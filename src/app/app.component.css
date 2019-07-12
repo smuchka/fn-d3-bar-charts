@@ -1,3 +1,9 @@
 p {
   font-family: Lato;
 }
+
+.chart-container {
+  width: 600px;
+  height: 250px;
+  background-color: #ccc;
+}

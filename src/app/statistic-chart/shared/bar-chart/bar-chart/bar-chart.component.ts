@@ -34,16 +34,24 @@ export class BarChartComponent extends BaseD3ChartComponent implements OnInit {
 
     let barWidth = 20;
 
-    const x = D3.scaleBand()
-      .domain(this.items.map(d => d.label))
-      .range([this.margin.left, this.width - this.margin.right]);
-    // .padding(0.1);
+    let x = D3.scaleBand()
+      .domain(this.items.map(d => d.identity))
+      .range([this.margin.left, this.width - this.margin.right])
+      .align(0.5)
+      .padding(0)
+      .paddingInner(0.8)
+      .paddingOuter(0.4);
 
-    const maxY = D3.max(this.items, d => d.value);
+const inputMax = 999;
+    const maxY = D3.max([
+      inputMax,
+      D3.max(this.items, d => d.value),
+    ]);
+    
     const y = D3.scaleLinear()
-      .domain([0, maxY]).nice()
-      .range([this.height - 100, this.margin.top]);
-    // this.margin.bottom
+      .domain([0, maxY])
+      .range([this.height - this.padding.bottom, this.padding.top])
+      .nice();
 
     let bars = this.svg.append('g')
       .attr('fill', 'steelblue')
@@ -51,30 +59,43 @@ export class BarChartComponent extends BaseD3ChartComponent implements OnInit {
       .data(this.items);
 
     console.warn(y(0), y(643));
-    // draw bar
+
+    // draw bar placeholder
     bars
       .join('rect')
-      .attr('x', d => x(d.label))
+      .attr('x', d => x(d.identity))
       .attr('y', d => y(maxY))
       .attr('height', d => y(0) - y(maxY))
       .attr('width', barWidth)
       .style('fill', 'yellow');
 
+    // draw bar
     bars
       .join('rect')
-      .attr('x', d => x(d.label))
+      .attr('x', d => x(d.identity))
       .attr('y', d => y(d.value))
       .attr('height', d => y(0) - y(d.value))
-      .attr('width', barWidth);
+      // .attr('width', barWidth);
+      .attr('width', x.bandwidth);
 
     // draw label
     bars
       .join('text')
-      .text((d, i) => i)
+      .text((d, i) => d.label)
       // set label by center of bar
-      .attr('x', d => x(d.label) + Math.round(barWidth / 2))
-      .attr('y', d => y(0))
-      .style('fill', 'black')
+      .attr('x', d => x(d.identity) + Math.round(barWidth / 2))
+      .attr('y', d => y(0) + 20)
+      .attr("font-family", "Lato")
+      .attr("font-size", "12px")
+      .style('fill', '#969DAD')
       .style('text-anchor', 'middle');
+
+    //Draw axes
+    var xAxis = D3.axisBottom(x);
+    const positionOnY = this.height - this.padding.bottom / 2;
+    this.svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + positionOnY + ")")
+      .call(xAxis);
   }
 }
