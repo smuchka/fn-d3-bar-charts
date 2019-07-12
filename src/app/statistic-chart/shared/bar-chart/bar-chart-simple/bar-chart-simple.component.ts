@@ -4,11 +4,10 @@ import { ItemData } from '../core/interfaces/item-data';
 import * as D3 from 'd3';
 
 @Component({
-  selector: 'fn-bar-chart',
+  selector: 'fn-bar-chart-simple',
   template: '<!--d3 create template itself-->',
-  styleUrls: ['./bar-chart.component.scss'],
 })
-export class BarChartComponent extends BaseD3ChartComponent implements OnInit {
+export class BarChartSimpleComponent extends BaseD3ChartComponent implements OnInit {
 
   @Input()
   public items: ItemData[];

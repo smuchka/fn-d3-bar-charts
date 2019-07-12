@@ -1,4 +1,10 @@
-<fn-bar-chart
-  [items]="listData_DayDelimiter$ | async"
+<fn-bar-chart-simple
+        [items]="listData_DayDelimiter$ | async"
 >
-</fn-bar-chart>
+</fn-bar-chart-simple>
+
+<br>
+<fn-bar-chart-time-scale
+        [items]="listData_DayDelimiter$ | async"
+>
+</fn-bar-chart-time-scale>
