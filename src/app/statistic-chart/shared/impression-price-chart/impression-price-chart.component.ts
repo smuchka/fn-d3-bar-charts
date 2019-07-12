@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { daysMock } from './mockData_hours';
-import { HourDelimiterData } from './core/delimiter-data';
+import { daysMock, hoursMock } from './mockData_hours';
+import { HourDelimiterData, DayDelimiterData } from './core/delimiter-data';
 import { ItemData } from '../bar-chart/core/interfaces/item-data';
 import { format } from 'date-fns'
 
@@ -12,22 +12,38 @@ import { format } from 'date-fns'
 })
 export class ImpressionPriceChartComponent implements OnInit {
   private listData_DayDelimiter$: Observable<ItemData[]>;
+  private listData_HourDelimiter$: Observable<ItemData[]>;
 
   constructor() {
 
     const getTimestamInSecond = (date: Date) => {
-      console.log(date, date.getTime() / 1000)
       return date.getTime() / 1000;
     };
 
     this.listData_DayDelimiter$ = of([
-      ...(<HourDelimiterData[]>daysMock).map<ItemData>((item: HourDelimiterData) => {
+      ...(<DayDelimiterData[]>daysMock).map<ItemData>((item: DayDelimiterData) => {
         const date = new Date(+item.year, +item.day, +item.month)
         return {
           identity: getTimestamInSecond(date),
           label: format(date, 'ddd'),
           value: item.views,
-          data: {},
+          data: {
+            date: date
+          },
+        };
+      }),
+    ]);
+
+    this.listData_HourDelimiter$ = of([
+      ...(<HourDelimiterData[]>hoursMock).map<ItemData>((item: HourDelimiterData) => {
+        const date = new Date(+item.year, +item.day, +item.month)
+        return {
+          identity: getTimestamInSecond(date),
+          label: format(date, 'ddd'),
+          value: item.views,
+          data: {
+            date
+          },
         };
       }),
     ]);

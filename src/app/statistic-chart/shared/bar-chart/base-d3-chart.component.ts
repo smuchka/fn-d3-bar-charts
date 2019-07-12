@@ -1,11 +1,13 @@
 import { Component, ElementRef, Renderer2 } from '@angular/core';
 import * as D3 from 'd3';
+
 type Position = {
   top: number,
   bottom: number,
   right: number,
   left: number,
 };
+
 @Component({
   selector: 'fn-base-d3-chart',
   template: '<!--d3 create template itself-->',
@@ -47,15 +49,15 @@ export class BaseD3ChartComponent {
     this.width = clientWidth - this.margin.left - this.margin.right;
     this.height = clientHeight - this.margin.bottom - this.margin.top;
 
-    console.warn(
-      'Init dimensions:',
-      this.width,
-      this.height,
-      JSON.stringify(this.padding),
-      'Parent: ', container,
-      container.clientWidth,
-      container.clientHeight,
-    );
+    // console.warn(
+    //   'Init dimensions:',
+    //   this.width,
+    //   this.height,
+    //   JSON.stringify(this.padding),
+    //   'Parent: ', container,
+    //   container.clientWidth,
+    //   container.clientHeight,
+    // );
   }
 
   protected buildSVG() {

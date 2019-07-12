@@ -1,6 +1,7 @@
 import { Component, ElementRef, Input, OnInit, Renderer2 } from '@angular/core';
 import { BaseD3ChartComponent } from '../base-d3-chart.component';
 import { ItemData } from '../core/interfaces/item-data';
+import { startOfToday, endOfToday, differenceInHours } from 'date-fns'
 import * as D3 from 'd3';
 
 @Component({
@@ -32,21 +33,25 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
     // if data exist
 
     let barWidth = 20;
+    let startRange = startOfToday();
+    let endRange = endOfToday();
+    let rangeEmptyData = (new Array(
+      differenceInHours(startRange, endRange)
+    )).fill(null)
 
-    let x = D3.scaleBand()
-      .domain(this.items.map(d => d.identity))
-      .range([this.margin.left, this.width - this.margin.right])
-      .align(0.5)
-      .padding(0)
-      .paddingInner(0.8)
-      .paddingOuter(0.4);
+    console.warn(':', differenceInHours(startRange, endRange));
 
-const inputMax = 999;
+    let x = D3.scaleTime()
+      .domain([startRange, endRange])
+      .range([this.margin.left, this.width - this.margin.right]);
+      x.ticks(D3.timeMinute.every(60));
+
+    const inputMax = 999;
     const maxY = D3.max([
       inputMax,
       D3.max(this.items, d => d.value),
     ]);
-    
+
     const y = D3.scaleLinear()
       .domain([0, maxY])
       .range([this.height - this.padding.bottom, this.padding.top])
@@ -62,7 +67,7 @@ const inputMax = 999;
     // draw bar placeholder
     bars
       .join('rect')
-      .attr('x', d => x(d.identity))
+      .attr('x', d => x(d.data.date))
       .attr('y', d => y(maxY))
       .attr('height', d => y(0) - y(maxY))
       .attr('width', barWidth)
