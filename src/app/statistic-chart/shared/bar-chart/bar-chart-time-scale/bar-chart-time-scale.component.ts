@@ -28,6 +28,10 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
   }
 
   private render() {
+    if(!this.svg) {
+      return;
+    }
+
     this.svg.selectAll().remove();
 
     // if data exist
