@@ -19,6 +19,7 @@ export class ImpressionPriceChartComponent implements OnInit {
   public startDateHour: Date;
   public endDateHour: Date;
   public barWidthHour: number;
+  public countViewBarsHours: number;
 
   constructor() {
 
@@ -30,12 +31,9 @@ export class ImpressionPriceChartComponent implements OnInit {
       ...(<DayDelimiterData[]>daysMock).map<ItemData>((item: DayDelimiterData) => {
         const date = new Date(+item.year, +item.month, +item.day)
         return {
-          identity: getTimestamInSecond(date),
+          identity: date,
           label: format(date, 'ddd'),
           value: item.views,
-          data: {
-            date: date
-          },
         };
       }),
     ]);
@@ -44,6 +42,7 @@ export class ImpressionPriceChartComponent implements OnInit {
     this.startDateHour = startOfToday();
     this.endDateHour = endOfToday();
     this.barWidthHour = 20;
+    this.countViewBarsHours = 14;
 
     this.listData_HourDelimiter$ = of([
       ...(<HourDelimiterData[]>hoursMock).map<ItemData>((item: HourDelimiterData) => {
@@ -51,18 +50,15 @@ export class ImpressionPriceChartComponent implements OnInit {
         date.setUTCHours(+item.hour);
         // date = addHours(date, -24)
         return {
-          identity: getTimestamInSecond(date),
-          label: format(date, 'ddd'),
+          identity: date,
+          label: format(date, 'HH:mm'),
           value: item.views,
-          data: {
-            date
-          },
         };
       }),
     ])
-    .pipe(
-      tap(data => console.log(data))
-    );
+      .pipe(
+        tap(data => console.log(data))
+      );
   }
 
   ngOnInit() {
