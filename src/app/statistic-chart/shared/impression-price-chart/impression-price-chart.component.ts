@@ -3,7 +3,7 @@ import { Observable, of } from 'rxjs';
 import { daysMock, hoursMock } from './mockData_hours';
 import { HourDelimiterData, DayDelimiterData } from './core/delimiter-data';
 import { ItemData } from '../bar-chart/core/interfaces/item-data';
-import { format } from 'date-fns'
+import { format, startOfToday, endOfToday, differenceInHours, addHours } from 'date-fns'
 
 @Component({
   selector: 'fn-impression-price-chart',
@@ -12,7 +12,11 @@ import { format } from 'date-fns'
 })
 export class ImpressionPriceChartComponent implements OnInit {
   private listData_DayDelimiter$: Observable<ItemData[]>;
-  private listData_HourDelimiter$: Observable<ItemData[]>;
+
+
+  public listData_HourDelimiter$: Observable<ItemData[]>;
+  public startDateHour: Date;
+  public endDateHour: Date;
 
   constructor() {
 
@@ -34,6 +38,10 @@ export class ImpressionPriceChartComponent implements OnInit {
       }),
     ]);
 
+    // Hours
+    this.startDateHour = startOfToday();
+    this.endDateHour = endOfToday();
+
     this.listData_HourDelimiter$ = of([
       ...(<HourDelimiterData[]>hoursMock).map<ItemData>((item: HourDelimiterData) => {
         const date = new Date(+item.year, +item.day, +item.month)
@@ -52,4 +60,7 @@ export class ImpressionPriceChartComponent implements OnInit {
   ngOnInit() {
   }
 
+  public onClickAdd() {
+
+  }
 }

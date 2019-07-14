@@ -13,7 +13,7 @@ type Position = {
   template: '<!--d3 create template itself-->',
   styles: [],
 })
-export class BaseD3ChartComponent {
+export abstract class BaseD3ChartComponent {
 
   protected svg;
   protected height;
@@ -46,7 +46,7 @@ export class BaseD3ChartComponent {
     const container = this.getParentElement();
     const clientWidth = container.clientWidth;
     const clientHeight = container.clientHeight;
-    this.width = clientWidth - this.margin.left - this.margin.right;
+    this.width = (clientWidth - this.margin.left - this.margin.right);
     this.height = clientHeight - this.margin.bottom - this.margin.top;
 
     // console.warn(
@@ -63,17 +63,21 @@ export class BaseD3ChartComponent {
   protected buildSVG() {
     this.host.html('');
     const divBlock = this.host.append('div')
-      .style('overflow-x', 'auto');
+      // .style('overflow-x', 'auto');
 
-    // this.svg = divBlock.append('svg')
-    //   .attr('width', this.width * 2)
-    //   .attr('height', this.height)
-    //   .style('padding-top', this.margin.top)
-    //   .style('padding-bottom', this.margin.bottom)
-    //   .style('padding-left', this.margin.left)
-    //   .style('padding-right', this.margin.right)
-    //   .style('background-color', '#6ecc9e');
+    this.svg = divBlock.append('svg')
+      .attr('width', this.width)
+      .attr('height', this.height)
+      .style('padding-top', this.margin.top)
+      .style('padding-bottom', this.margin.bottom)
+      .style('padding-left', this.margin.left)
+      .style('padding-right', this.margin.right)
+      .style('background-color', '#6ecc9e');
   }
+
+  protected abstract bindEvents(): void;
+
+  protected abstract calcXAxisEndDate(): void;
 
   /**
    * Get element container of chip list

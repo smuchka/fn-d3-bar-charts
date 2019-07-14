@@ -3,8 +3,12 @@
 >
 </fn-bar-chart-simple> -->
 
+
+<button (onclick)="onClickAdd()">add 1 day before</button>
 <br>
 <fn-bar-chart-time-scale
-        [items]="listData_DayDelimiter$ | async"
+        [items]="listData_HourDelimiter$ | async"
+        [startRange]="startDateHour"
+        [endRange]="endDateHour"
 >
 </fn-bar-chart-time-scale>
