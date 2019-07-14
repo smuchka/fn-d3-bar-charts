@@ -4,6 +4,9 @@ import { ItemData } from '../core/interfaces/item-data';
 import { startOfToday, endOfToday, startOfYesterday, differenceInHours, addHours } from 'date-fns'
 import * as D3 from 'd3';
 
+const colorDataBar = '#969DAD';
+const colorPlaceholderBar = '#F2F5FA';
+
 @Component({
   selector: 'fn-bar-chart-time-scale',
   template: '<!--d3 create template itself-->',
@@ -22,6 +25,7 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
   private placeholderBars;
   private barsDataGroup;
   private zoom;
+  private radiusRectangle;
 
   @Input()
   public startRange: Date;
@@ -35,7 +39,9 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
     protected renderer: Renderer2,
   ) {
     super(element, renderer);
+
     this.items = [];
+    this.radiusRectangle = 4;
   }
 
   public ngOnInit(): void {
@@ -151,8 +157,6 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
 
   private drawBarAndPlaceholders() {
 
-    let radiusRectangle = 4;
-
     console.warn(':', differenceInHours(this.endRange, this.startRange));
 
     const countHours = differenceInHours(this.endRange, this.startRange) + 1;
@@ -180,8 +184,8 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
       .attr('y', d => this.y(this.getMaxYValue()))
       .attr('height', d => this.y(0) - this.y(this.getMaxYValue()))
       .attr('width', this.barWidth)
-      .attr('rx', d => radiusRectangle)
-      .attr('ry', d => radiusRectangle)
+      .attr('rx', d => this.radiusRectangle)
+      .attr('ry', d => this.radiusRectangle)
       .style('fill', '#F2F5FA')
       .style('radius', '4px');
 
@@ -192,23 +196,25 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
       .selectAll('rect')
       .data(this.items);
 
-    bars
-      .join('rect')
-      .attr('x', d => {
-        console.log(
-          d.data.date,
-          this.x(d.data.date),
-          this.x(startOfToday())
-        )
-        return this.x(d.data.date) - this.barWidth / 2
-      })
-      .attr('y', d => this.y(d.value))
-      .attr('height', d => this.y(0) - this.y(d.value))
-      .attr('width', this.barWidth)
-      .attr('rx', d => radiusRectangle)
-      .attr('ry', d => radiusRectangle)
-      .style('fill', '#969DAD');
+    // bars
+    //   .join('rect')
+    //   .attr('x', d => {
+    //     console.log(
+    //       d.data.date,
+    //       this.x(d.data.date),
+    //       this.x(startOfToday())
+    //     )
+    //     return this.x(d.data.date) - this.barWidth / 2
+    //   })
+    //   .attr('y', d => this.y(d.value))
+    //   .attr('height', d => this.y(0) - this.y(d.value))
+    //   .attr('width', this.barWidth)
+    //   .attr('rx', d => this.radiusRectangle)
+    //   .attr('ry', d => this.radiusRectangle)
+    //   .style('fill', '#969DAD');
 
+    bars.call(this.drawDataBar.bind(this))
+    
     // draw label
     // bars
     //   .join('text')
@@ -230,5 +236,28 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
       .attr("class", "x axis")
       .attr("transform", "translate(0," + positionOnY + ")")
       .call(this.xAxis);
+  }
+
+  private drawDataBar(selectors: any): void {
+    this.drawBarPrimitive(selectors, colorDataBar);
+  }
+
+  private drawPlaceholderBar(selectors: any): void {
+    this.drawBarPrimitive(selectors, colorPlaceholderBar);
+  }
+
+  private drawBarPrimitive(
+    selectors: any,
+    color: string,
+  ): void {
+    selectors
+      .join('rect')
+      .attr('x', d => this.x(d.data.date) - this.barWidth / 2)
+      .attr('y', d => this.y(d.value))
+      .attr('height', d => this.y(0) - this.y(d.value))
+      .attr('width', this.barWidth)
+      .attr('rx', d => this.radiusRectangle)
+      .attr('ry', d => this.radiusRectangle)
+      .style('fill', color);
   }
 }
