@@ -1,7 +1,7 @@
 import { Component, ElementRef, Input, OnInit, Renderer2 } from '@angular/core';
 import { BaseD3ChartComponent } from '../base-d3-chart.component';
 import { ItemData } from '../core/interfaces/item-data';
-import { startOfToday, endOfToday, differenceInHours, addHours } from 'date-fns'
+import { startOfToday, endOfToday, startOfYesterday, differenceInHours, addHours } from 'date-fns'
 import * as D3 from 'd3';
 
 @Component({
@@ -20,12 +20,15 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
   private xAxis;
   private xAxisG;
   private placeholderBars;
+  private barsDataGroup;
   private zoom;
 
   @Input()
   public startRange: Date;
   @Input()
   public endRange: Date;
+  @Input()
+  public barWidth: number;
 
   public constructor(
     protected element: ElementRef,
@@ -46,15 +49,16 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
     this.render();
   }
 
-  protected calcXAxisEndDate(): void {
-
+  protected calcXAxisEndDate(): Date {
+    const countHours = Math.floor(this.width / (this.barWidth * 3));
+    return addHours(this.startRange, countHours);
   }
 
   private createXScale(): void {
     const x = D3.scaleTime()
-      .domain([this.startRange, this.endRange])
+      .domain([this.startRange, this.calcXAxisEndDate()])
       .range([this.margin.left, this.width - this.margin.right]);
-    x.ticks(D3.timeMinute.every(60));
+    x.ticks(D3.utcMinute.every(60));
     this.x2 = x.copy();
     return x;
   }
@@ -68,7 +72,7 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
   }
 
   private getMaxYValue() {
-    const inputMax = 999;
+    const inputMax = 0;
     const maxY = D3.max([
       inputMax,
       D3.max(this.items, d => d.value),
@@ -87,16 +91,31 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
     this.x = this.createXScale();
     this.y = this.createYScale();
 
+    const a = 100;
     this.zoom = D3.zoom()
-      .extent([[200, 0], [this.width, this.height]])
+      // .extent([
+      //   [100, 100],
+      //   [this.x(addHours(this.endRange, 4)), this.height]
+      // ])
       .scaleExtent([1, 1])
-      .translateExtent([[0, 0], [this.width, this.height]])
+      .translateExtent([
+        [this.x(addHours(this.startRange, -3)), 0],
+        [this.x(addHours(this.endRange, 3)), this.height]
+      ])
       .on("zoom", this.onZoomed.bind(this));
 
     this.svg.call(this.zoom);
 
     this.drawBarAndPlaceholders();
     this.drawBottomAxis();
+
+    console.log('!');
+    // this.svg.transition()
+    //   .duration(750)
+    //   .call(
+    //     this.zoom.transform, 
+    //     D3.zoomIdentity.translate(0, 0)
+    //   );
   }
 
   protected bindEvents(): void {
@@ -114,8 +133,7 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
     // tx = Math.max(tx, this.width);
     // zoom.translate([tx, ty]);
 
-    console.log(D3.event);
-
+    console.log(D3.event.transform);
     // setTimeout(() => {
     //   this.svg.transition()
     //     .duration(750)
@@ -125,12 +143,14 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
     this.x = D3.event.transform.rescaleX(this.x2) // update the working 
     this.xAxis.scale(this.x);
     this.xAxisG.call(this.xAxis);
-    this.placeholderBarsGroup.attr("transform", "translate(" + D3.event.transform.x + ",0)");
+    this.placeholderBarsGroup
+      .attr("transform", "translate(" + D3.event.transform.x + ",0)");
+    this.barsDataGroup
+      .attr("transform", "translate(" + D3.event.transform.x + ",0)");
   }
 
   private drawBarAndPlaceholders() {
 
-    let barWidth = 20;
     let radiusRectangle = 4;
 
     console.warn(':', differenceInHours(this.endRange, this.startRange));
@@ -141,7 +161,7 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
         return addHours(this.startRange, index);
       });
 
-    console.warn(rangeEmptyData[0].getTime());
+    // console.warn(rangeEmptyData[0].getTime());
 
     // // // // // // // // //
     // draw bar placeholder //
@@ -154,43 +174,52 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
     this.placeholderBars
       .join('rect')
       .attr('x', d => {
-        // console.log(d.data)
-        return this.x(d)
+        // console.log(d)
+        return this.x(d) - this.barWidth / 2
       })
       .attr('y', d => this.y(this.getMaxYValue()))
+      .attr('height', d => this.y(0) - this.y(this.getMaxYValue()))
+      .attr('width', this.barWidth)
       .attr('rx', d => radiusRectangle)
       .attr('ry', d => radiusRectangle)
-      .attr('height', d => this.y(0) - this.y(this.getMaxYValue()))
-      .attr('width', barWidth)
-      // .attr('width', this.x.bandwidth)
       .style('fill', '#F2F5FA')
       .style('radius', '4px');
 
+
     // draw bar
-    let bars = this.svg.append('g')
-      .attr('fill', 'steelblue')
+    this.barsDataGroup = this.svg.append('g');
+    const bars = this.barsDataGroup.attr('fill', 'steelblue')
       .selectAll('rect')
       .data(this.items);
 
     bars
       .join('rect')
-      .attr('x', d => this.x(d.identity))
+      .attr('x', d => {
+        console.log(
+          d.data.date,
+          this.x(d.data.date),
+          this.x(startOfToday())
+        )
+        return this.x(d.data.date) - this.barWidth / 2
+      })
       .attr('y', d => this.y(d.value))
       .attr('height', d => this.y(0) - this.y(d.value))
-    // .attr('width', barWidth);
-    // .attr('width', this.x.bandwidth);
+      .attr('width', this.barWidth)
+      .attr('rx', d => radiusRectangle)
+      .attr('ry', d => radiusRectangle)
+      .style('fill', '#969DAD');
 
     // draw label
-    bars
-      .join('text')
-      .text((d, i) => d.label)
-      // set label by center of bar
-      .attr('x', d => this.x(d.identity) + Math.round(barWidth / 2))
-      .attr('y', d => this.y(0) + 20)
-      .attr("font-family", "Lato")
-      .attr("font-size", "12px")
-      .style('fill', '#969DAD')
-      .style('text-anchor', 'middle');
+    // bars
+    //   .join('text')
+    //   .text((d, i) => d.label)
+    //   // set label by center of bar
+    //   .attr('x', d => this.x(d.identity) + Math.round(this.barWidth / 2))
+    //   .attr('y', d => this.y(0) + 20)
+    //   .attr("font-family", "Lato")
+    //   .attr("font-size", "12px")
+    //   .style('fill', '#969DAD')
+    //   .style('text-anchor', 'middle');
 
   }
 
