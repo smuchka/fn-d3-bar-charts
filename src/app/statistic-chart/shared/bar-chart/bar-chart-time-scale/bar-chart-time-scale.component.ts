@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, OnInit, Renderer2 } from '@angular/core';
+import { Component, ElementRef, Input, OnChanges, OnInit, Renderer2, SimpleChanges } from '@angular/core';
 import { BaseD3ChartComponent } from '../base-d3-chart.component';
 import { ItemData } from '../core/interfaces/item-data';
 import { startOfToday, endOfToday, startOfYesterday, differenceInHours, addHours, format } from 'date-fns'
@@ -9,9 +9,13 @@ const colorPlaceholderBar = '#F2F5FA';
 
 @Component({
   selector: 'fn-bar-chart-time-scale',
-  template: '<!--d3 create template itself-->',
+  template: `<!--d3 create template itself-->
+  <button (click)="positionEndViewPort()">to end</button>
+  <button (click)="positionReset()">reset</button>
+  <button (click)="positionZero()">to (0,0)</button>
+  `,
 })
-export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements OnInit {
+export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements OnInit, OnChanges {
 
   @Input()
   public items: ItemData[];
@@ -28,13 +32,15 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
 
   @Input()
   public startRange: Date;
-  @Input()
-  public endRange: Date;
+  @Input('maxValue')
+  public initMaxValue: number;
   @Input()
   public barWidth: number;
 
   @Input()
   public countViewBars: number;
+
+  private maxValueFromChart: number;
 
   public constructor(
     protected element: ElementRef,
@@ -44,54 +50,75 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
 
     this.items = [];
     this.radiusRectangle = 4;
+    this.initMaxValue = 0;
+    this.maxValueFromChart = 0;
   }
 
   public ngOnInit(): void {
+    //
     this.initialiseSizeAndScale();
     this.buildSVG();
-    this.render();
+    this.createZoom();
+    this.createXScale();
+    this.createYScale();
+    //
+    this.svg.selectAll().remove();
+    this.drawBottomAxis();
+    this.groupPlaceholderBars = this.svg.append('g');
+    this.groupDataBars = this.svg.append('g');
+    this.updateChart();
+  }
+
+  public ngOnChanges(changes: SimpleChanges): void {
+    if (changes.items && changes.items.firstChange) {
+      return;
+    }
+
+    if (changes.items && changes.items.currentValue) {
+      this.updateChart();
+    }
+  }
+
+  protected updateChart(): void {
+
+    if (this.checkAndUpdateMaxValue()) {
+      this.createYScale();
+    }
+
+    // draw placeholders
+    const placeholderBars = this.groupPlaceholderBars
+      .selectAll('rect')
+      .data(this.items)
+      .call(this.drawPlaceholderBar.bind(this));
+
+    // draw bar
+    const bars = this.groupDataBars.attr('fill', 'steelblue')
+      .selectAll('rect')
+      .data(this.items.filter(el => el.value))
+      .call(this.drawDataBar.bind(this))
   }
 
   // todo: hours dependencies
-  protected calcXAxisEndDate(): Date {
-    return addHours(this.startRange, this.countViewBars - 1);
+  protected xAxisDateRange(): [Date, Date] {
+    return [this.startRange, addHours(this.startRange, this.countViewBars - 1)];
+    // return [this.startRange, this.endRange];
   }
 
   private createXScale(): void {
-    const x = D3.scaleTime()
-      .domain([this.startRange, this.calcXAxisEndDate()])
+    this.x = D3.scaleTime()
+      .domain(this.xAxisDateRange())
       .range([this.margin.left, this.width - this.margin.right]);
-    x.ticks(D3.utcMinute.every(60));
-    this.x2 = x.copy();
-    return x;
+    this.x2 = this.x.copy();
   }
 
   private createYScale(): void {
-    return D3.scaleLinear()
-      .domain([0, this.getMaxYValue()])
+    this.y = D3.scaleLinear()
+      .domain([0, this.maxValueFromChart])
       .range([this.height - this.padding.bottom, this.padding.top])
       .nice();
   }
 
-  private getMaxYValue() {
-    const inputMax = 0;
-    const maxY = D3.max([
-      inputMax,
-      D3.max(this.items, d => d.value),
-    ]);
-
-    return maxY;
-  }
-
-  private render() {
-    if (!this.svg) {
-      return;
-    }
-
-    this.svg.selectAll().remove();
-    // if data exist
-    this.x = this.createXScale();
-    this.y = this.createYScale();
+  private createZoom(): void {
 
     const a = 100;
     this.zoom = D3.zoom()
@@ -101,92 +128,94 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
       // ])
       .scaleExtent([1, 1])
 
-      // TODO: how limit scroll range ????
-      // todo: hours dependencies
-      .translateExtent([
-        [this.x(addHours(this.startRange, -3)), 0],
-        [this.x(addHours(this.endRange, 3)), this.height]
-      ])
+      // // TODO: how limit scroll range ????
+      // // todo: hours dependencies
+      // .translateExtent([
+      //   [this.x(addHours(this.startRange, -3)), 0],
+      //   [this.x(addHours(this.endRange, 3)), this.height]
+      // ])
       .on("zoom", this.onZoomed.bind(this));
 
     this.svg.call(this.zoom);
-
-    this.drawBarAndPlaceholders();
-    this.drawBottomAxis();
-
-    console.log('!');
-    // this.svg.transition()
-    //   .duration(750)
-    //   .call(
-    //     this.zoom.transform, 
-    //     D3.zoomIdentity.translate(0, 0)
-    //   );
   }
 
-  private drawBarAndPlaceholders() {
+  private checkAndUpdateMaxValue(): boolean {
+    const oldValue = this.maxValueFromChart;
 
-    // todo: hours dependencies
-    // geberate ranage placeholders
-    const countHours = differenceInHours(this.endRange, this.startRange) + 1;
-    let rangeEmptyData: ItemData[] =
-      Array.from(Array(countHours), (el, index) => {
+    this.maxValueFromChart = D3.max([
+      this.initMaxValue,
+      D3.max(this.items, d => d.value),
+    ]);
 
-        const date = addHours(this.startRange, index);
-        return <ItemData>{
-          identity: date,
-          label: format(date, 'HH:mm'),
-          value: this.getMaxYValue(),
-        };
-      });
+    return this.maxValueFromChart !== oldValue;
+  }
 
-    // draw placeholders
-    this.groupPlaceholderBars = this.svg.append('g')
-    const placeholderBars = this.groupPlaceholderBars
-      .selectAll('rect')
-      .data(rangeEmptyData)
-      .call(this.drawPlaceholderBar.bind(this));
+  private goTo(x: number = 0, y: number = 0, animationDuration: number = 750): void {
+    this.svg
+      .transition()
+      .duration(750)
+      .call(
+        this.zoom.transform,
+        D3.zoomIdentity.translate(x, y)
+      );
+  }
 
-    // draw bar
-    this.groupDataBars = this.svg.append('g');
-    const bars = this.groupDataBars.attr('fill', 'steelblue')
-      .selectAll('rect')
-      .data(this.items)
-      .call(this.drawDataBar.bind(this))
+  private positionBarInViewPort(date: Date): void {
+    const x = this.x(date);
+    this.goTo(x);
+  }
 
+  public positionEndViewPort(): void {
+    const lastDateCurrentRange: Date = endOfToday();
+    this.positionBarInViewPort(lastDateCurrentRange);
+  }
+
+  public positionReset(): void {
+    this.svg
+      .transition()
+      .duration(750)
+      .call(
+        this.zoom.transform,
+        D3.zoomIdentity
+      );
+  }
+
+  public positionZero(): void {
+    this.svg
+      .transition()
+      .duration(750)
+      .call(
+        this.zoom.transform,
+        D3.zoomIdentity.translate(0, 0)
+      );
   }
 
   private onZoomed(): void {
-    // console.log(D3.event.transform);
-    // todo: run navigate on position
-    // setTimeout(() => {
-    //   this.svg.transition()
-    //     .duration(750)
-    //     .call(this.zoom.transform, D3.zoomIdentity.translate(0, 0));
-    // }, 2000)
-
+    // recalc X Scale and redraw xAxis
     this.x = D3.event.transform.rescaleX(this.x2) // update the working 
     this.xAxis.scale(this.x);
     this.xAxisG.call(this.xAxis);
 
+    // redraw groups of bars 
     const { x } = D3.event.transform || {};
-    this.groupPlaceholderBars
-      .attr("transform", "translate(" + x + ",0)");
-    this.groupDataBars
-      .attr("transform", "translate(" + x + ",0)");
+    this.groupPlaceholderBars.attr("transform", "translate(" + x + ",0)");
+    this.groupDataBars.attr("transform", "translate(" + x + ",0)");
   }
 
   private drawDataBar(selectors: any): void {
     this.drawBarPrimitive(
       selectors,
       colorDataBar,
-    );
+    )
   }
 
   private drawPlaceholderBar(selectors: any): void {
     this.drawBarPrimitive(
       selectors,
-      colorPlaceholderBar,
-    );
+      colorPlaceholderBar
+    )
+      .attr('y', d => this.y(this.maxValueFromChart))
+      .attr('height', d => this.y(0) - this.y(this.maxValueFromChart))
 
     // draw label
     // bars
@@ -202,10 +231,10 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
   }
 
   private drawBarPrimitive(
-    selectors: any,
+    selectors: Selection,
     color: string,
-  ): void {
-    selectors
+  ): any {
+    return selectors
       .join('rect')
       .attr('x', d => this.x(d.identity))
       .attr('y', d => this.y(d.value))

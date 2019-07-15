@@ -48,20 +48,10 @@ export abstract class BaseD3ChartComponent {
     const clientHeight = container.clientHeight;
     this.width = (clientWidth - this.margin.left - this.margin.right);
     this.height = clientHeight - this.margin.bottom - this.margin.top;
-
-    // console.warn(
-    //   'Init dimensions:',
-    //   this.width,
-    //   this.height,
-    //   JSON.stringify(this.padding),
-    //   'Parent: ', container,
-    //   container.clientWidth,
-    //   container.clientHeight,
-    // );
   }
 
   protected buildSVG() {
-    this.host.html('');
+    // this.host.html('');
     const divBlock = this.host.append('div')
       // .style('overflow-x', 'auto');
 
@@ -77,7 +67,12 @@ export abstract class BaseD3ChartComponent {
 
   protected abstract bindEvents(): void;
 
-  protected abstract calcXAxisEndDate(): void;
+  /**
+   * Date range to Width chart ratio.
+   * How many dates include in view area of chart.
+   * use for calculation x axix values
+   */
+  protected abstract xAxisDateRange(): [Date, Date];
 
   /**
    * Get element container of chip list

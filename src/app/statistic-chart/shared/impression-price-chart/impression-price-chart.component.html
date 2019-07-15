@@ -4,13 +4,16 @@
 </fn-bar-chart-simple> -->
 
 
-<button (onclick)="onClickAdd()">add 1 day before</button>
+<div class="buttons">
+	<button (click)="onClickHour_AddBeforeChunk()">add -1</button>
+  <button (click)="onClickHour_AddAfterChunk()">add +1</button>
+</div>
 <br>
 <fn-bar-chart-time-scale
-        [items]="listData_HourDelimiter$ | async"
+        [items]="this.pagginableDataForHourChart$ | async"
         [startRange]="startDateHour"
-        [endRange]="endDateHour"
         [barWidth]="barWidthHour"
         [countViewBars]="countViewBarsHours"
+        [maxValue]="maxValueForHour"
 >
 </fn-bar-chart-time-scale>
