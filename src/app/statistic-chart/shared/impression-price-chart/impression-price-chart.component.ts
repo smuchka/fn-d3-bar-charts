@@ -21,6 +21,7 @@ export class ImpressionPriceChartComponent implements OnInit {
   public barWidthHour: number;
   public countViewBarsHours: number;
 
+
   constructor() {
 
     const getTimestamInSecond = (date: Date) => {
@@ -29,7 +30,7 @@ export class ImpressionPriceChartComponent implements OnInit {
 
     this.listData_DayDelimiter$ = of([
       ...(<DayDelimiterData[]>daysMock).map<ItemData>((item: DayDelimiterData) => {
-        const date = new Date(+item.year, +item.month, +item.day)
+        const date = new Date(+item.year, +item.month - 1, +item.day)
         return {
           identity: date,
           label: format(date, 'ddd'),
@@ -46,9 +47,11 @@ export class ImpressionPriceChartComponent implements OnInit {
 
     this.listData_HourDelimiter$ = of([
       ...(<HourDelimiterData[]>hoursMock).map<ItemData>((item: HourDelimiterData) => {
-        const date = new Date(+item.year, +item.month, +item.day);
-        date.setUTCHours(+item.hour);
-        // date = addHours(date, -24)
+        const date = new Date();
+        date.setUTCFullYear(+item.year);
+        date.setUTCMonth(+item.month-1);
+        date.setUTCDate(+item.day);
+        date.setUTCHours(+item.hour, 0, 0, 0);
         return {
           identity: date,
           label: format(date, 'HH:mm'),

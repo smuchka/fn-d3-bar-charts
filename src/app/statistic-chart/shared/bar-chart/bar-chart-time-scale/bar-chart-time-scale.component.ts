@@ -19,6 +19,7 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
   private groupPlaceholderBars;
   private groupDataBars;
   private x;
+  private x2;
   private y;
   private xAxis;
   private xAxisG;
@@ -31,7 +32,7 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
   public endRange: Date;
   @Input()
   public barWidth: number;
-  
+
   @Input()
   public countViewBars: number;
 
@@ -61,6 +62,7 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
       .domain([this.startRange, this.calcXAxisEndDate()])
       .range([this.margin.left, this.width - this.margin.right]);
     x.ticks(D3.utcMinute.every(60));
+    this.x2 = x.copy();
     return x;
   }
 
@@ -98,7 +100,7 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
       //   [this.x(addHours(this.endRange, 4)), this.height]
       // ])
       .scaleExtent([1, 1])
-      
+
       // TODO: how limit scroll range ????
       // todo: hours dependencies
       .translateExtent([
@@ -154,7 +156,7 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
   }
 
   private onZoomed(): void {
-    console.log(D3.event.transform);
+    // console.log(D3.event.transform);
     // todo: run navigate on position
     // setTimeout(() => {
     //   this.svg.transition()
@@ -162,13 +164,15 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
     //     .call(this.zoom.transform, D3.zoomIdentity.translate(0, 0));
     // }, 2000)
 
-    this.x = D3.event.transform.rescaleX(this.x) // update the working 
+    this.x = D3.event.transform.rescaleX(this.x2) // update the working 
     this.xAxis.scale(this.x);
     this.xAxisG.call(this.xAxis);
+
+    const { x } = D3.event.transform || {};
     this.groupPlaceholderBars
-      .attr("transform", "translate(" + D3.event.transform.x + ",0)");
+      .attr("transform", "translate(" + x + ",0)");
     this.groupDataBars
-      .attr("transform", "translate(" + D3.event.transform.x + ",0)");
+      .attr("transform", "translate(" + x + ",0)");
   }
 
   private drawDataBar(selectors: any): void {
@@ -203,12 +207,14 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
   ): void {
     selectors
       .join('rect')
-      .attr('x', d => this.x(d.identity) - this.barWidth / 2)
+      .attr('x', d => this.x(d.identity))
       .attr('y', d => this.y(d.value))
       .attr('height', d => this.y(0) - this.y(d.value))
       .attr('width', this.barWidth)
       .attr('rx', d => this.radiusRectangle)
       .attr('ry', d => this.radiusRectangle)
+      .attr('dutc', d => d.identity.toUTCString())
+      .attr('dlocal', d => d.identity.toString())
       .style('fill', color);
   }
 
