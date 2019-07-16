@@ -1,10 +1,16 @@
 import { Component, ElementRef, Input, OnChanges, OnInit, Renderer2, SimpleChanges } from '@angular/core';
 import { BaseD3ChartComponent } from '../base-d3-chart.component';
 import { ItemData } from '../core/interfaces/item-data';
-import { startOfToday, endOfToday, startOfYesterday, differenceInHours, addHours, format } from 'date-fns'
+import {
+  startOfToday, endOfToday,
+  startOfYesterday,
+  differenceInHours, addHours,
+  format
+} from 'date-fns'
 import * as D3 from 'd3';
 
 const colorDataBar = '#969DAD';
+const colorLabel = '#969DAD';
 const colorPlaceholderBar = '#F2F5FA';
 
 @Component({
@@ -14,6 +20,7 @@ const colorPlaceholderBar = '#F2F5FA';
   <button (click)="positionReset()">reset</button>
   <button (click)="positionZero()">to (0,0)</button>
   `,
+  styles: ['./bar-chart-time-scale.scss'],
 })
 export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements OnInit, OnChanges {
 
@@ -41,6 +48,7 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
   public countViewBars: number;
 
   private maxValueFromChart: number;
+  private activeDate: Date;
 
   public constructor(
     protected element: ElementRef,
@@ -52,6 +60,8 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
     this.radiusRectangle = 4;
     this.initMaxValue = 0;
     this.maxValueFromChart = 0;
+
+    this.activeDate = addHours(startOfToday(), 8)
   }
 
   public ngOnInit(): void {
@@ -64,8 +74,8 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
     //
     this.svg.selectAll().remove();
     this.drawBottomAxis();
-    this.groupPlaceholderBars = this.svg.append('g');
-    this.groupDataBars = this.svg.append('g');
+    this.groupPlaceholderBars = this.svg.append('g').attr('class', 'placeholder');
+    this.groupDataBars = this.svg.append('g').attr('class', 'bar');
     this.updateChart();
   }
 
@@ -75,27 +85,9 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
     }
 
     if (changes.items && changes.items.currentValue) {
+      console.log(changes.items.currentValue)
       this.updateChart();
     }
-  }
-
-  protected updateChart(): void {
-
-    if (this.checkAndUpdateMaxValue()) {
-      this.createYScale();
-    }
-
-    // draw placeholders
-    const placeholderBars = this.groupPlaceholderBars
-      .selectAll('rect')
-      .data(this.items)
-      .call(this.drawPlaceholderBar.bind(this));
-
-    // draw bar
-    const bars = this.groupDataBars.attr('fill', 'steelblue')
-      .selectAll('rect')
-      .data(this.items.filter(el => el.value))
-      .call(this.drawDataBar.bind(this))
   }
 
   // todo: hours dependencies
@@ -194,7 +186,7 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
     // recalc X Scale and redraw xAxis
     this.x = D3.event.transform.rescaleX(this.x2) // update the working 
     this.xAxis.scale(this.x);
-    this.xAxisG.call(this.xAxis);
+    // this.xAxisG.call(this.xAxis);
 
     // redraw groups of bars 
     const { x } = D3.event.transform || {};
@@ -202,39 +194,51 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
     this.groupDataBars.attr("transform", "translate(" + x + ",0)");
   }
 
-  private drawDataBar(selectors: any): void {
-    this.drawBarPrimitive(
-      selectors,
-      colorDataBar,
-    )
+  private updateChart(): void {
+
+    if (this.checkAndUpdateMaxValue()) {
+      this.createYScale();
+    }
+
+    // draw bar placeholders
+    const placeholderBars = this.groupPlaceholderBars
+      .selectAll('rect')
+      .data(this.items)
+      .call(this.drawPlaceholderBar.bind(this))
+
+    // draw bar label
+    this.groupPlaceholderBars
+      .selectAll('text')
+      .data(this.items)
+      .call(this.drawBarLabel.bind(this))
+
+    // draw DATA bars
+    this.groupDataBars
+      .selectAll('rect')
+      .data(this.items.filter(el => el.value))
+      .call(this.drawDataBar.bind(this))
+
+
+    rect.exit().remove();
   }
 
-  private drawPlaceholderBar(selectors: any): void {
-    this.drawBarPrimitive(
-      selectors,
-      colorPlaceholderBar
-    )
+  private drawDataBar(selection: any): void {
+    this
+      .drawBarPrimitive(selection, colorDataBar)
+      // mark active label
+      .call(this.drawAsActiveBar.bind(this))
+  }
+
+  private drawPlaceholderBar(selection: any): void {
+    this
+      .drawBarPrimitive(selection, colorPlaceholderBar)
       .attr('y', d => this.y(this.maxValueFromChart))
       .attr('height', d => this.y(0) - this.y(this.maxValueFromChart))
-
-    // draw label
-    // bars
-    //   .join('text')
-    //   .text((d, i) => d.label)
-    //   // set label by center of bar
-    //   .attr('x', d => this.x(d.identity) + Math.round(this.barWidth / 2))
-    //   .attr('y', d => this.y(0) + 20)
-    //   .attr("font-family", "Lato")
-    //   .attr("font-size", "12px")
-    //   .style('fill', '#969DAD')
-    //   .style('text-anchor', 'middle');
+      .attr('class', 'bar placeholder')
   }
 
-  private drawBarPrimitive(
-    selectors: Selection,
-    color: string,
-  ): any {
-    return selectors
+  private drawBarPrimitive(selection: Selection, color: string): Selection {
+    return selection
       .join('rect')
       .attr('x', d => this.x(d.identity))
       .attr('y', d => this.y(d.value))
@@ -242,18 +246,45 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
       .attr('width', this.barWidth)
       .attr('rx', d => this.radiusRectangle)
       .attr('ry', d => this.radiusRectangle)
-      .attr('dutc', d => d.identity.toUTCString())
-      .attr('dlocal', d => d.identity.toString())
-      .style('fill', color);
+      .attr('class', 'bar')
+    // .attr('dutc', d => d.identity.toUTCString())
+    // .attr('dlocal', d => d.identity.toString())
+  }
+
+  private drawBarLabel(selection: any): void {
+
+    const labelFontSize: number = 12;
+    const labelOffsetTop: number = 10;
+    const labelFontFamily: string = 'Lato';
+
+    selection
+      .join('text')
+      .text((d, i) => d.label)
+      .attr('class', 'label')
+      // set label by center of bar
+      .attr('x', d => this.x(d.identity) + Math.round(this.barWidth / 2))
+      .attr('y', d => this.y(0) + labelOffsetTop + labelFontSize)
+      .attr("font-family", `${labelFontFamily}`)
+      .attr("font-size", `${labelFontSize}px`)
+      .style('text-anchor', 'middle')
+      // mark active label
+      .call(this.drawAsActiveBar.bind(this))
+
+    return selection;
+  }
+
+  private drawAsActiveBar(selection: Selection): any {
+    const fnActive = (d) => d.identity.getTime() === this.activeDate.getTime();
+    selection.classed('active', fnActive);
   }
 
   // debug
   private drawBottomAxis() {
     this.xAxis = D3.axisBottom(this.x);
     const positionOnY = this.height - this.padding.bottom / 2;
-    this.xAxisG = this.svg.append("g")
-      .attr("class", "x axis")
-      .attr("transform", "translate(0," + positionOnY + ")")
-      .call(this.xAxis);
+    // this.xAxisG = this.svg.append("g")
+    //   .attr("class", "x axis")
+    //   .attr("transform", "translate(0," + positionOnY + ")")
+    //   .call(this.xAxis);
   }
 }

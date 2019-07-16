@@ -23,6 +23,7 @@ export class ImpressionPriceChartComponent implements OnInit {
   public startDateHour: Date;
   public endDateHour: Date;
   public barWidthHour: number;
+  public heightCorrection: number;
   public countViewBarsHours: number;
   public maxValueForHour: number;
   private pagginableDataForHourChart$: BehaviorSubject<ItemData[]>;
@@ -34,9 +35,10 @@ export class ImpressionPriceChartComponent implements OnInit {
     // Hours
     this.startDateHour = startOfToday();
     this.endDateHour = endOfToday();
-    this.barWidthHour = 20;
-    this.countViewBarsHours = 14;
+    this.barWidthHour = 16;
+    this.countViewBarsHours = 16;
     this.maxValueForHour = 500;
+    this.heightCorrection = -60;
 
     this.mockStaticDataHour = new Map(); 
     (<HourDelimiterData[]>hoursMock).forEach((item: HourDelimiterData) => {
@@ -109,7 +111,7 @@ export class ImpressionPriceChartComponent implements OnInit {
         {
           identity: date,
           value: random(0, 999),
-          label: date.toDateString(),
+          label: format(date, 'HH:mm'),
         }
       )
     });

@@ -1,4 +1,4 @@
-import { Component, ElementRef, Renderer2 } from '@angular/core';
+import { Component, ElementRef, Renderer2, Input } from '@angular/core';
 import * as D3 from 'd3';
 
 type Position = {
@@ -11,7 +11,6 @@ type Position = {
 @Component({
   selector: 'fn-base-d3-chart',
   template: '<!--d3 create template itself-->',
-  styles: [],
 })
 export abstract class BaseD3ChartComponent {
 
@@ -20,16 +19,21 @@ export abstract class BaseD3ChartComponent {
   protected width;
   protected host;
 
+  @Input()
+  public heightCorrection: number; 
+  @Input()
+  public widthCorrection: number; 
+
   protected margin: Position = {
-    top: 20,
-    bottom: 10,
+    top: 0,
+    bottom: 25,
     right: 20,
     left: 20,
   };
 
   protected padding: Position = {
-    top: 0,
-    bottom: 50,
+    top: 130,
+    bottom: 25,
     right: 0,
     left: 0,
   };
@@ -39,15 +43,16 @@ export abstract class BaseD3ChartComponent {
     protected renderer: Renderer2,
   ) {
     this.host = D3.select(elementRef.nativeElement);
-
+    this.heightCorrection = 0;
+    this.widthCorrection = 0;
   }
 
   protected initialiseSizeAndScale() {
     const container = this.getParentElement();
     const clientWidth = container.clientWidth;
     const clientHeight = container.clientHeight;
-    this.width = (clientWidth - this.margin.left - this.margin.right);
-    this.height = clientHeight - this.margin.bottom - this.margin.top;
+    this.width = clientWidth - this.margin.left - this.margin.right + this.widthCorrection;
+    this.height = clientHeight - this.margin.bottom - this.margin.top + this.heightCorrection;
   }
 
   protected buildSVG() {
@@ -62,7 +67,7 @@ export abstract class BaseD3ChartComponent {
       .style('padding-bottom', this.margin.bottom)
       .style('padding-left', this.margin.left)
       .style('padding-right', this.margin.right)
-      .style('background-color', '#6ecc9e');
+      // .style('background-color', '#6ecc9e');
   }
 
   protected abstract bindEvents(): void;

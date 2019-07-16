@@ -3,5 +3,25 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  background-color: #9dc1ff;
+  // background-color: #9dc1ff;
+}
+
+
+/deep/ .bar {
+  fill:#969DAD;
+}
+/deep/ .bar.active {
+  fill:#0768EF;
+}
+
+/deep/ .bar.placeholder {
+  fill:#F2F5FA;
+}
+
+/deep/ .label {
+  fill:#969DAD;
+}
+
+/deep/ .label.active {
+  fill:#0768EF;
 }

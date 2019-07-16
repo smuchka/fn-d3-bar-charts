@@ -160,7 +160,7 @@ export const hoursMock: DayDelimiterData[] = <StatisticData[]>[
   {
     views: 40,
     cost: 130.0298,
-    day: '15',
+    day: '16',
     month: '7',
     year: '2019',
     hour: '2',
@@ -169,7 +169,7 @@ export const hoursMock: DayDelimiterData[] = <StatisticData[]>[
   {
     views: 500,
     cost: 12.1090,
-    day: '15',
+    day: '16',
     month: '7',
     year: '2019',
     hour: '4',
@@ -178,7 +178,7 @@ export const hoursMock: DayDelimiterData[] = <StatisticData[]>[
   {
     views: 423,
     cost: 130.0298,
-    day: '15',
+    day: '16',
     month: '7',
     year: '2019',
     hour: '5',
