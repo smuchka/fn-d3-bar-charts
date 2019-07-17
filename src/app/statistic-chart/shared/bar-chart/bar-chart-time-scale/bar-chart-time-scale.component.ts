@@ -16,9 +16,11 @@ const colorPlaceholderBar = '#F2F5FA';
 @Component({
   selector: 'fn-bar-chart-time-scale',
   template: `<!--d3 create template itself-->
-  <button (click)="positionEndViewPort()">to end</button>
-  <button (click)="positionReset()">reset</button>
-  <button (click)="positionZero()">to (0,0)</button>
+  <button (click)="onPositionEndViewPort()">to end</button>
+  <button (click)="onPositionReset()">reset</button>
+  <button (click)="onPositionZero()">to (0,0)</button>
+  <button (click)="onClickToPrevActive()">︎←</button>
+  <button (click)="onClickToNextActive()">→</button>
   `,
   styles: ['./bar-chart-time-scale.scss'],
 })
@@ -68,9 +70,9 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
     //
     this.initialiseSizeAndScale();
     this.buildSVG();
-    this.createZoom();
     this.createXScale();
     this.createYScale();
+    this.createZoom();
     //
     this.svg.selectAll().remove();
     this.drawBottomAxis();
@@ -114,18 +116,19 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
 
     const a = 100;
     this.zoom = D3.zoom()
-      // .extent([
-      //   [100, 100],
-      //   [this.x(addHours(this.endRange, 4)), this.height]
-      // ])
+      .extent([
+        [this.padding.left + 100, 100],
+        [this.width, this.height]
+      ])
       .scaleExtent([1, 1])
 
       // // TODO: how limit scroll range ????
       // // todo: hours dependencies
-      // .translateExtent([
-      //   [this.x(addHours(this.startRange, -3)), 0],
-      //   [this.x(addHours(this.endRange, 3)), this.height]
-      // ])
+      .translateExtent([
+        // [this.startRange, 0],
+        [this.x(addHours(this.startRange, 0)), 0],
+        [this.x(addHours(this.startRange, 24)), this.height]
+      ])
       .on("zoom", this.onZoomed.bind(this));
 
     this.svg.call(this.zoom);
@@ -157,12 +160,14 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
     this.goTo(x);
   }
 
-  public positionEndViewPort(): void {
+
+  // handlers
+  public onPositionEndViewPort(): void {
     const lastDateCurrentRange: Date = endOfToday();
     this.positionBarInViewPort(lastDateCurrentRange);
   }
 
-  public positionReset(): void {
+  public onPositionReset(): void {
     this.svg
       .transition()
       .duration(750)
@@ -172,7 +177,7 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
       );
   }
 
-  public positionZero(): void {
+  public onPositionZero(): void {
     this.svg
       .transition()
       .duration(750)
@@ -182,11 +187,28 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
       );
   }
 
+  public onClickToPrevActive(): void {
+    this.activeDate = addHours(this.activeDate, -1);
+    this.updateChart();
+  }
+
+  public onClickToNextActive(): void {
+    this.activeDate = addHours(this.activeDate, 1);
+    this.updateChart();
+  }
+
+
   private onZoomed(): void {
     // recalc X Scale and redraw xAxis
     this.x = D3.event.transform.rescaleX(this.x2) // update the working 
     this.xAxis.scale(this.x);
-    // this.xAxisG.call(this.xAxis);
+    this.xAxisG.call(this.xAxis);
+
+    console.log(
+      D3.event.transform,
+    //   this.x(this.items[0].value),
+    //   this.x2(this.items[0].value)
+    );
 
     // redraw groups of bars 
     const { x } = D3.event.transform || {};
@@ -217,9 +239,18 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
       .selectAll('rect')
       .data(this.items.filter(el => el.value))
       .call(this.drawDataBar.bind(this))
+    // rect.exit().remove();
+  }
 
+  private updateActiveBar(): void {
+    this.groupDataBars
+      .selectAll('rect')
+      .call(this.drawDataBar.bind(this))
 
-    rect.exit().remove();
+    this.groupPlaceholderBars
+      .selectAll('.label')
+      .data(this.items)
+      .call(this.drawBarLabel.bind(this))
   }
 
   private drawDataBar(selection: any): void {
@@ -282,9 +313,9 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
   private drawBottomAxis() {
     this.xAxis = D3.axisBottom(this.x);
     const positionOnY = this.height - this.padding.bottom / 2;
-    // this.xAxisG = this.svg.append("g")
-    //   .attr("class", "x axis")
-    //   .attr("transform", "translate(0," + positionOnY + ")")
-    //   .call(this.xAxis);
+    this.xAxisG = this.svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + (positionOnY) + ")")
+      .call(this.xAxis);
   }
 }
