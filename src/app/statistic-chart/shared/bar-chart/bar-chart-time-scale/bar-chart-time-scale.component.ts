@@ -21,6 +21,7 @@ const colorPlaceholderBar = '#F2F5FA';
   <button (click)="onPositionZero()">to (0,0)</button>
   <button (click)="onClickToPrevActive()">︎←</button>
   <button (click)="onClickToNextActive()">→</button>
+  <button (click)="onLog()">dump</button>
   `,
   styles: ['./bar-chart-time-scale.scss'],
 })
@@ -101,7 +102,10 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
   private createXScale(): void {
     this.x = D3.scaleTime()
       .domain(this.xAxisDateRange())
-      .range([this.margin.left, this.width - this.margin.right]);
+      .range([
+        this.margin.left + this.padding.left,
+        this.width - this.margin.right - this.padding.right,
+      ])
     this.x2 = this.x.copy();
   }
 
@@ -113,25 +117,24 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
   }
 
   private createZoom(): void {
-
-    const a = 100;
     this.zoom = D3.zoom()
-      .extent([
-        [this.padding.left + 100, 100],
-        [this.width, this.height]
-      ])
       .scaleExtent([1, 1])
-
-      // // TODO: how limit scroll range ????
-      // // todo: hours dependencies
-      .translateExtent([
-        // [this.startRange, 0],
-        [this.x(addHours(this.startRange, 0)), 0],
-        [this.x(addHours(this.startRange, 24)), this.height]
-      ])
-      .on("zoom", this.onZoomed.bind(this));
+      .on("zoom", this.onZoomed.bind(this))
+      .on("end", this.onZoomedEnd.bind(this));
 
     this.svg.call(this.zoom);
+  }
+
+  private updateZoomByChunk(min, max): void {
+    this.zoom = this.zoom
+      .extent([
+        [this.margin.left + this.padding.left, 0],
+        [this.width - this.margin.right - this.padding.right, 0]
+      ])
+      .translateExtent([
+        [this.x(min), 0],
+        [this.x(max), this.height]
+      ])
   }
 
   private checkAndUpdateMaxValue(): boolean {
@@ -145,6 +148,7 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
     return this.maxValueFromChart !== oldValue;
   }
 
+  // handlers
   private goTo(x: number = 0, y: number = 0, animationDuration: number = 750): void {
     this.svg
       .transition()
@@ -160,8 +164,6 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
     this.goTo(x);
   }
 
-
-  // handlers
   public onPositionEndViewPort(): void {
     const lastDateCurrentRange: Date = endOfToday();
     this.positionBarInViewPort(lastDateCurrentRange);
@@ -197,17 +199,27 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
     this.updateChart();
   }
 
+  public onLog(): void {
+    console.log(
+      D3.zoomIdentity,
+      D3.zoomTransform(this.groupDataBars.node())
+    )
+  }
 
   private onZoomed(): void {
+
     // recalc X Scale and redraw xAxis
-    this.x = D3.event.transform.rescaleX(this.x2) // update the working 
-    this.xAxis.scale(this.x);
-    this.xAxisG.call(this.xAxis);
+    this.x = D3.event.transform
+      // .translate(-100, 0)
+      .rescaleX(this.x2) // update the working 
+
+    if (this.xAxis) this.xAxis.scale(this.x);
+    if (this.xAxisG) this.xAxisG.call(this.xAxis);
 
     console.log(
       D3.event.transform,
-    //   this.x(this.items[0].value),
-    //   this.x2(this.items[0].value)
+      //   //   this.x(this.items[0].value),
+      //   //   this.x2(this.items[0].value)
     );
 
     // redraw groups of bars 
@@ -216,11 +228,27 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
     this.groupDataBars.attr("transform", "translate(" + x + ",0)");
   }
 
+  private onZoomedEnd(): void {
+    console.log(
+      'zoomEnd',
+      this,
+      D3.event
+    )
+  }
+
+
   private updateChart(): void {
 
     if (this.checkAndUpdateMaxValue()) {
       this.createYScale();
     }
+
+    // update potencial availabel scroll zone
+    // (limited current X range dates)
+    this.updateZoomByChunk(
+      D3.min(this.items, d => d.identity),
+      D3.max(this.items, d => d.identity),
+    );
 
     // draw bar placeholders
     const placeholderBars = this.groupPlaceholderBars
@@ -266,6 +294,16 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
       .attr('y', d => this.y(this.maxValueFromChart))
       .attr('height', d => this.y(0) - this.y(this.maxValueFromChart))
       .attr('class', 'bar placeholder')
+      .on("click", function (e) {
+        var coords = D3.mouse(this);
+
+        console.log(
+          'click',
+          coords,
+          D3.zoomTransform(this),
+          e
+        );
+      });
   }
 
   private drawBarPrimitive(selection: Selection, color: string): Selection {

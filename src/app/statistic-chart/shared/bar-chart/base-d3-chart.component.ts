@@ -28,14 +28,14 @@ export abstract class BaseD3ChartComponent {
     top: 0,
     bottom: 25,
     right: 20,
-    left: 0,
+    left: 25,
   };
 
   protected padding: Position = {
     top: 130,
     // bottom: 25,
     bottom: 50,
-    right: 0,
+    right: 20,
     left: 0,
   };
 

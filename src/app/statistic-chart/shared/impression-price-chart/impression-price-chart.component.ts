@@ -36,6 +36,7 @@ export class ImpressionPriceChartComponent implements OnInit {
     this.startDateHour = startOfToday();
     this.endDateHour = endOfToday();
     this.barWidthHour = 16;
+    // this.countViewBarsHours = 16;
     this.countViewBarsHours = 16;
     this.maxValueForHour = 500;
     this.heightCorrection = -60;
