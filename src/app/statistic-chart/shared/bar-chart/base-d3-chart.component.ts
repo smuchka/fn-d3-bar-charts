@@ -12,7 +12,7 @@ type Position = {
   selector: 'fn-base-d3-chart',
   template: '<!--d3 create template itself-->',
 })
-export abstract class BaseD3ChartComponent {
+export abstract class BaseD3ChartComponent implements OnInit {
 
   protected svg;
   protected height;
@@ -20,9 +20,9 @@ export abstract class BaseD3ChartComponent {
   protected host;
 
   @Input()
-  public heightCorrection: number; 
+  public heightCorrection: number;
   @Input()
-  public widthCorrection: number; 
+  public widthCorrection: number;
 
   protected margin: Position = {
     top: 0,
@@ -48,6 +48,11 @@ export abstract class BaseD3ChartComponent {
     this.widthCorrection = 0;
   }
 
+  public ngOnInit(): void {
+    this.initialiseSizeAndScale();
+    this.buildSVG();
+  }
+
   protected initialiseSizeAndScale() {
     const container = this.getParentElement();
     const clientWidth = container.clientWidth;
@@ -59,7 +64,7 @@ export abstract class BaseD3ChartComponent {
   protected buildSVG() {
     // this.host.html('');
     const divBlock = this.host.append('div')
-      // .style('overflow-x', 'auto');
+    // .style('overflow-x', 'auto');
 
     this.svg = divBlock.append('svg')
       .attr('width', this.width)
@@ -68,7 +73,7 @@ export abstract class BaseD3ChartComponent {
       .style('padding-bottom', this.margin.bottom)
       .style('padding-left', this.margin.left)
       .style('padding-right', this.margin.right)
-      // .style('background-color', '#6ecc9e');
+    // .style('background-color', '#6ecc9e');
   }
 
   protected abstract bindEvents(): void;

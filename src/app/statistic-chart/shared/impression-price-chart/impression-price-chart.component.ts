@@ -20,7 +20,6 @@ import * as D3 from 'd3';
   styleUrls: ['./impression-price-chart.component.scss'],
 })
 export class ImpressionPriceChartComponent implements OnInit {
-  public startDateHour: Date;
   public endDateHour: Date;
   public barWidthHour: number;
   public heightCorrection: number;
@@ -33,7 +32,6 @@ export class ImpressionPriceChartComponent implements OnInit {
   constructor() {
 
     // Hours
-    this.startDateHour = startOfToday();
     this.endDateHour = endOfToday();
     this.barWidthHour = 16;
     // this.countViewBarsHours = 16;

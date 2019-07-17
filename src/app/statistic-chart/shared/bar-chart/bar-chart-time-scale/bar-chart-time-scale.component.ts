@@ -4,7 +4,8 @@ import { ItemData } from '../core/interfaces/item-data';
 import {
   startOfToday, endOfToday,
   startOfYesterday,
-  differenceInHours, addHours, addDays,
+  differenceInHours, differenceInSeconds,
+  addHours, addDays,
   format
 } from 'date-fns'
 import * as D3 from 'd3';
@@ -12,11 +13,14 @@ import * as D3 from 'd3';
 const colorDataBar = '#969DAD';
 const colorLabel = '#969DAD';
 const colorPlaceholderBar = '#F2F5FA';
+type DirectionActiveChange = 1 | -1;
+const DirectionLeft: DirectionActiveChange = -1;
+const DirectionRight: DirectionActiveChange = 1;
 
 @Component({
   selector: 'fn-bar-chart-time-scale',
   template: `<!--d3 create template itself-->
-  <button (click)="onPositionEndViewPort()">to end</button>
+  <button (click)="onClickShowEndChart()">to end</button>
   <button (click)="onPositionReset()">reset</button>
   <button (click)="onPositionZero()">to (0,0)</button>
   <button (click)="onClickToPrevActive()">︎←</button>
@@ -40,8 +44,6 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
   private zoom;
   private radiusRectangle;
 
-  @Input()
-  public startRange: Date;
   @Input('maxValue')
   public initMaxValue: number;
   @Input()
@@ -51,7 +53,7 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
   public countViewBars: number;
 
   private maxValueFromChart: number;
-  private scaleRangeWidtTick: number;
+  private translateWidthOneBar: number;
   private activeDate: Date;
 
   public constructor(
@@ -61,28 +63,36 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
     super(element, renderer);
 
     this.items = [];
+    this.activeDate = null;
     this.radiusRectangle = 4;
     this.initMaxValue = 0;
     this.maxValueFromChart = 0;
-    this.scaleRangeWidtTick = 0;
-
-    // this.activeDate = addHours(startOfToday(), 8)
-    this.activeDate = addHours(startOfToday(), 18)
+    this.translateWidthOneBar = 0;
   }
 
   public ngOnInit(): void {
-    //
-    this.initialiseSizeAndScale();
-    this.buildSVG();
+
+    // Init svg in DOM
+    // and init svg dimetions
+    super.ngOnInit();
+
+    // must exist data !!!!
+    this.initActiveDate();
     this.createXScale();
     this.createYScale();
     this.createZoom();
-    //
+
+    // process drowing
     this.svg.selectAll().remove();
     this.drawBottomAxis();
     this.groupPlaceholderBars = this.svg.append('g').attr('class', 'placeholder');
     this.groupDataBars = this.svg.append('g').attr('class', 'bar');
     this.updateChart();
+
+    // 1. show active date in viewport
+    // 2. emit event - painning ended left/right! => upload more data ...
+    // 3. !!!! navigation nex to balance better
+    // 4. не упускать из виду активный
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
@@ -91,28 +101,36 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
     }
 
     if (changes.items && changes.items.currentValue) {
-      console.log(changes.items.currentValue)
       this.updateChart();
     }
   }
 
-  // todo: hours dependencies
-  protected xAxisDateRange(): [Date, Date] {
-    return [this.startRange, addHours(this.startRange, this.countViewBars - 1)];
-    // return [this.startRange, this.endRange];
+  protected initActiveDate(): void {
+    const arr = this.items.filter(d => d.value > 0)
+    const dateMax: Date | null = arr.length
+      ? D3.max(arr, d => d.identity)
+      : null;
+    const now = this.calcNowBarDate();
+    this.activeDate = dateMax
+      ? differenceInSeconds(dateMax, now) < 0 ? dateMax : now
+      : now;
   }
 
   private createXScale(): void {
+    const [d1, d2] = this.viewportDateRange();
+
     this.x = D3.scaleTime()
-      .domain(this.xAxisDateRange())
+      .domain(this.viewportDateRange())
       .range([
         this.margin.left + this.padding.left,
         this.width - this.margin.right - this.padding.right,
-      ])
+      ]);
     this.x2 = this.x.copy();
 
-    // 
-    this.calcWidthOneBar()
+    // calc width of one bar
+    this.translateWidthOneBar = Math.abs(
+      this.x(d1) - this.x(this.calcNextBarDate(d1))
+    );
   }
 
   private createYScale(): void {
@@ -122,10 +140,6 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
       .nice();
   }
 
-  private calcWidthOneBar(): void {
-    this.scaleRangeWidtTick = this.x(this.activeDate) - this.x(addHours(this.activeDate, 1));
-  }
-
   private createZoom(): void {
     this.zoom = D3.zoom()
       .scaleExtent([1, 1])
@@ -133,18 +147,17 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
       .on("end", this.onZoomedEnd.bind(this));
 
     this.svg.call(this.zoom)
-    // this.svg.on("wheel", function() { D3.event.preventDefault(); });;
   }
 
-  private updateZoomByChunk(min, max): void {
+  private updateZoomByChunk(from: Date, to: Date): void {
     this.zoom = this.zoom
       .extent([
         [this.margin.left + this.padding.left, 0],
         [this.width - this.margin.right - this.padding.right, 0]
       ])
       .translateExtent([
-        [this.x(min), 0],
-        [this.x(max), this.height]
+        [this.x(from), 0],
+        [this.x(to), this.height]
       ])
   }
 
@@ -160,7 +173,8 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
   }
 
   // handlers
-  private goTo(x: number = 0, y: number = 0, animationDuration: number = 750): void {
+  // todo: check it
+  private svgTranslateX(x: number = 0, y: number = 0, animationDuration: number = 750): void {
     this.svg
       .transition()
       .duration(animationDuration)
@@ -169,53 +183,38 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
         D3.zoomIdentity.translate(x, y)
       );
   }
+
+  // todo: check it
   private moveX(count: number = 0, animationDuration: number = 750): void {
-    // const oldX = 0;
-    // const newX = oldX + count;
-
-    // console.log(
-    //   this.groupPlaceholderBars.attr('transform') || 'translate(0,0)',
-    //   this.groupPlaceholderBars.node().getBBox(),
-    //   D3.zoomTransform(this.groupPlaceholderBars),
-    // )
-
     this.groupPlaceholderBars
       .transition()
       .duration(animationDuration)
-      .call(this.zoom.translateBy, count, 0)
-
-    // const x = this.x(this.items[this.items.length-1].identity) - this.x(this.items[0].identity)
-    // this.svg
-    //   .transition()
-    //   .duration(animationDuration)
-    //   .call(this.zoom.translateBy, this.x(this.ac), 0)
-
-
-    //   .transition()
-    //   .duration(animationDuration)
-    //   .call(
-    //     this.zoom.transform,
-    //     D3.zoomIdentity.translate(newX, 0)
-    //   );
-
-    // const lastDateCurrentRange: Date = this.items[0];
-    // console.log(x);
-    // // this.groupPlaceholderBars.attr("transform", "translate(" + x + ",0)");
-    // this.groupDataBars.attr("transform", "translate(" + x + ",0)");
+      .call(this.zoom.translateBy, count, 0);
   }
 
-  private positionBarInViewPort(date: Date): void {
+  // todo: check it
+  private moveX(count: number = 0, animationDuration: number = 750): void {
+    this.groupPlaceholderBars
+      .transition()
+      .duration(animationDuration)
+      .call(this.zoom.translateBy, count, 0);
+  }
+
+  // todo: check it
+  private translateBarInViewPort(date: Date): void {
     const x = this.x(date);
-    this.goTo(x);
+    this.svgTranslateX(x);
   }
 
-  public onPositionEndViewPort(): void {
+  // todo: check it
+  public onClickShowEndChart(): void {
     if (this.items.length) {
-      const lastDateCurrentRange: Date = this.items[0];
-      this.positionBarInViewPort(lastDateCurrentRange);
+      const lastDateCurrentRange: Date = this.items[this.itemsl.length - 1];
+      this.translateBarInViewPort(lastDateCurrentRange);
     }
   }
 
+  // todo: check it
   public onPositionReset(): void {
     this.svg
       .transition()
@@ -226,21 +225,43 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
       );
   }
 
+  // todo: check it
   public onPositionZero(): void {
-    this.goTo(0, 0)
+    this.svgTranslateX(0, 0)
   }
 
+  private canChangeActiveOn(dir: DirectionActiveChange): boolean {
+    if (!this.activeDate) {
+      return false;
+    }
+
+    const endDirectionDate: date = (
+      (dir === DirectionRight) ? this.items[this.items.length - 1] : this.items[0]
+    ).identity;
+    const diffDates: number = differenceInSeconds(endDirectionDate, this.activeDate);
+
+    return (dir === DirectionRight) ? diffDates > 0 : diffDates < 0;
+  }
+
+  // todo: check it
   public onClickToPrevActive(): void {
-    this.activeDate = addHours(this.activeDate, -1);
+    if (!this.canChangeActiveOn(DirectionLeft)) return;
+
+    this.activeDate = this.calcPrevBarDate();
     this.updateChart();
+    this.moveX(this.translateWidthOneBar)
   }
 
+  // todo: check it
   public onClickToNextActive(): void {
-    this.activeDate = addHours(this.activeDate, 1);
+    if (!this.canChangeActiveOn(DirectionRight)) return;
+
+    this.activeDate = this.calcNextBarDate(this.activeDate);
     this.updateChart();
-    this.moveX(this.scaleRangeWidtTick)
+    this.moveX(this.translateWidthOneBar)
   }
 
+  // todo: check it
   public onLog(): void {
     console.log(
       D3.zoomIdentity,
@@ -248,19 +269,39 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
     )
   }
 
+  // todo: hours dependencies
+  protected viewportDateRange(): [Date, Date] {
+    const from: Date = this.items[0].identity;
+    return [from, addHours(from, this.countViewBars - 1)];
+  }
+
+  // todo: hours dependencies
+  protected calcNowBarDate(): Date {
+    const now = new Date();
+    now.setMinutes(0);
+    now.setSeconds(0);
+    now.setMilliseconds(0);
+    return now;
+  }
+
+  // todo: hours dependencies
+  protected calcNextBarDate(from: Date): Date {
+    return addHours(from, 1);
+  }
+
+  // todo: hours dependencies
+  protected calcPrevBarDate(): Date {
+    return addHours(this.activeDate, -1);
+  }
+
   private onZoomed(): void {
 
     // recalc X Scale and redraw xAxis
-    this.x = D3.event.transform.rescaleX(this.x2) // update the working 
+    this.x = D3.event.transform.rescaleX(this.x2);
 
+    // todo: debug X axis & it group
     if (this.xAxis) this.xAxis.scale(this.x);
     if (this.xAxisG) this.xAxisG.call(this.xAxis);
-
-    // console.log(
-    //   D3.event.transform,
-    //   this.x(this.items[0].value),
-    //   this.x2(this.items[0].value)
-    // );
 
     // redraw groups of bars 
     const { x } = D3.event.transform || {};
@@ -268,14 +309,14 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
     this.groupDataBars.attr("transform", "translate(" + x + ",0)");
   }
 
+  // todo: check it
   private onZoomedEnd(): void {
-    console.log(
-      'zoomEnd',
-      this,
-      D3.event
-    )
+    // console.log(
+    //   'zoomEnd',
+    //   this,
+    //   D3.event
+    // )
   }
-
 
   private updateChart(): void {
 
@@ -307,9 +348,9 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
       .selectAll('rect')
       .data(this.items.filter(el => el.value))
       .call(this.drawDataBar.bind(this))
-    // rect.exit().remove();
   }
 
+  // todo: check it !!!!
   private updateActiveBar(): void {
     this.groupDataBars
       .selectAll('rect')
@@ -356,8 +397,6 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
       .attr('rx', d => this.radiusRectangle)
       .attr('ry', d => this.radiusRectangle)
       .attr('class', 'bar')
-    // .attr('dutc', d => d.identity.toUTCString())
-    // .attr('dlocal', d => d.identity.toString())
   }
 
   private drawBarLabel(selection: any): void {
@@ -387,7 +426,7 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
     selection.classed('active', fnActive);
   }
 
-  // debug
+  // todo: remove after debug mode
   private drawBottomAxis() {
     this.xAxis = D3.axisBottom(this.x)
     // .tickSize(6)
