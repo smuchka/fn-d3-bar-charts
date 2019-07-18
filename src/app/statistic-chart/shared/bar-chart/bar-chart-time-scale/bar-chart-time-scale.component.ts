@@ -88,20 +88,10 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
     this.groupDataBars = this.svg.append('g').attr('class', 'bar');
 
     this.showActiveBarOnCenterViewport();
-    this.updateChart();
+    this.onDataChangedHandler();
 
     // Test: Dynamic change active date work fine!!!
-    //
-    // const timerId = setInterval(() => {
-    //   this.activeDate = addHours(startOfToday(), random(1, 23));
-    //   console.log(this.activeDate);
-    //   this.showActiveBarOnCenterViewport();
-    //   this.updateChart();
-    // }, 4000);
-
-    // setTimeout(function () {
-    //   clearInterval(timerId);
-    // }, 15000)
+    this.runEveryFourRandomCurDate(15);
 
     // TODO:
     // - emit event - painning ended left/right! => upload more data ...
@@ -113,22 +103,29 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
-    console.log('ngChnage');
-    
     if (changes.items && changes.items.firstChange) {
       return;
     }
 
     if (changes.items && changes.items.currentValue) {
-
-      const isChanged: boolean = this.updateMaxChartValue()
-      if (isChanged) {
-        this.initYScale();
-      }
-
-      console.log('ngChnage items');
-      this.updateChart();
+      this.onDataChangedHandler();
     }
+  }
+
+  private onDataChangedHandler(): void {
+    const isChanged: boolean = this.updateMaxChartValue()
+    if (isChanged) {
+      this.initYScale();
+    }
+
+    // update potencial availabel scroll zone
+    // (limited current X range dates)
+    this.updateZoomOnChangeData(
+      D3.min(this.items, d => d.identity),
+      D3.max(this.items, d => d.identity),
+    );
+
+    this.updateChart();
   }
 
   private onZoomed(): void {
@@ -186,14 +183,6 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
   }
 
   private updateChart(): void {
-
-    // update potencial availabel scroll zone
-    // (limited current X range dates)
-    this.updateZoomOnChangeData(
-      D3.min(this.items, d => d.identity),
-      D3.max(this.items, d => d.identity),
-    );
-
     // draw bar placeholders
     const placeholderBars = this.groupPlaceholderBars
       .selectAll('rect')
@@ -412,6 +401,22 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
       .attr("class", "x axis")
       .attr("transform", "translate(0," + (positionOnY) + ")")
       .call(this.xAxis);
+  }
+
+  // todo: remove after debug mode
+  private runEveryFourRandomCurDate(howLong = 15): void {
+    const timerId = setInterval(() => {
+      this.activeDate = addHours(startOfToday(), random(1, 23));
+      console.log(
+        format(this.activeDate, 'HH:mm')
+      );
+      this.showActiveBarOnCenterViewport();
+      this.updateChart();
+    }, 4000);
+
+    setTimeout(function () {
+      clearInterval(timerId);
+    }, howLong * 1000)
   }
 }
 
