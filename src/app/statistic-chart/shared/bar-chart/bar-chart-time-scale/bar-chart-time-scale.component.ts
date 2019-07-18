@@ -101,6 +101,7 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
     // - не упускать из виду активный
     // - click on bar - make it as active date
     // - show tooltip
+    // - check subscriptions
 
     this.svg.on("click", this.onSvgClick.bind(this));
   }
