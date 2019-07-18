@@ -1,4 +1,6 @@
-import { Component, ElementRef, Input, OnChanges, OnInit, Renderer2, SimpleChanges } from '@angular/core';
+import {
+  Component, ElementRef, Input, OnChanges, OnInit, Renderer2, SimpleChanges, EventEmitter
+} from '@angular/core';
 import { BaseD3ChartComponent } from '../base-d3-chart.component';
 import { ItemData } from '../core/interfaces/item-data';
 import {
@@ -19,10 +21,7 @@ const DirectionRight: DirectionActiveChange = 1;
 
 @Component({
   selector: 'fn-bar-chart-time-scale',
-  template: `<!--d3 create template itself-->
-  <button (click)="onClickToPrevActive()">︎←</button>
-  <button (click)="onClickToNextActive()">→</button>
-  `,
+  template: `<!--d3 create template itself-->`,
   styles: ['./bar-chart-time-scale.scss'],
 })
 export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements OnInit, OnChanges {
@@ -52,6 +51,8 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
   private translateWidthOneBar: number;
   private activeDate: Date;
 
+  private changeData: EventEmitter<ItemData[]>;
+
   public constructor(
     protected element: ElementRef,
     protected renderer: Renderer2,
@@ -64,6 +65,11 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
     this.initMaxValue = 0;
     this.maxValueFromChart = 0;
     this.translateWidthOneBar = 0;
+    this.changeData = new EventEmitter();
+
+    // subscribe on:
+    this.changeData
+      .subscribe(this.onDataChanged.bind(this));
   }
 
   public ngOnInit(): void {
@@ -74,52 +80,53 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
 
     // must exist data !!!!
     this.initActiveDate();
-    // this.activeDate = addHours(startOfToday(), random(1, 23));
-    // this.activeDate = addHours(startOfToday(), 10);
-
     this.initXScale();
     this.initYScale();
     this.initZoom();
 
     // process drowing
     this.svg.selectAll().remove();
-    // this.drawBottomAxis();
     this.groupPlaceholderBars = this.svg.append('g').attr('class', 'placeholder');
     this.groupDataBars = this.svg.append('g').attr('class', 'bar');
 
     this.showActiveBarOnCenterViewport();
-    this.onDataChangedHandler();
-
-    // Test: Dynamic change active date work fine!!!
-    this.runEveryFourRandomCurDate(15);
+    this.changeData.emit(this.items);
 
     // TODO:
+    // - create comunication with wrapper Component
+    // -- next active
+    // -- prev active
     // - emit event - painning ended left/right! => upload more data ...
     // - navigation on nexx/prev active
     // - не упускать из виду активный
+    // - click on bar - make it as active date
+    // - show tooltip
 
-    this.svg
-      .on("click", this.onSvgClick.bind(this));
+    this.svg.on("click", this.onSvgClick.bind(this));
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
+
+    // skip any changes until onInit unavailable
     if (changes.items && changes.items.firstChange) {
       return;
     }
 
     if (changes.items && changes.items.currentValue) {
-      this.onDataChangedHandler();
+      this.changeData.emit(changes.items.currentValue);
     }
   }
 
-  private onDataChangedHandler(): void {
+  /**
+   * Handler of changing input data
+   */
+  private onDataChanged(): void {
+    console.log('!')
     const isChanged: boolean = this.updateMaxChartValue()
     if (isChanged) {
       this.initYScale();
     }
 
-    // update potencial availabel scroll zone
-    // (limited current X range dates)
     this.updateZoomOnChangeData(
       D3.min(this.items, d => d.identity),
       D3.max(this.items, d => d.identity),
@@ -170,6 +177,10 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
     return this.maxValueFromChart !== oldValue;
   }
 
+  /**
+   * Update availabel scroll zoom
+   * Set restrict X axis from range dates
+   */
   private updateZoomOnChangeData(from: Date, to: Date): void {
     this.zoom = this.zoom
       .extent([
@@ -182,6 +193,9 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
       ])
   }
 
+  /**
+   * Update any chart elements
+   */
   private updateChart(): void {
     // draw bar placeholders
     const placeholderBars = this.groupPlaceholderBars
@@ -213,6 +227,9 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
       : now;
   }
 
+  /**
+   * Intit scaling for X axis and calc width one step (from bar start to next bar start)
+   */
   private initXScale(): void {
     const [d1, d2] = this.viewportDateRange();
 
@@ -231,6 +248,9 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
     );
   }
 
+  /**
+   * Intit scaling for X axis
+   */
   private initYScale(): void {
     this.y = D3.scaleLinear()
       .domain([0, this.maxValueFromChart])
@@ -238,6 +258,9 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
       .nice();
   }
 
+  /**
+   * Init api zooming for implement panning (horizontal scroll zone)
+   */
   private initZoom(): void {
     this.zoom = D3.zoom()
       .scaleExtent([1, 1])
@@ -283,20 +306,24 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
     return (dir === DirectionRight) ? diffDates > 0 : diffDates < 0;
   }
 
-  public onClickToPrevActive(): void {
-    if (!this.canChangeActiveOn(DirectionLeft)) return;
+  public goToPrevBar(): boolean {
+    if (!this.canChangeActiveOn(DirectionLeft)) return false;
 
     this.activeDate = this.calcPrevBarDate(this.activeDate);
     this.showActiveBarOnCenterViewport();
     this.updateChart();
+
+    return true;
   }
 
-  public onClickToNextActive(): void {
-    if (!this.canChangeActiveOn(DirectionRight)) return;
+  public goToNextBar(): boolean {
+    if (!this.canChangeActiveOn(DirectionRight)) return false;
 
     this.activeDate = this.calcNextBarDate(this.activeDate);
     this.showActiveBarOnCenterViewport();
     this.updateChart();
+
+    return true;
   }
 
   // // // // // // // // // // // // 
@@ -386,40 +413,4 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
     const fnActive = (d) => d.identity.getTime() === this.activeDate.getTime();
     selection.classed('active', fnActive);
   }
-
-  // todo: remove after debug mode
-  private drawBottomAxis() {
-    this.xAxis = D3.axisBottom(this.x)
-    // .tickSize(6)
-    // .tickSizeOuter(6)
-    // .tickSizeInner(6)
-    // .tickPadding(3)
-    // .tickFormat(D3.timeFormat('%H:%M'))
-
-    const positionOnY = this.height - this.padding.bottom / 2;
-    this.xAxisG = this.svg.append("g")
-      .attr("class", "x axis")
-      .attr("transform", "translate(0," + (positionOnY) + ")")
-      .call(this.xAxis);
-  }
-
-  // todo: remove after debug mode
-  private runEveryFourRandomCurDate(howLong = 15): void {
-    const timerId = setInterval(() => {
-      this.activeDate = addHours(startOfToday(), random(1, 23));
-      console.log(
-        format(this.activeDate, 'HH:mm')
-      );
-      this.showActiveBarOnCenterViewport();
-      this.updateChart();
-    }, 4000);
-
-    setTimeout(function () {
-      clearInterval(timerId);
-    }, howLong * 1000)
-  }
-}
-
-function random(min, max) {
-  return Math.floor(Math.random() * (+max - +min)) + +min;
 }

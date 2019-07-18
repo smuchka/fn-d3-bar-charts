@@ -39,7 +39,7 @@ export class ImpressionPriceChartComponent implements OnInit {
     this.maxValueForHour = 500;
     this.heightCorrection = -60;
 
-    this.mockStaticDataHour = new Map(); 
+    this.mockStaticDataHour = new Map();
     (<HourDelimiterData[]>hoursMock).forEach((item: HourDelimiterData) => {
       const date = new Date();
       date.setUTCFullYear(+item.year);
@@ -95,6 +95,9 @@ export class ImpressionPriceChartComponent implements OnInit {
       ...this.extendDateRangeByEmptyData(dynamicChunk, addHours(date, 1), addHours(date, 24)),
     ]);
   }
+
+  public onClickToPrevActive(): void { }
+  public onClickToNextActive(): void { }
 
   private generateRandomHourChunk(d1: Date, d2: Date, count: number): Map<number, ItemData> {
     const map = new Map<number, ItemData>();
