@@ -286,7 +286,7 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
   public onClickToPrevActive(): void {
     if (!this.canChangeActiveOn(DirectionLeft)) return;
 
-    this.activeDate = this.calcPrevBarDate();
+    this.activeDate = this.calcPrevBarDate(this.activeDate);
     this.showActiveBarOnCenterViewport();
     this.updateChart();
   }
@@ -320,8 +320,8 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
     return addHours(from, 1);
   }
 
-  protected calcPrevBarDate(): Date {
-    return addHours(this.activeDate, -1);
+  protected calcPrevBarDate(from: Date): Date {
+    return addHours(from, -1);
   }
 
   // // // // // // // // // // // // 

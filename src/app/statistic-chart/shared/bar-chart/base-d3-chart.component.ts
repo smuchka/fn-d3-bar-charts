@@ -76,15 +76,6 @@ export abstract class BaseD3ChartComponent implements OnInit {
     // .style('background-color', '#6ecc9e');
   }
 
-  protected abstract bindEvents(): void;
-
-  /**
-   * Date range to Width chart ratio.
-   * How many dates include in view area of chart.
-   * use for calculation x axix values
-   */
-  protected abstract xAxisDateRange(): [Date, Date];
-
   /**
    * Get element container of chip list
    * @return HTMLElement
