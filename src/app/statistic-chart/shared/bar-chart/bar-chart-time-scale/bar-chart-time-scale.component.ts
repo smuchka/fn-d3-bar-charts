@@ -20,12 +20,9 @@ const DirectionRight: DirectionActiveChange = 1;
 @Component({
   selector: 'fn-bar-chart-time-scale',
   template: `<!--d3 create template itself-->
-  <button (click)="onClickShowEndChart()">to end</button>
-  <button (click)="onPositionReset()">reset</button>
   <button (click)="onPositionZero()">to (0,0)</button>
   <button (click)="onClickToPrevActive()">︎←</button>
   <button (click)="onClickToNextActive()">→</button>
-  <button (click)="onLog()">dump</button>
   `,
   styles: ['./bar-chart-time-scale.scss'],
 })
@@ -174,30 +171,15 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
 
   // handlers
   // todo: check it
-  private svgTranslateX(x: number = 0, y: number = 0, animationDuration: number = 750): void {
+  private svgTranslateX(x: number = 0, animationDuration: number = 750): void {
     this.svg
       .transition()
       .duration(animationDuration)
-      .call(
-        this.zoom.transform,
-        D3.zoomIdentity.translate(x, y)
-      );
-  }
-
-  // todo: check it
-  private moveX(count: number = 0, animationDuration: number = 750): void {
-    this.groupPlaceholderBars
-      .transition()
-      .duration(animationDuration)
-      .call(this.zoom.translateBy, count, 0);
-  }
-
-  // todo: check it
-  private moveX(count: number = 0, animationDuration: number = 750): void {
-    this.groupPlaceholderBars
-      .transition()
-      .duration(animationDuration)
-      .call(this.zoom.translateBy, count, 0);
+      // .call(
+      //   this.zoom.transform,
+      //   D3.zoomIdentity.translate(x, 0)
+      // );
+      .call(this.zoom.translateBy, x, 0);
   }
 
   // todo: check it
@@ -207,27 +189,8 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
   }
 
   // todo: check it
-  public onClickShowEndChart(): void {
-    if (this.items.length) {
-      const lastDateCurrentRange: Date = this.items[this.itemsl.length - 1];
-      this.translateBarInViewPort(lastDateCurrentRange);
-    }
-  }
-
-  // todo: check it
-  public onPositionReset(): void {
-    this.svg
-      .transition()
-      .duration(750)
-      .call(
-        this.zoom.transform,
-        D3.zoomIdentity
-      );
-  }
-
-  // todo: check it
   public onPositionZero(): void {
-    this.svgTranslateX(0, 0)
+    this.svgTranslateX(0)
   }
 
   private canChangeActiveOn(dir: DirectionActiveChange): boolean {
@@ -249,7 +212,7 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
 
     this.activeDate = this.calcPrevBarDate();
     this.updateChart();
-    this.moveX(this.translateWidthOneBar)
+    // this.moveX(this.translateWidthOneBar)
   }
 
   // todo: check it
@@ -258,15 +221,27 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
 
     this.activeDate = this.calcNextBarDate(this.activeDate);
     this.updateChart();
-    this.moveX(this.translateWidthOneBar)
+
+    console.log(
+      this.x(0),
+      this.x(this.width),
+      this.x(this.activeDate)
+    )
+    // this.moveX(this.translateWidthOneBar * -1)
   }
 
   // todo: check it
-  public onLog(): void {
-    console.log(
-      D3.zoomIdentity,
-      D3.zoomTransform(this.groupDataBars.node())
-    )
+  private moveX(count: number = 0, animationDuration: number = 100): void {
+
+    this.groupDataBars
+      .transition()
+      .duration(animationDuration)
+      .call(this.zoom.translateBy, count, 0);
+
+    this.groupPlaceholderBars
+      .transition()
+      .duration(animationDuration)
+      .call(this.zoom.translateBy, count, 0);
   }
 
   // todo: hours dependencies
