@@ -12,17 +12,15 @@ type Position = {
   selector: 'fn-base-d3-chart',
   template: '<!--d3 create template itself-->',
 })
-export abstract class BaseD3ChartComponent implements OnInit {
+export abstract class D3ChartBaseComponent implements OnInit {
 
   protected svg;
   protected height;
   protected width;
   protected host;
 
-  @Input()
-  public heightCorrection: number;
-  @Input()
-  public widthCorrection: number;
+  protected heightCorrection: number;
+  protected widthCorrection: number;
 
   protected margin: Position = {
     top: 0,
@@ -33,7 +31,6 @@ export abstract class BaseD3ChartComponent implements OnInit {
 
   protected padding: Position = {
     top: 130,
-    // bottom: 25,
     bottom: 50,
     right: 20,
     left: 0,
@@ -84,16 +81,4 @@ export abstract class BaseD3ChartComponent implements OnInit {
   private getParentElement(): HTMLElement {
     return this.renderer.parentNode(this.elementRef.nativeElement);
   }
-
-  /**
-   * Get start of step/bar date.
-   * Depend of delimiter chart && start is 00 value
-   */
-  protected abstract calcNowBarDate(): Date;
-
-  protected abstract calcNextBarDate(from: Date): Date;
-
-  protected abstract calcPrevBarDate(from: Date): Date;
-
-  protected abstract viewportDateRange(): [Date, Date];
 }

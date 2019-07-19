@@ -1,16 +1,20 @@
 import {
   Component, ElementRef, Input, OnChanges, OnInit, Renderer2, SimpleChanges, EventEmitter
 } from '@angular/core';
-import { BaseD3ChartComponent } from '../base-d3-chart.component';
+import { D3ChartBaseComponent } from './d3-chart-base.component';
 import { ItemData } from '../core/interfaces/item-data';
-import { DirectionActiveChange, DirectionLeft, DirectionRight } from '../core/types/direction-active-change';
 import {
   startOfToday, endOfToday,
   startOfYesterday,
   differenceInHours, differenceInSeconds,
   addHours, addDays,
   format
-} from 'date-fns'
+} from 'date-fns';
+import {
+  DirectionActiveChange,
+  DirectionLeft,
+  DirectionRight
+} from '../core/types/direction-active-change';
 import * as D3 from 'd3';
 
 const colorDataBar = '#969DAD';
@@ -22,10 +26,7 @@ const colorPlaceholderBar = '#F2F5FA';
   template: `<!--d3 create template itself-->`,
   styles: ['./bar-chart-time-scale.scss'],
 })
-export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements OnInit, OnChanges {
-
-  @Input()
-  public items: ItemData[];
+export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent implements OnInit, OnChanges {
 
   private groupPlaceholderBars;
   private groupDataBars;
@@ -37,13 +38,12 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
   private zoom;
   private radiusRectangle;
 
-  @Input('maxValue')
-  public initMaxValue: number;
+  @Input()
+  public items: ItemData[];
   @Input()
   public barWidth: number;
-
-  @Input()
-  public countViewBars: number;
+  @Input('maxValue')
+  public initMaxValue: number;
 
   private maxValueFromChart: number;
   private translateWidthOneBar: number;
@@ -348,34 +348,17 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
   // // // // // // // // // // // // 
   // TODO: need overload in child - hours | days | weeks
   // // // // // // // // // // // // 
-
-  protected viewportDateRange(): [Date, Date] {
-    const from: Date = this.items[0].identity;
-    return [from, addHours(from, this.countViewBars - 1)];
-  }
-
   /**
    * Get start of step/bar date.
    * Depend of delimiter chart && start is 00 value
    */
-  protected calcNowBarDate(): Date {
-    const now = new Date();
-    now.setMinutes(0);
-    now.setSeconds(0);
-    now.setMilliseconds(0);
-    return now;
-  }
+  protected abstract calcNowBarDate(): Date;
 
-  protected calcNextBarDate(from: Date): Date {
-    return addHours(from, 1);
-  }
+  protected abstract calcNextBarDate(from: Date): Date;
 
-  protected calcPrevBarDate(from: Date): Date {
-    return addHours(from, -1);
-  }
+  protected abstract calcPrevBarDate(from: Date): Date;
 
-  // // // // // // // // // // // // 
-  // // // // // // // // // // // //
+  protected abstract viewportDateRange(): [Date, Date];
 
   private drawDataBar(selection: any): void {
     this

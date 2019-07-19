@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ImpressionPriceChartComponent } from './impression-price-chart.component';
 import { BarChartModule } from '../bar-chart/bar-chart.module';
 import { DayDelimiterChartComponent } from './day-delimiter-chart/day-delimiter-chart.component';
+import { ImpressionStatisticService } from './services/impression-statistic.service';
 
 @NgModule({
   imports: [
@@ -11,11 +12,11 @@ import { DayDelimiterChartComponent } from './day-delimiter-chart/day-delimiter-
   ],
   declarations: [
     ImpressionPriceChartComponent,
-    DayDelimiterChartComponent
   ],
   exports: [
     ImpressionPriceChartComponent,
   ],
+  providers: [ImpressionStatisticService],
 })
 export class ImpressionPriceChartModule {
 }

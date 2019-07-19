@@ -1,6 +1,6 @@
-import { DayDelimiterData, HourDelimiterData, StatisticData, WeekDelimiterData } from './core/delimiter-data';
+import { DayDelimiterData, StatisticData } from './../core/delimiter-data';
 
-export const daysMock: HourDelimiterData[] = <StatisticData[]>[
+export const daysMock: DayDelimiterData[] = <StatisticData[]>[
   // {
   //   views: 1,
   //   cost: 1,
@@ -154,90 +154,5 @@ export const daysMock: HourDelimiterData[] = <StatisticData[]>[
     year: '2019',
     hour: null,
     week: null,
-  },
-];
-export const hoursMock: DayDelimiterData[] = <StatisticData[]>[
-  {
-    views: 40,
-    cost: 130.0298,
-    day: '17',
-    month: '7',
-    year: '2019',
-    hour: '2',
-    week: null,
-  },
-  {
-    views: 500,
-    cost: 12.1090,
-    day: '17',
-    month: '7',
-    year: '2019',
-    hour: '4',
-    week: null,
-  },
-  {
-    views: 423,
-    cost: 130.0298,
-    day: '17',
-    month: '7',
-    year: '2019',
-    hour: '5',
-    week: null,
-  },
-];
-export const weeksMock: WeekDelimiterData[] = <StatisticData[]>[
-  {
-    views: 1158,
-    cost: 396.5435,
-    day: null,
-    month: '3',
-    year: '2019',
-    hour: null,
-    week: '10',
-  },
-  {
-    views: 4119,
-    cost: 1448.9926,
-    day: null,
-    month: '3',
-    year: '2019',
-    hour: null,
-    week: '11',
-  },
-  {
-    views: 2897,
-    cost: 1011.4518,
-    day: null,
-    month: '3',
-    year: '2019',
-    hour: null,
-    week: '12',
-  },
-  {
-    views: 1,
-    cost: 0.2018,
-    day: null,
-    month: '3',
-    year: '2019',
-    hour: null,
-    week: '13',
-  },
-  {
-    views: 2266,
-    cost: 799.0618,
-    day: null,
-    month: '4',
-    year: '2019',
-    hour: null,
-    week: '14',
-  },
-  {
-    views: 584,
-    cost: 216.0682,
-    day: null,
-    month: '4',
-    year: '2019',
-    hour: null,
-    week: '15',
   },
 ];
