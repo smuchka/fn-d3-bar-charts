@@ -10,6 +10,7 @@ import { ImpressionPriceChartModule } from './shared/impression-price-chart/impr
   exports: [
     ImpressionPriceChartModule,
   ],
+  declarations: [],
 })
 export class StatisticChartModule {
 }

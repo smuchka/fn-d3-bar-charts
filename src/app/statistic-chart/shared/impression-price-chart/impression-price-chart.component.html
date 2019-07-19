@@ -1,22 +1,9 @@
-<!-- <fn-bar-chart-simple
-        [items]="listData_DayDelimiter$ | async"
->
-</fn-bar-chart-simple> -->
-
-
-<div class="buttons">
+<!-- <div class="buttons">
 	<button (click)="onClickHour_AddBeforeChunk()">add -1</button>
   <button (click)="onClickHour_AddAfterChunk()">add +1</button>
-
-  <button (click)="onClickToPrevActive()">︎←</button>
-  <button (click)="onClickToNextActive()">→</button>
 </div>
-<br>
-<fn-bar-chart-time-scale
-        [items]="this.pagginableDataForHourChart$ | async"
-        [barWidth]="barWidthHour"
-        [countViewBars]="countViewBarsHours"
-        [maxValue]="maxValueForHour"
-        [heightCorrection]="heightCorrection"
->
-</fn-bar-chart-time-scale>
+<br> -->
+
+<fn-day-delimiter-chart 
+  [data]="pagginableDataForHourChart$"
+></fn-day-delimiter-chart>

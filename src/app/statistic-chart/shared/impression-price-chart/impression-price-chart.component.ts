@@ -4,6 +4,7 @@ import { tap, map } from 'rxjs/operators'
 import { daysMock, hoursMock } from './mockData_hours';
 import { HourDelimiterData, DayDelimiterData } from './core/delimiter-data';
 import { ItemData } from '../bar-chart/core/interfaces/item-data';
+import { DelimiterRangeData } from './core/delimiter-data';
 import {
   format, parse,
   startOfToday, endOfToday,
@@ -20,19 +21,16 @@ import * as D3 from 'd3';
   styleUrls: ['./impression-price-chart.component.scss'],
 })
 export class ImpressionPriceChartComponent implements OnInit {
-  public endDateHour: Date;
   public barWidthHour: number;
   public heightCorrection: number;
   public countViewBarsHours: number;
   public maxValueForHour: number;
-  private pagginableDataForHourChart$: BehaviorSubject<ItemData[]>;
+  private pagginableDataForHourChart$: BehaviorSubject<DelimiterRangeData<ItemData>>;
   private mockStaticDataHour: Map<number, ItemData>;
 
 
   constructor() {
 
-    // Hours
-    this.endDateHour = endOfToday();
     this.barWidthHour = 16;
     // this.countViewBarsHours = 16;
     this.countViewBarsHours = 16;
@@ -57,14 +55,17 @@ export class ImpressionPriceChartComponent implements OnInit {
       );
     });
 
-    this.pagginableDataForHourChart$ = new BehaviorSubject<ItemData[]>([]);
+    this.pagginableDataForHourChart$ = new BehaviorSubject<DelimiterRangeData<ItemData>>(null);
   }
 
   ngOnInit() {
+
     // send first chunk - today
-    this.pagginableDataForHourChart$.next(
-      this.extendDateRangeByEmptyData(this.mockStaticDataHour, startOfToday(), endOfToday())
-    );
+    const from: Date = startOfToday();
+    const to: Date = endOfToday();
+    const list: ItemData[] = this.extendDateRangeByEmptyData(this.mockStaticDataHour, from, to);
+    console.log(list);
+    this.pagginableDataForHourChart$.next({ from, to, list });
   }
 
   public onClickHour_AddBeforeChunk(count = 5): void {
@@ -95,7 +96,6 @@ export class ImpressionPriceChartComponent implements OnInit {
       ...this.extendDateRangeByEmptyData(dynamicChunk, addHours(date, 1), addHours(date, 24)),
     ]);
   }
-
   public onClickToPrevActive(): void { }
   public onClickToNextActive(): void { }
 

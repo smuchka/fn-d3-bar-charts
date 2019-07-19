@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ImpressionPriceChartComponent } from './impression-price-chart.component';
 import { BarChartModule } from '../bar-chart/bar-chart.module';
+import { DayDelimiterChartComponent } from './day-delimiter-chart/day-delimiter-chart.component';
 
 @NgModule({
   imports: [
@@ -10,6 +11,7 @@ import { BarChartModule } from '../bar-chart/bar-chart.module';
   ],
   declarations: [
     ImpressionPriceChartComponent,
+    DayDelimiterChartComponent
   ],
   exports: [
     ImpressionPriceChartComponent,

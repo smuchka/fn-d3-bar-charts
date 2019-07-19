@@ -55,6 +55,7 @@ export abstract class BaseD3ChartComponent implements OnInit {
 
   protected initialiseSizeAndScale() {
     const container = this.getParentElement();
+    console.warn(container)
     const clientWidth = container.clientWidth;
     const clientHeight = container.clientHeight;
     this.width = clientWidth - this.margin.left - this.margin.right + this.widthCorrection;
@@ -75,6 +76,15 @@ export abstract class BaseD3ChartComponent implements OnInit {
       .style('padding-right', this.margin.right)
     // .style('background-color', '#6ecc9e');
   }
+
+  protected abstract bindEvents(): void;
+
+  /**
+   * Date range to Width chart ratio.
+   * How many dates include in view area of chart.
+   * use for calculation x axix values
+   */
+  protected abstract xAxisDateRange(): [Date, Date];
 
   /**
    * Get element container of chip list

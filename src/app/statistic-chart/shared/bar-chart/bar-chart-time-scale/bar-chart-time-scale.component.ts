@@ -62,7 +62,7 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
     this.items = [];
     this.activeDate = null;
     this.radiusRectangle = 4;
-    this.initMaxValue = 0;
+    this.initMaxValue = 1;
     this.maxValueFromChart = 0;
     this.translateWidthOneBar = 0;
     this.changeData = new EventEmitter();
@@ -78,7 +78,11 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
     // and init svg dimetions
     super.ngOnInit();
 
-    // must exist data !!!!
+    // Start work with data, shoul already exist
+    if (!this.items || !this.items.length) {
+      return;
+    }
+
     this.initActiveDate();
     this.initXScale();
     this.initYScale();
@@ -122,11 +126,12 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
    * Handler of changing input data
    */
   private onDataChanged(): void {
-    console.log('!')
+    console.log('!', this.maxValueFromChart)
     const isChanged: boolean = this.updateMaxChartValue()
     if (isChanged) {
       this.initYScale();
     }
+    console.log('!', this.maxValueFromChart)
 
     this.updateZoomOnChangeData(
       D3.min(this.items, d => d.identity),
@@ -170,6 +175,7 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
   private updateMaxChartValue(): boolean {
     const oldValue = this.maxValueFromChart;
 
+    console.log(this.items);
     this.maxValueFromChart = D3.max([
       this.initMaxValue,
       D3.max(this.items, d => d.value),

@@ -1,0 +1,26 @@
+<div>
+	<div class="header">
+		<button 
+      (click)="onClickPrevActivate()"
+      [disabled]="canPrevActivate"
+    >︎←</button>
+
+    <button
+      (click)="onClickNextActivate()"
+      [disabled]="canNextActivate"
+    >→</button>
+  </div>
+  
+  <div class="chart-container">
+    <fn-bar-chart-time-scale
+      #chart
+      [items]="mappedData$ | async"
+      [barWidth]="barWidth"
+      [countViewBars]="countBarsInViewport"
+      [maxValue]="maxImpressionValue"
+      [heightCorrection]="heightCorrection"
+    >
+    </fn-bar-chart-time-scale>
+  </div>
+
+</div>
