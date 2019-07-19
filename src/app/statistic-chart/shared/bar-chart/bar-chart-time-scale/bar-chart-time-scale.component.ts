@@ -218,14 +218,25 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
   }
 
   private initActiveDate(): void {
+
     const arr = this.items.filter(d => d.value > 0)
-    const dateMax: Date | null = arr.length
+    const lastNotEmptyDate: Date | null = arr.length
       ? D3.max(arr, d => d.identity)
       : null;
+
+    // if now include in current chart range (first and last items)
     const now = this.calcNowBarDate();
-    this.activeDate = dateMax
-      ? differenceInSeconds(dateMax, now) < 0 ? dateMax : now
-      : now;
+    const lastChartDate = this.items[this.items.length - 1].identity;
+
+    // if now NOT out of current chart dates range
+    if (lastNotEmptyDate && differenceInSeconds(lastChartDate, now) <= 0) {
+      this.activeDate = lastNotEmptyDate
+        ? differenceInSeconds(lastNotEmptyDate, now) < 0 ? lastNotEmptyDate : now
+        : now;
+    }
+
+    // some items of center chunk
+    this.activeDate = this.items[Math.floor((this.items.length - 1) / 2)].identity;
   }
 
   /**
