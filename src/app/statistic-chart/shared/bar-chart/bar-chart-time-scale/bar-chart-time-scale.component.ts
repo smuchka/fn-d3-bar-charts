@@ -3,6 +3,7 @@ import {
 } from '@angular/core';
 import { BaseD3ChartComponent } from '../base-d3-chart.component';
 import { ItemData } from '../core/interfaces/item-data';
+import { DirectionActiveChange, DirectionLeft, DirectionRight } from '../core/types/direction-active-change';
 import {
   startOfToday, endOfToday,
   startOfYesterday,
@@ -15,9 +16,6 @@ import * as D3 from 'd3';
 const colorDataBar = '#969DAD';
 const colorLabel = '#969DAD';
 const colorPlaceholderBar = '#F2F5FA';
-type DirectionActiveChange = 1 | -1;
-const DirectionLeft: DirectionActiveChange = -1;
-const DirectionRight: DirectionActiveChange = 1;
 
 @Component({
   selector: 'fn-bar-chart-time-scale',
@@ -49,9 +47,12 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
 
   private maxValueFromChart: number;
   private translateWidthOneBar: number;
+  private changeData: EventEmitter<ItemData[]>;
   private activeDate: Date;
 
-  private changeData: EventEmitter<ItemData[]>;
+  public get activeBarDate(): Date {
+    return this.activeDate || null;
+  }
 
   public constructor(
     protected element: ElementRef,
@@ -311,7 +312,7 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
     layout.call(this.zoom.translateTo, initialX, initialY)
   }
 
-  private canChangeActiveOn(dir: DirectionActiveChange): boolean {
+  public canChangeActiveOn(dir: DirectionActiveChange): boolean {
     if (!this.activeDate) {
       return false;
     }
@@ -353,6 +354,10 @@ export class BarChartTimeScaleComponent extends BaseD3ChartComponent implements 
     return [from, addHours(from, this.countViewBars - 1)];
   }
 
+  /**
+   * Get start of step/bar date.
+   * Depend of delimiter chart && start is 00 value
+   */
   protected calcNowBarDate(): Date {
     const now = new Date();
     now.setMinutes(0);

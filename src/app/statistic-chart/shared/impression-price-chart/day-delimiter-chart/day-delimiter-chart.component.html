@@ -1,14 +1,16 @@
 <div>
 	<div class="header">
-		<button 
-      (click)="onClickPrevActivate()"
-      [disabled]="canPrevActivate"
-    >︎←</button>
+		<div *ngIf="availableChart" class="nav">
+			<button 
+        (click)="onClickPrevActivate()"
+        [disabled]="!canPrevActivate()"
+      >︎←</button>
 
-    <button
-      (click)="onClickNextActivate()"
-      [disabled]="canNextActivate"
-    >→</button>
+      <button
+        (click)="onClickNextActivate()"
+        [disabled]="!canNextActivate()"
+      >→</button>
+    </div>
   </div>
   
   <div class="chart-container">

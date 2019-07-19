@@ -77,15 +77,6 @@ export abstract class BaseD3ChartComponent implements OnInit {
     // .style('background-color', '#6ecc9e');
   }
 
-  protected abstract bindEvents(): void;
-
-  /**
-   * Date range to Width chart ratio.
-   * How many dates include in view area of chart.
-   * use for calculation x axix values
-   */
-  protected abstract xAxisDateRange(): [Date, Date];
-
   /**
    * Get element container of chip list
    * @return HTMLElement
@@ -93,4 +84,16 @@ export abstract class BaseD3ChartComponent implements OnInit {
   private getParentElement(): HTMLElement {
     return this.renderer.parentNode(this.elementRef.nativeElement);
   }
+
+  /**
+   * Get start of step/bar date.
+   * Depend of delimiter chart && start is 00 value
+   */
+  protected abstract calcNowBarDate(): Date;
+
+  protected abstract calcNextBarDate(from: Date): Date;
+
+  protected abstract calcPrevBarDate(from: Date): Date;
+
+  protected abstract viewportDateRange(): [Date, Date];
 }
