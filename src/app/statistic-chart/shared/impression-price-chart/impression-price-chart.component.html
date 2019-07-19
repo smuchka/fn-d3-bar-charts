@@ -2,3 +2,27 @@
   [data]="pagginableDataForHourChart$"
 ></fn-day-delimiter-chart> -->
 
+
+<div>
+	<div class="header">
+		<div *ngIf="availableChart" class="nav">
+			<button 
+        (click)="onClickPrevActivate()"
+        [disabled]="!canPrevActivate()"
+      >︎←</button>
+
+      <button
+        (click)="onClickNextActivate()"
+        [disabled]="!canNextActivate()"
+      >→</button>
+    </div>
+  </div>
+  
+  <div class="chart-container">
+    <fn-daily-bar-chart
+      [data]="showChartData$ | async"
+      (loadMore)="loadMore()"
+    ></fn-daily-bar-chart>
+  </div>
+
+</div>

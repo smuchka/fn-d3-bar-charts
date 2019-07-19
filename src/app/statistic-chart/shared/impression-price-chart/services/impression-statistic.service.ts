@@ -29,12 +29,27 @@ export class ImpressionStatisticService {
 
   public loadStaticticByDates(d1: Date, d2: Date): ItemData[] {
     const now = this.currentDateFromStartHour();
-    if (differenceInHours(now, d1) <= 0
-      && differenceInHours(d2, now) <= 0) {
+    if (differenceInHours(d1, now) <= 0
+      && differenceInHours(now, d2) <= 0) {
+
+      const list = Array.from(this.mockStaticDataHour.values());
+      console.log(
+        this.extendDateRangeByEmptyData(list, d1, d2)
+      )
       return Array.from(this.mockStaticDataHour.values());
     }
 
     const dynamicChunk = this.generateRandomHourChunk(d1, d2, this.countRandom);
+        dynamicChunk.forEach((date: Date) => {
+      map.set(
+        getTimestamInSecond(date),
+        {
+          identity: date,
+          value: random(0, 999),
+          label: format(date, 'HH:mm'),
+        }
+      )
+    });
     return this.extendDateRangeByEmptyData(dynamicChunk, d1, d2);
   }
 

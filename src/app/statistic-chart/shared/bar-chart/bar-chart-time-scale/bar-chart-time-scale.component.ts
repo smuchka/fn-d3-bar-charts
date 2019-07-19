@@ -38,7 +38,7 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
   private zoom;
   private radiusRectangle;
 
-  @Input()
+  @Input('data')
   public items: ItemData[];
   @Input()
   public barWidth: number;
@@ -112,7 +112,6 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
-
     // skip any changes until onInit unavailable
     if (changes.items && changes.items.firstChange) {
       return;
@@ -127,12 +126,10 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
    * Handler of changing input data
    */
   private onDataChanged(): void {
-    console.log('!', this.maxValueFromChart)
     const isChanged: boolean = this.updateMaxChartValue()
     if (isChanged) {
       this.initYScale();
     }
-    console.log('!', this.maxValueFromChart)
 
     this.updateZoomOnChangeData(
       D3.min(this.items, d => d.identity),

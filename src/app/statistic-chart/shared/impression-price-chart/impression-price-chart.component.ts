@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { Observable, of, BehaviorSubject } from 'rxjs';
-import { tap, map } from 'rxjs/operators'
+import { tap, map, filter } from 'rxjs/operators'
 import { HourDelimiterData, DayDelimiterData } from './core/delimiter-data';
 import { ItemData } from '../bar-chart/core/interfaces/item-data';
 import { DelimiterRangeData } from './core/delimiter-data';
 import { ImpressionStatisticService } from './services/impression-statistic.service';
+import { DayDelimiterChartComponent } from './day-delimiter-chart/day-delimiter-chart.component';
 import {
   format, parse,
   startOfToday, endOfToday,
@@ -22,24 +23,48 @@ import * as D3 from 'd3';
 })
 export class ImpressionPriceChartComponent implements OnInit {
 
-  private pagginableDataForHourChart$: BehaviorSubject<ItemData[]>;
+  @ViewChild('chart', { static: false })
+  protected chart: DayDelimiterChartComponent;
+
+  private pagginableData$: BehaviorSubject<ItemData[]>;
+  public showChartData$: Observable<ItemData[]>;
 
   constructor(private statistic: ImpressionStatisticService) {
-    this.pagginableDataForHourChart$ = new BehaviorSubject<ItemData[]>(null);
+    this.pagginableData$ = new BehaviorSubject<ItemData[]>([]);
+    this.showChartData$ = this.pagginableData$.pipe(
+      filter(list => Boolean(list.length)),
+      tap(console.warn),
+    );
   }
 
   ngOnInit() {
     const [from, to] = this.getLastCampaignDateRange();
     const list: ItemData[] = this.statistic.loadStaticticByDates(from, to);
-    this.pagginableDataForHourChart$.next(this.mergeStatiscticWithChunk(list));
+    this.pagginableData$.next(this.mergeStatiscticWithChunk(list));
+  }
+
+  public loadMore(): void {
+    if (!this.canLoadMore()) {
+      return;
+    }
+
+    this.loadPrevPeriod();
   }
 
   public loadPrevPeriod(): void {
-    const date: Date = this.pagginableDataForHourChart$.value[0].identity;
+    const date: Date = this.pagginableData$.value[0].identity;
     const [from, to] = [subHours(date, 24), subHours(date, 1)];
     const list: ItemData[] = this.statistic.loadStaticticByDates(from, to);
-    this.pagginableDataForHourChart$.next(this.mergeStatiscticWithChunk(list))
+    this.pagginableData$.next(this.mergeStatiscticWithChunk(list))
   }
+
+  public onClickPrevActivate(): void { }
+
+  public canPrevActivate(): boolean { }
+
+  public onClickNextActivate(): void { }
+
+  public canNextActivate(): boolean { }
 
   /**
    * Must fetch dates from campaign and 
@@ -52,10 +77,14 @@ export class ImpressionPriceChartComponent implements OnInit {
     return [startOfToday(), endOfToday()];
   }
 
+  private canLoadMore(): boolean {
+    return true;
+  }
+
   private mergeStatiscticWithChunk(chunk: ItemData[]): ItemData[] {
     return [
       ...chunk,
-      ...this.pagginableDataForHourChart$.value,
+      ...this.pagginableData$.value,
     ]
   }
 }
