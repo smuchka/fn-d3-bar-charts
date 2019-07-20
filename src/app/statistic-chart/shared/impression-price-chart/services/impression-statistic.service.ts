@@ -20,8 +20,6 @@ import * as D3 from 'd3';
 
 @Injectable()
 export class ImpressionStatisticService {
-
-  private mockStaticDataHour: Map<number, ItemData> = new Map();
   private countRandom = 5;
 
   constructor() {
@@ -31,27 +29,16 @@ export class ImpressionStatisticService {
     const now = this.currentDateFromStartHour();
     if (differenceInHours(d1, now) <= 0
       && differenceInHours(now, d2) <= 0) {
-
-      // const list = Array.from(this.mockStaticDataHour.values())
-      //   .forEach((date: Date) => {
-      //     map.set(
-      //       getTimestamInSecond(date),
-      //       item
-      //     )
-      //   });
-      // console.log(
-        
-      // )
-      return this.extendDateRangeByEmptyData(this.mockStaticDataHour, d1, d2);
+      return this.extendDateRangeByEmptyData(this.loadMockStaticData(), d1, d2);
     }
 
-    // const map = new Map<number, ItemData>();
     const map = this.generateRandomHourChunk(d1, d2, this.countRandom);
-    console.log(map);
     return this.extendDateRangeByEmptyData(map, d1, d2);
   }
 
-  private loadMockStaticData(): void {
+  private loadMockStaticData(): Map<number, ItemData> {
+    const mockStaticDataHour: Map<number, ItemData> = new Map();
+
     hoursMock.forEach((item: HourDelimiterData) => {
       const date = new Date();
       date.setUTCFullYear(+item.year);
@@ -59,7 +46,7 @@ export class ImpressionStatisticService {
       date.setUTCDate(+item.day);
       date.setUTCHours(+item.hour, 0, 0, 0);
 
-      this.mockStaticDataHour.set(
+      mockStaticDataHour.set(
         getTimestamInSecond(date),
         {
           identity: date,
@@ -68,6 +55,8 @@ export class ImpressionStatisticService {
         }
       );
     })
+
+    return mockStaticDataHour;
   }
 
   private generateRandomHourChunk(d1: Date, d2: Date, count: number): Map<number, ItemData> {
