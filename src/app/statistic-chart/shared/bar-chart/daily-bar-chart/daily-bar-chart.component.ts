@@ -21,7 +21,6 @@ export class DailyBarChartComponent extends BarChartTimeScaleComponent {
 
     this.barWidth = 16;
     this.countBarsInViewport = 16;
-    this.heightCorrection = -60;
   }
 
   /**

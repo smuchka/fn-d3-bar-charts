@@ -19,10 +19,6 @@ import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import * as D3 from 'd3';
 
-const colorDataBar = '#969DAD';
-const colorLabel = '#969DAD';
-const colorPlaceholderBar = '#F2F5FA';
-
 @Component({
   selector: 'fn-bar-chart-time-scale',
   template: `<!--d3 create template itself-->`,
@@ -398,25 +394,21 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
 
   private drawDataBar(selection: any): void {
     this
-      .drawBarPrimitive(selection, colorDataBar)
+      .drawBarPrimitive(selection)
       // mark active label
       .call(this.drawAsActiveBar.bind(this))
   }
 
   private drawPlaceholderBar(selection: any): void {
     this
-      .drawBarPrimitive(selection, colorPlaceholderBar)
+      .drawBarPrimitive(selection)
       .attr('y', d => this.y(this.maxValueFromChart))
       .attr('height', d => this.y(0) - this.y(this.maxValueFromChart))
       .attr('class', 'bar placeholder')
       .on("click", this.onBarClick.bind(this));
-    // .on("click", (e) => {
-    //   D3.zoomTransform();
-    //   console.log(e, this);
-    // })
   }
 
-  private drawBarPrimitive(selection: Selection, color: string): Selection {
+  private drawBarPrimitive(selection: Selection): Selection {
     return selection
       .join('rect')
       .attr('x', d => this.x(d.identity) - Math.round(this.barWidth / 2))
@@ -431,9 +423,9 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
 
   private drawBarLabel(selection: any): void {
 
-    const labelFontSize: number = 12;
-    const labelOffsetTop: number = 10;
-    const labelFontFamily: string = 'Lato';
+    const yPos: number = this.y(0)
+      + (this.labelConfig.labelOffsetTop || 0)
+      + (this.labelConfig.labelFontSize || 0);
 
     selection
       .join('text')
@@ -441,9 +433,9 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
       .attr('class', 'label')
       // set label by center of bar
       .attr('x', d => this.x(d.identity))
-      .attr('y', d => this.y(0) + labelOffsetTop + labelFontSize)
-      .attr("font-family", `${labelFontFamily}`)
-      .attr("font-size", `${labelFontSize}px`)
+      .attr('y', d => yPos)
+      .attr("font-family", `${this.labelConfig.labelFontFamily}`)
+      .attr("font-size", `${this.labelConfig.labelFontSize}px`)
       .style('text-anchor', 'middle')
       // mark active label
       .call(this.drawAsActiveBar.bind(this))
