@@ -342,21 +342,6 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
     return true;
   }
 
-  // // // // // // // // // // // // 
-  // TODO: need overload in child - hours | days | weeks
-  // // // // // // // // // // // // 
-  /**
-   * Get start of step/bar date.
-   * Depend of delimiter chart && start is 00 value
-   */
-  protected abstract calcNowBarDate(): Date;
-
-  protected abstract calcNextBarDate(from: Date): Date;
-
-  protected abstract calcPrevBarDate(from: Date): Date;
-
-  protected abstract viewportDateRange(): [Date, Date];
-
   private drawDataBar(selection: any): void {
     this
       .drawBarPrimitive(selection, colorDataBar)
@@ -416,4 +401,16 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
     const fnActive = (d) => d.identity.getTime() === this.activeDate.getTime();
     selection.classed('active', fnActive);
   }
+
+  /**
+   * Get start of step/bar date.
+   * Depend of delimiter chart && start is 00 value
+   */
+  protected abstract calcNowBarDate(): Date;
+
+  protected abstract calcNextBarDate(from: Date): Date;
+
+  protected abstract calcPrevBarDate(from: Date): Date;
+
+  protected abstract viewportDateRange(): [Date, Date];
 }

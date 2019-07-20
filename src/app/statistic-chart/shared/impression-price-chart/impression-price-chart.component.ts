@@ -23,7 +23,7 @@ import * as D3 from 'd3';
 })
 export class ImpressionPriceChartComponent implements OnInit {
 
-  @ViewChild('chart', { static: false })
+  @ViewChild('chart', { static: true })
   protected chart: DayDelimiterChartComponent;
 
   private pagginableData$: BehaviorSubject<ItemData[]>;
@@ -43,6 +43,10 @@ export class ImpressionPriceChartComponent implements OnInit {
     this.pagginableData$.next(this.mergeStatiscticWithChunk(list));
   }
 
+  ngAfterViewInit() {
+    console.warn(this.chart);
+  }
+
   public loadMore(): void {
     if (!this.canLoadMore()) {
       return;
@@ -58,13 +62,21 @@ export class ImpressionPriceChartComponent implements OnInit {
     this.pagginableData$.next(this.mergeStatiscticWithChunk(list))
   }
 
-  public onClickPrevActivate(): void { }
+  public onClickPrevActivate(): void {
+    this.chart.goToPrevBar();
+  }
 
-  public canPrevActivate(): boolean { }
+  public canPrevActivate(): boolean {
+    return true;
+  }
 
-  public onClickNextActivate(): void { }
+  public onClickNextActivate(): void {
+    this.chart.goToNextBar();
+  }
 
-  public canNextActivate(): boolean { }
+  public canNextActivate(): boolean {
+    return true;
+  }
 
   /**
    * Must fetch dates from campaign and 

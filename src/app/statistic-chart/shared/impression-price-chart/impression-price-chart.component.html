@@ -1,11 +1,6 @@
-<!-- <fn-day-delimiter-chart 
-  [data]="pagginableDataForHourChart$"
-></fn-day-delimiter-chart> -->
-
-
 <div>
 	<div class="header">
-		<div *ngIf="availableChart" class="nav">
+		<div class="nav">
 			<button 
         (click)="onClickPrevActivate()"
         [disabled]="!canPrevActivate()"
@@ -20,6 +15,7 @@
   
   <div class="chart-container">
     <fn-daily-bar-chart
+      #chart
       [data]="showChartData$ | async"
       (loadMore)="loadMore()"
     ></fn-daily-bar-chart>
