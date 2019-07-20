@@ -32,25 +32,23 @@ export class ImpressionStatisticService {
     if (differenceInHours(d1, now) <= 0
       && differenceInHours(now, d2) <= 0) {
 
-      const list = Array.from(this.mockStaticDataHour.values());
-      console.log(
-        this.extendDateRangeByEmptyData(list, d1, d2)
-      )
-      return Array.from(this.mockStaticDataHour.values());
+      // const list = Array.from(this.mockStaticDataHour.values())
+      //   .forEach((date: Date) => {
+      //     map.set(
+      //       getTimestamInSecond(date),
+      //       item
+      //     )
+      //   });
+      // console.log(
+        
+      // )
+      return this.extendDateRangeByEmptyData(this.mockStaticDataHour, d1, d2);
     }
 
-    const dynamicChunk = this.generateRandomHourChunk(d1, d2, this.countRandom);
-        dynamicChunk.forEach((date: Date) => {
-      map.set(
-        getTimestamInSecond(date),
-        {
-          identity: date,
-          value: random(0, 999),
-          label: format(date, 'HH:mm'),
-        }
-      )
-    });
-    return this.extendDateRangeByEmptyData(dynamicChunk, d1, d2);
+    // const map = new Map<number, ItemData>();
+    const map = this.generateRandomHourChunk(d1, d2, this.countRandom);
+    console.log(map);
+    return this.extendDateRangeByEmptyData(map, d1, d2);
   }
 
   private loadMockStaticData(): void {
