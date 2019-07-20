@@ -55,17 +55,18 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
   private maxValueFromChart: number;
   private translateWidthOneBar: number;
   private changeData: EventEmitter<ItemData[]>;
-  private activeBarDate: Date;
+  private activeDate: Date;
   private subs: Subscription;
   private canActivatePrevBar: boolean;
   private canActivateNextBar: boolean;
 
-  public get activeDate(): Date {
-    return this.activeBarDate || null;
-  }
-  public set activeDate(date: Date) {
-    this.activeBarDate = date;
-    this.activeDataChange.emit(this.activeBarDate);
+  // public get activeBarDate(): Date {
+  //   return this. || null;
+  // }
+
+  public setActiveDate(date: Date) {
+    this.activeDate = date;
+    this.activeDataChange.emit(this.activeDate);
   }
 
   public constructor(
@@ -75,7 +76,7 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
     super(element, renderer);
 
     this.data = [];
-    this.activeBarDate = null;
+    this.activeDate = null;
     this.canActivatePrevBar = false;
     this.canActivateNextBar = false;
     this.radiusRectangle = 4;
@@ -102,7 +103,7 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
 
     // Requiered init after chart entities
     this.initSubscribes();
-    
+
     this.initActiveDate();
     this.initXScale();
     this.initYScale();
@@ -155,6 +156,7 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
    * Handler of active date chnage
    */
   private onActiveDateChanged(newValue: any): void {
+    console.log('onActiveDateChanged')
     this.canActivatePrevBar = this.canChangeActiveOn(DirectionLeft);
     this.canActivateNextBar = this.canChangeActiveOn(DirectionRight);
     this.showActiveBarOnCenterViewport();
@@ -191,7 +193,7 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
   }
 
   private onBarClick(d: ItemData): void {
-    this.activeDate = d.identity;
+    this.setActiveDate(d.identity);
   }
 
   private onSvgClick(d): void {
@@ -259,6 +261,7 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
   }
 
   private initActiveDate(): void {
+    let activeDate = this.activeDate;
     const now = this.calcNowBarDate();
     const arr = this.data.filter(d => d.value > 0)
     const lastNotEmptyDate: Date | null = arr.length
@@ -278,6 +281,9 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
       // make active item from center chunk
       this.activeDate = this.data[Math.floor((this.data.length - 1) / 2)].identity;
     }
+
+    this.canActivatePrevBar = this.canChangeActiveOn(DirectionLeft);
+    this.canActivateNextBar = this.canChangeActiveOn(DirectionRight);
   }
 
   /**
@@ -312,6 +318,7 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
   }
 
   private initSubscribes(): void {
+    console.log('initSubscribes')
     // move to subscribe method
     this.subs.add(
       this.changeData
@@ -364,14 +371,18 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
 
   public goToPrevBar(): boolean {
     if (!this.canActivatePrevBar) return false;
-    this.activeDate = this.calcPrevBarDate(this.activeDate);
+    this.setActiveDate(
+      this.calcPrevBarDate(this.activeDate)
+    );
 
     return true;
   }
 
   public goToNextBar(): boolean {
     if (!this.canActivateNextBar) return false;
-    this.activeDate = this.calcNextBarDate(this.activeDate);
+    this.setActiveDate(
+      this.calcNextBarDate(this.activeDate)
+    );
 
     return true;
   }
