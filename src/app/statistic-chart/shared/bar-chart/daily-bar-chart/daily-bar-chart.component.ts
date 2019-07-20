@@ -45,7 +45,7 @@ export class DailyBarChartComponent extends BarChartTimeScaleComponent {
   }
 
   protected viewportDateRange(): [Date, Date] {
-    const from: Date = this.items[0].identity;
+    const from: Date = this.data[0].identity;
     return [from, addHours(from, this.countBarsInViewport - 1)];
   }
 

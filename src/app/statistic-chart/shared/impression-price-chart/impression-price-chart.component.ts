@@ -33,7 +33,6 @@ export class ImpressionPriceChartComponent implements OnInit {
     this.pagginableData$ = new BehaviorSubject<ItemData[]>([]);
     this.showChartData$ = this.pagginableData$.pipe(
       filter(list => Boolean(list.length)),
-      tap(console.warn),
     );
   }
 
@@ -45,10 +44,6 @@ export class ImpressionPriceChartComponent implements OnInit {
     // TODO:
     // - make depend of Delimiter
     // - can next/prev getter
-  }
-
-  ngAfterViewInit() {
-    console.warn(this.chart);
   }
 
   public loadMore(): void {
@@ -71,10 +66,7 @@ export class ImpressionPriceChartComponent implements OnInit {
   }
 
   public canPrevActivate(): boolean {
-    // if (this.chart && this.chart.activeBarDate) {
-    //   return differenceInHours(this.chart.activeBarDate, );
-    // }
-    // return false;
+    return this.chart && this.chart.canActivatePrevBar;
   }
 
   public onClickNextActivate(): void {
@@ -82,7 +74,7 @@ export class ImpressionPriceChartComponent implements OnInit {
   }
 
   public canNextActivate(): boolean {
-    return true;
+    return this.chart && this.chart.canActivateNextBar;
   }
 
   private loadPrevPeriod(): void {

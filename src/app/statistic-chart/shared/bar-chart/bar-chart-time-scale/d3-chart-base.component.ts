@@ -52,7 +52,6 @@ export abstract class D3ChartBaseComponent implements OnInit {
 
   protected initialiseSizeAndScale() {
     const container = this.getParentElement();
-    console.warn(container)
     const clientWidth = container.clientWidth;
     const clientHeight = container.clientHeight;
     this.width = clientWidth - this.margin.left - this.margin.right + this.widthCorrection;
@@ -60,18 +59,15 @@ export abstract class D3ChartBaseComponent implements OnInit {
   }
 
   protected buildSVG() {
-    // this.host.html('');
-    const divBlock = this.host.append('div')
-    // .style('overflow-x', 'auto');
+    this.host.html('');
 
-    this.svg = divBlock.append('svg')
+    this.svg = this.host.append('svg')
       .attr('width', this.width)
       .attr('height', this.height)
       .style('padding-top', this.margin.top)
       .style('padding-bottom', this.margin.bottom)
       .style('padding-left', this.margin.left)
       .style('padding-right', this.margin.right)
-    // .style('background-color', '#6ecc9e');
   }
 
   /**
