@@ -18,6 +18,7 @@
       #chart
       [data]="showChartData$ | async"
       (loadMore)="loadMore()"
+      (petBorder)="onChartEmitPetBorderEvent()"
     ></fn-daily-bar-chart>
   </div>
 

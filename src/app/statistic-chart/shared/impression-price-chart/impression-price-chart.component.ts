@@ -41,6 +41,10 @@ export class ImpressionPriceChartComponent implements OnInit {
     const [from, to] = this.getLastCampaignDateRange();
     const list: ItemData[] = this.statistic.loadStaticticByDates(from, to);
     this.pagginableData$.next(this.mergeStatiscticWithChunk(list));
+
+    // TODO:
+    // - make depend of Delimiter
+    // - can next/prev getter
   }
 
   ngAfterViewInit() {
@@ -55,11 +59,11 @@ export class ImpressionPriceChartComponent implements OnInit {
     this.loadPrevPeriod();
   }
 
-  public loadPrevPeriod(): void {
-    const date: Date = this.pagginableData$.value[0].identity;
-    const [from, to] = [subHours(date, 24), subHours(date, 1)];
-    const list: ItemData[] = this.statistic.loadStaticticByDates(from, to);
-    this.pagginableData$.next(this.mergeStatiscticWithChunk(list))
+  /**
+   * todo: make it in chart - emit event correct
+   */
+  public onChartEmitPetBorderEvent(e): void {
+    console.log('Chart near of border!')
   }
 
   public onClickPrevActivate(): void {
@@ -67,7 +71,10 @@ export class ImpressionPriceChartComponent implements OnInit {
   }
 
   public canPrevActivate(): boolean {
-    return true;
+    // if (this.chart && this.chart.activeBarDate) {
+    //   return differenceInHours(this.chart.activeBarDate, );
+    // }
+    // return false;
   }
 
   public onClickNextActivate(): void {
@@ -76,6 +83,13 @@ export class ImpressionPriceChartComponent implements OnInit {
 
   public canNextActivate(): boolean {
     return true;
+  }
+
+  private loadPrevPeriod(): void {
+    const date: Date = this.pagginableData$.value[0].identity;
+    const [from, to] = [subHours(date, 24), subHours(date, 1)];
+    const list: ItemData[] = this.statistic.loadStaticticByDates(from, to);
+    this.pagginableData$.next(this.mergeStatiscticWithChunk(list))
   }
 
   /**

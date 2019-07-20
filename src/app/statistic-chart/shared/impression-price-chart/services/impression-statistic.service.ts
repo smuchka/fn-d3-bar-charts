@@ -110,8 +110,8 @@ export class ImpressionStatisticService {
 
   public getFirstChunkDateRange(): [Date, Date] {
     return [
-      subHours(startOfToday(), 0),
-      subHours(endOfToday(), 0)
+      subHours(startOfToday(), 24),
+      subHours(endOfToday(), 24)
     ];
   }
 }

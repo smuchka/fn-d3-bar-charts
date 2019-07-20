@@ -1,5 +1,5 @@
 import {
-  Component, ElementRef, Input, OnChanges, OnInit, Renderer2, SimpleChanges, EventEmitter
+  Component, ElementRef, Input, Output, OnChanges, OnInit, Renderer2, SimpleChanges, EventEmitter, OnDestroy
 } from '@angular/core';
 import { D3ChartBaseComponent } from './d3-chart-base.component';
 import { ItemData } from '../core/interfaces/item-data';
@@ -15,6 +15,7 @@ import {
   DirectionLeft,
   DirectionRight
 } from '../core/types/direction-active-change';
+import { Subscription } from 'rxjs';
 import * as D3 from 'd3';
 
 const colorDataBar = '#969DAD';
@@ -26,7 +27,7 @@ const colorPlaceholderBar = '#F2F5FA';
   template: `<!--d3 create template itself-->`,
   styles: ['./bar-chart-time-scale.scss'],
 })
-export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent implements OnInit, OnChanges {
+export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent implements OnInit, OnChanges, OnDestroy {
 
   private groupPlaceholderBars;
   private groupDataBars;
@@ -45,10 +46,16 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
   @Input('maxValue')
   public initMaxValue: number;
 
+  @Output()
+  public petBorder: EventEmitter<any>;
+  @Output()
+  public activeChange: EventEmitter<any>;
+
   private maxValueFromChart: number;
   private translateWidthOneBar: number;
   private changeData: EventEmitter<ItemData[]>;
   private activeDate: Date;
+  private subs: Subscription;
 
   public get activeBarDate(): Date {
     return this.activeDate || null;
@@ -67,10 +74,13 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
     this.maxValueFromChart = 0;
     this.translateWidthOneBar = 0;
     this.changeData = new EventEmitter();
+    this.activeChange = new EventEmitter();
+    this.petBorder = new EventEmitter();
+    this.subs = new Subscription();
 
-    // subscribe on:
-    this.changeData
-      .subscribe(this.onDataChanged.bind(this));
+    this.subs.add(
+      this.changeData.subscribe(this.onDataChanged.bind(this))
+    )
   }
 
   public ngOnInit(): void {
@@ -98,15 +108,13 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
     this.changeData.emit(this.items);
 
     // TODO:
-    // - create comunication with wrapper Component
-    // -- next active
-    // -- prev active
+    // + click on bar - make it as active date
+    // + create comunication with wrapper Component (next/prev active)
+    // + navigation on nexx/prev active
     // - emit event - painning ended left/right! => upload more data ...
-    // - navigation on nexx/prev active
     // - не упускать из виду активный
-    // - click on bar - make it as active date
     // - show tooltip
-    // - check subscriptions
+    // - load input size OR container size
 
     this.svg.on("click", this.onSvgClick.bind(this));
   }
@@ -122,25 +130,20 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
     }
   }
 
+  public ngOnDestroy(): void {
+    this.subs.unsubscribe();
+  }
+
   /**
    * Handler of changing input data
    */
   private onDataChanged(): void {
-    const isChanged: boolean = this.updateMaxChartValue()
-    if (isChanged) {
-      this.initYScale();
-    }
-
-    this.updateZoomOnChangeData(
-      D3.min(this.items, d => d.identity),
-      D3.max(this.items, d => d.identity),
-    );
 
     this.updateChart();
   }
 
   private onZoomed(): void {
-    console.log('onZoomed');
+    // console.log('onZoomed');
 
     // recalc X Scale and redraw xAxis
     this.x = D3.event.transform.rescaleX(this.x2);
@@ -155,19 +158,38 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
     this.groupDataBars.attr("transform", "translate(" + x + ",0)");
   }
 
-  private onZoomedEnd(): void {
-    console.log('zoomEnd', this, D3.event)
+  private onZoomedEnd(e): void {
+    console.log('zoomEnd', D3.event.transform)
 
     // TODO:
     // detect here zoom/scroll ending and emit event outside
     // use it for paggination -> upload prev chunk
+    // if (
+    //   D3.event.transform.x
+    // ) {
+    //   this.petBorder.emit(true);
+    // }
   }
 
   private onBarClick(d: ItemData): void {
+    console.log(d);
+    this.activeDate = d.identity;
+    this.showActiveBarOnCenterViewport();
+    this.updateChart();
   }
 
   private onSvgClick(d): void {
     // console.log('click svg - ', D3.zoomIdentity, format(this.activeDate, 'HH:mm'));
+
+    // const isChanged: boolean = this.updateMaxChartValue()
+    // if (isChanged) {
+    //   this.initYScale();
+    // }
+    // this.updateZoomOnChangeData(
+    //   D3.min(this.items, d => d.identity),
+    //   D3.max(this.items, d => d.identity),
+    // );
+    // this.updateChart();
   }
 
   private updateMaxChartValue(): boolean {
@@ -202,6 +224,16 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
    * Update any chart elements
    */
   private updateChart(): void {
+    const isChanged: boolean = this.updateMaxChartValue()
+    if (isChanged) {
+      this.initYScale();
+    }
+
+    this.updateZoomOnChangeData(
+      D3.min(this.items, d => d.identity),
+      D3.max(this.items, d => d.identity),
+    );
+
     // draw bar placeholders
     const placeholderBars = this.groupPlaceholderBars
       .selectAll('rect')
@@ -286,7 +318,7 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
     this.svg.call(this.zoom)
   }
 
-  private showActiveBarOnCenterViewport(): void {
+  private showActiveBarOnCenterViewport(duration: number = 0): void {
     if (!this.activeDate) {
       return;
     }
@@ -295,15 +327,17 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
 
     const layout = this.svg
       .transition()
-      .duration(0)
+      .duration(duration)
 
     // - create new transform and apply it
+    // const offset = 100
     // const newTransform = D3.zoomIdentity.translate(-initialX, 0);
     // layout.call(this.zoom.transform, newTransform);
 
     // - BETTER!
     // - need add offset
-    // layout.call(this.zoom.translateBy, -initialX, initialY);
+    // const offset = 100
+    // layout.call(this.zoom.translateBy, -initialX + offset, initialY);
 
     // - on zoom function call method - translateTo
     layout.call(this.zoom.translateTo, initialX, initialY)
@@ -355,7 +389,7 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
       .attr('y', d => this.y(this.maxValueFromChart))
       .attr('height', d => this.y(0) - this.y(this.maxValueFromChart))
       .attr('class', 'bar placeholder')
-    // .on("click", this.onBarClick.bind(this));
+      .on("click", this.onBarClick.bind(this));
     // .on("click", (e) => {
     //   D3.zoomTransform();
     //   console.log(e, this);
@@ -372,7 +406,7 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
       .attr('rx', d => this.radiusRectangle)
       .attr('ry', d => this.radiusRectangle)
       .attr('class', 'bar')
-    // .on("click", this.onBarClick.bind(this));
+      .on("click", this.onBarClick.bind(this));
   }
 
   private drawBarLabel(selection: any): void {
