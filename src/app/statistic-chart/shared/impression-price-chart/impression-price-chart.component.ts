@@ -74,7 +74,7 @@ export class ImpressionPriceChartComponent implements OnInit {
    * !!!! depend of current time Delimiter and WEB/MOBILE platform
    */
   private getLastCampaignDateRange(): [Date, Date] {
-    return [startOfToday(), endOfToday()];
+    return this.statistic.getFirstChunkDateRange();
   }
 
   private canLoadMore(): boolean {

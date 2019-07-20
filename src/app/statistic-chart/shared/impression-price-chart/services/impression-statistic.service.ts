@@ -4,7 +4,7 @@ import { HourDelimiterData, DayDelimiterData } from '../core/delimiter-data';
 import {
   format,
   parse,
-  // startOfToday, endOfToday,
+  startOfToday, endOfToday,
   differenceInHours,
   addHours,
   subHours,
@@ -26,9 +26,9 @@ export class ImpressionStatisticService {
   }
 
   public loadStaticticByDates(d1: Date, d2: Date): ItemData[] {
-    const now = this.currentDateFromStartHour();
-    if (differenceInHours(d1, now) <= 0
-      && differenceInHours(now, d2) <= 0) {
+    const [firstChunkStart, firstChunkEnd] = this.getFirstChunkDateRange();
+    if (differenceInHours(d1, firstChunkStart) <= 0
+      && differenceInHours(d2, firstChunkEnd) <= 0) {
       return this.extendDateRangeByEmptyData(this.loadMockStaticData(), d1, d2);
     }
 
@@ -100,12 +100,19 @@ export class ImpressionStatisticService {
     return Array.from(Array(countHours), createDataItem);
   }
 
-  private currentDateFromStartHour(): Date {
-    const now = new Date();
-    now.setMinutes(0);
-    now.setSeconds(0);
-    now.setMilliseconds(0);
-    return now;
+  // private currentDateFromStartHour(): Date {
+  //   const now = new Date();
+  //   now.setMinutes(0);
+  //   now.setSeconds(0);
+  //   now.setMilliseconds(0);
+  //   return now;
+  // }
+
+  public getFirstChunkDateRange(): [Date, Date] {
+    return [
+      subHours(startOfToday(), 0),
+      subHours(endOfToday(), 0)
+    ];
   }
 }
 
