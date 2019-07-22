@@ -2,8 +2,8 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ImpressionPriceChartComponent } from './impression-price-chart.component';
 import { BarChartModule } from '../bar-chart/bar-chart.module';
-import { DayDelimiterChartComponent } from './day-delimiter-chart/day-delimiter-chart.component';
-import { ImpressionStatisticService } from './services/impression-statistic.service';
+import { StatisticHourDelimiterService } from './services/statistic-hour-delimiter.service';
+import { StatisticDayDelimiterService } from './services/statistic-day-delimiter.service';
 
 @NgModule({
   imports: [
@@ -16,7 +16,10 @@ import { ImpressionStatisticService } from './services/impression-statistic.serv
   exports: [
     ImpressionPriceChartComponent,
   ],
-  providers: [ImpressionStatisticService],
+  providers: [
+    StatisticHourDelimiterService,
+    StatisticDayDelimiterService
+  ],
 })
 export class ImpressionPriceChartModule {
 }

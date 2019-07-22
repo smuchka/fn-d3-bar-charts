@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ItemData } from '../../bar-chart/core/interfaces/item-data';
 import { HourDelimiterData, DayDelimiterData } from '../core/delimiter-data';
+import { ImpressionStatistic } from './impression-statistic';
 import {
   format,
   parse,
@@ -8,21 +9,25 @@ import {
   differenceInHours,
   addHours,
   subHours,
-  // subDays, addDays,
-  // endOfDay, startOfDay
 } from 'date-fns'
 // mocks
-import { daysMock } from '../data/daysMock';
 import { hoursMock } from '../data/hoursMock';
-import { weeksMock } from '../data/weeksMock';
+import { random, getTimestamInSecond } from './helpers';
 // for generate mock paggination
 import * as D3 from 'd3';
 
 @Injectable()
-export class ImpressionStatisticService {
+export class StatisticHourDelimiterService implements ImpressionStatistic {
   private countRandom = 5;
 
   constructor() {
+  }
+
+  public getFirstChunkDateRange(): [Date, Date] {
+    return [
+      subHours(startOfToday(), 24),
+      subHours(endOfToday(), 24)
+    ];
   }
 
   public loadStaticticByDates(d1: Date, d2: Date): ItemData[] {
@@ -34,6 +39,25 @@ export class ImpressionStatisticService {
 
     const map = this.generateRandomHourChunk(d1, d2, this.countRandom);
     return this.extendDateRangeByEmptyData(map, d1, d2);
+  }
+
+  private extendDateRangeByEmptyData(data: Map<number, ItemData>, d1: Date, d2: Date): ItemData[] {
+    // geberate ranage placeholders
+    const countHours = Math.abs(differenceInHours(d1, d2)) + 1;
+
+    const createDataItem = (el, index): ItemData => {
+      const date: Date = addHours(d1, index);
+      return data.has(getTimestamInSecond(date))
+        ? data.get(getTimestamInSecond(date))
+        : <ItemData>{
+          identity: date,
+          label: format(date, 'HH:mm'),
+          value: 0,
+        };
+    };
+
+
+    return Array.from(Array(countHours), createDataItem);
   }
 
   private loadMockStaticData(): Map<number, ItemData> {
@@ -80,46 +104,4 @@ export class ImpressionStatisticService {
 
     return map;
   }
-
-  private extendDateRangeByEmptyData(data: Map<number, ItemData>, d1: Date, d2: Date): ItemData[] {
-    // geberate ranage placeholders
-    const countHours = Math.abs(differenceInHours(d1, d2)) + 1;
-
-    const createDataItem = (el, index): ItemData => {
-      const date: Date = addHours(d1, index);
-      return data.has(getTimestamInSecond(date))
-        ? data.get(getTimestamInSecond(date))
-        : <ItemData>{
-          identity: date,
-          label: format(date, 'HH:mm'),
-          value: 0,
-        };
-    };
-
-
-    return Array.from(Array(countHours), createDataItem);
-  }
-
-  // private currentDateFromStartHour(): Date {
-  //   const now = new Date();
-  //   now.setMinutes(0);
-  //   now.setSeconds(0);
-  //   now.setMilliseconds(0);
-  //   return now;
-  // }
-
-  public getFirstChunkDateRange(): [Date, Date] {
-    return [
-      subHours(startOfToday(), 24),
-      subHours(endOfToday(), 24)
-    ];
-  }
 }
-
-function random(min, max) {
-  return Math.floor(Math.random() * (+max - +min)) + +min;
-}
-
-function getTimestamInSecond(date: Date) {
-  return date.getTime() / 1000;
-};

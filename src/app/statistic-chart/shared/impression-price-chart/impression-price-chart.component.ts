@@ -3,9 +3,10 @@ import { Observable, of, BehaviorSubject } from 'rxjs';
 import { tap, map, filter } from 'rxjs/operators'
 import { HourDelimiterData, DayDelimiterData } from './core/delimiter-data';
 import { ItemData } from '../bar-chart/core/interfaces/item-data';
-import { DelimiterRangeData } from './core/delimiter-data';
-import { ImpressionStatisticService } from './services/impression-statistic.service';
-import { DayDelimiterChartComponent } from './day-delimiter-chart/day-delimiter-chart.component';
+import { ImpressionStatistic } from './services/impression-statistic';
+import { StatisticHourDelimiterService } from './services/statistic-hour-delimiter.service';
+import { StatisticDayDelimiterService } from './services/statistic-day-delimiter.service';
+import { DailyBarChartComponent } from '../bar-chart/daily-bar-chart/daily-bar-chart.component';
 import {
   format, parse,
   startOfToday, endOfToday,
@@ -20,16 +21,23 @@ import * as D3 from 'd3';
   selector: 'fn-impression-price-chart',
   templateUrl: './impression-price-chart.component.html',
   styleUrls: ['./impression-price-chart.component.scss'],
+  providers: [
+    // { provide: ImpressionStatistic, useClass: StatisticHourDelimiterService }
+    // { provide: ImpressionStatistic, useClass: StatisticDayDelimiterService }
+  ]
 })
 export class ImpressionPriceChartComponent implements OnInit {
 
   @ViewChild('chart', { static: true })
-  protected chart: DayDelimiterChartComponent;
+  protected chart: DailyBarChartComponent;
 
   private pagginableData$: BehaviorSubject<ItemData[]>;
   public showChartData$: Observable<ItemData[]>;
 
-  constructor(private statistic: ImpressionStatisticService) {
+  constructor(
+    // private statistic: StatisticHourDelimiterService,
+    private statistic: StatisticDayDelimiterService,
+  ) {
     this.pagginableData$ = new BehaviorSubject<ItemData[]>([]);
     this.showChartData$ = this.pagginableData$.pipe(
       filter(list => Boolean(list.length)),
@@ -39,7 +47,9 @@ export class ImpressionPriceChartComponent implements OnInit {
   ngOnInit() {
     const [from, to] = this.getLastCampaignDateRange();
     const list: ItemData[] = this.statistic.loadStaticticByDates(from, to);
-    this.pagginableData$.next(this.mergeStatiscticWithChunk(list));
+    const mergedList: ItemData[] = this.mergeStatiscticWithChunk(list);
+    console.warn(mergedList);
+    this.pagginableData$.next(mergedList);
 
     // TODO:
     // - make depend of Delimiter

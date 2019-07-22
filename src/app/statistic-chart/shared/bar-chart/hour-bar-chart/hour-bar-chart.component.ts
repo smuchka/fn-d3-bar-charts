@@ -2,14 +2,14 @@ import {
   Component, ElementRef, OnInit, Renderer2
 } from '@angular/core';
 import { BarChartTimeScaleComponent } from '../bar-chart-time-scale/bar-chart-time-scale.component';
-import { addDays, addHours, startOfToday } from 'date-fns'
+import { addHours } from 'date-fns'
 
 @Component({
-  selector: 'fn-daily-bar-chart',
+  selector: 'fn-hour-bar-chart',
   template: `<!--d3 create template itself-->`,
-  styleUrls: ['./daily-bar-chart.component.scss']
+  styleUrls: ['./hour-bar-chart.component.scss']
 })
-export class DailyBarChartComponent extends BarChartTimeScaleComponent {
+export class HourBarChartComponent extends BarChartTimeScaleComponent {
 
   protected countBarsInViewport: number;
 
@@ -19,8 +19,8 @@ export class DailyBarChartComponent extends BarChartTimeScaleComponent {
   ) {
     super(element, renderer);
 
-    this.barWidth = 24;
-    this.countBarsInViewport = 14;
+    this.barWidth = 16;
+    this.countBarsInViewport = 16;
   }
 
   /**
@@ -28,20 +28,24 @@ export class DailyBarChartComponent extends BarChartTimeScaleComponent {
    * Depend of delimiter chart && start is 00 value
    */
   protected calcNowBarDate(): Date {
-    return startOfToday();
+    const now = new Date();
+    now.setMinutes(0);
+    now.setSeconds(0);
+    now.setMilliseconds(0);
+    return now;
   }
 
   protected calcNextBarDate(from: Date): Date {
-    return addDays(from, 1);
+    return addHours(from, 1);
   }
 
   protected calcPrevBarDate(from: Date): Date {
-    return addDays(from, -1);
+    return addHours(from, -1);
   }
 
   protected viewportDateRange(): [Date, Date] {
     const from: Date = this.data[0].identity;
-    return [from, addDays(from, this.countBarsInViewport - 1)];
+    return [from, addHours(from, this.countBarsInViewport - 1)];
   }
 
 }
