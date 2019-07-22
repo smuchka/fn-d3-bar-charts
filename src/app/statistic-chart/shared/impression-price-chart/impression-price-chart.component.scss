@@ -6,9 +6,20 @@
   // background-color: #9dc1ff;
 }
 
+.header {
+  padding: 10px;
+  .nav .nav-item {
+    margin: auto 5px;
+  }
+}
+
 .chart-container {
-  width: 900px;
+  // width: 900px;
   height: 520px;
+
+  // /deep/ svg {
+  //   background-color: #799603;
+  // }
 }
 
 

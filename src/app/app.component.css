@@ -3,9 +3,7 @@ p {
 }
 
 .chart-container {
-  /* width: 900px;
-  height: 520px; */
-  /* background-color: #ccc; */
+  width: 904px;
   border: 1px solid #DFE3EC;
   border-radius: 4px;
 }

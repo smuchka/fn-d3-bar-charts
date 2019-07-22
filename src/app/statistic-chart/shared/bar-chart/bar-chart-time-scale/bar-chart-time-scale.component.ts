@@ -34,7 +34,8 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
   private xAxis;
   private xAxisG;
   private zoom;
-  private radiusRectangle;
+  private radiusRectangle: number;
+  private minBarHeight: number;
 
   @Input()
   public data: ItemData[];
@@ -76,6 +77,9 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
     this.canActivatePrevBar = false;
     this.canActivateNextBar = false;
     this.radiusRectangle = 4;
+    this.minBarHeight = 0;
+    this.minBarHeight = 10;
+    // this.heightCorrection = -10;
     this.initMaxValue = 1;
     this.maxValueFromChart = 0;
     this.translateWidthOneBar = 0;
@@ -212,10 +216,12 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
    * Set restrict X axis from range dates
    */
   private updateZoomOnChangeData(from: Date, to: Date): void {
+    const { left, right } = this.getPadding();
+
     this.zoom = this.zoom
       .extent([
-        [this.margin.left + this.padding.left, 0],
-        [this.width - this.margin.right - this.padding.right, 0]
+        [this.margin.left + left, 0],
+        [this.width - this.margin.right - right, 0]
       ])
       .translateExtent([
         [this.x(from), 0],
@@ -287,12 +293,13 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
    */
   private initXScale(): void {
     const [d1, d2] = this.viewportDateRange();
+    const { left, right } = this.getPadding();
 
     this.x = D3.scaleTime()
       .domain(this.viewportDateRange())
       .rangeRound([
-        this.margin.left + this.padding.left,
-        this.width - this.margin.right - this.padding.right,
+        this.margin.left + left,
+        this.width - this.margin.right - right,
       ])
       .nice();
     this.x2 = this.x.copy();
@@ -307,10 +314,19 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
    * Intit scaling for X axis
    */
   private initYScale(): void {
+    const { top, bottom } = this.getPadding();
     this.y = D3.scaleLinear()
-      .domain([0, this.maxValueFromChart])
-      .range([this.height - this.padding.bottom, this.padding.top])
-      .nice();
+      .domain([1, this.maxValueFromChart])
+      .range([
+        // this.height - bottom,
+        this.height - bottom - this.minBarHeight,
+        // this.height - this.minBarHeight,
+        top
+      ])
+
+    if (this.useYAxisValuesRound) {
+      this.y = this.y.nice();
+    }
   }
 
   private initSubscribes(): void {
@@ -403,7 +419,7 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
     this
       .drawBarPrimitive(selection)
       .attr('y', d => this.y(this.maxValueFromChart))
-      .attr('height', d => this.y(0) - this.y(this.maxValueFromChart))
+      .attr('height', d => this.y(0) - this.y(this.maxValueFromChart) + this.minBarHeight)
       .attr('class', 'bar placeholder')
       .on("click", this.onBarClick.bind(this));
   }
@@ -413,7 +429,7 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
       .join('rect')
       .attr('x', d => this.x(d.identity) - Math.round(this.barWidth / 2))
       .attr('y', d => this.y(d.value))
-      .attr('height', d => this.y(0) - this.y(d.value))
+      .attr('height', d => this.y(0) - this.y(d.value) + this.minBarHeight)
       .attr('width', this.barWidth)
       .attr('rx', d => this.radiusRectangle)
       .attr('ry', d => this.radiusRectangle)
@@ -424,6 +440,7 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
   private drawBarLabel(selection: any): void {
 
     const yPos: number = this.y(0)
+      + this.minBarHeight
       + (this.labelConfig.labelOffsetTop || 0)
       + (this.labelConfig.labelFontSize || 0);
 

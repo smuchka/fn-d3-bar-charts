@@ -10,7 +10,9 @@ type Position = {
 
 type LabelConfig = {
   labelFontSize: number;
+  labelLineHeight: number;
   labelOffsetTop: number;
+  labelOffsetBottom: number;
   labelFontFamily: string;
 }
 
@@ -21,11 +23,19 @@ type LabelConfig = {
 export abstract class D3ChartBaseComponent implements OnInit {
 
   protected svg;
-  protected height;
-  protected width;
-  protected host;
-  protected labelConfig: LabelConfig;
 
+  /**
+   * Height of chart region.
+   * Include padding & not include margin
+   */
+  protected height;
+  /**
+   * Width of chart region.
+   * Include padding & not include margin
+   */
+  protected width;
+
+  // todo: check both fields - use or not used
   protected heightCorrection: number;
   protected widthCorrection: number;
 
@@ -34,37 +44,56 @@ export abstract class D3ChartBaseComponent implements OnInit {
    */
   protected margin: Position = {
     top: 0,
-    bottom: 0,
     right: 10,
+    bottom: 0,
     left: 10,
   };
 
   /**
-   * Padding for chart inside svg on drawing
+   * Padding for chart inside svg. 
+   * For example padding used for label spaces.
    * Important: left & right padding say where X axis start
    */
   protected padding: Position = {
-    top: 130,
-    bottom: 100, // include height of label row
+    // top: 130,
+    top: 0,
     right: 10,
+    bottom: 0,
     left: 10,
   };
 
+  /**
+   * Label bar dimetions.
+   * Adds the height of the result label to the bottom indent.
+   */
+  protected labelConfig: LabelConfig = {
+    labelFontSize: 12,
+    labelLineHeight: 14,
+    labelOffsetTop: 8,
+    labelOffsetBottom: 10,
+    labelFontFamily: 'Lato',
+  };
+
+  /**
+   * Used if unable to get the width / height of the parent node
+   */
   private defaultWidth: number = 300;
   private defaultHeight: number = 400;
+
+  protected useLabel: boolean;
+  protected useYAxisValuesRound: boolean;
+  private host;
 
   public constructor(
     protected elementRef: ElementRef,
     protected renderer: Renderer2,
   ) {
     this.host = D3.select(elementRef.nativeElement);
+
     this.heightCorrection = 0;
     this.widthCorrection = 0;
-    this.labelConfig = {
-      labelFontSize: 12,
-      labelOffsetTop: 10,
-      labelFontFamily: 'Lato',
-    };
+    this.useLabel = true;
+    this.useYAxisValuesRound = false;
   }
 
   public ngOnInit(): void {
@@ -79,7 +108,6 @@ export abstract class D3ChartBaseComponent implements OnInit {
     // height
     this.height = height
       - this.margin.bottom - this.margin.top
-      - this.labelConfig.labelOffsetTop - this.labelConfig.labelFontSize
       + this.heightCorrection;
   }
 
@@ -92,7 +120,19 @@ export abstract class D3ChartBaseComponent implements OnInit {
       .style('padding-top', this.margin.top)
       .style('padding-bottom', this.margin.bottom)
       .style('padding-left', this.margin.left)
-      .style('padding-right', this.margin.right)
+      .style('padding-right', this.margin.right);
+  }
+
+  /**
+   * Get dimetion for chart.
+   */
+  protected getChartDimetions(): [number, number] {
+    const container = this.getElementContainer();
+    console.warn(container);
+    const clientWidth = container.clientWidth || this.defaultWidth;
+    const clientHeight = container.clientHeight || this.defaultHeight;
+
+    return [clientWidth, clientHeight];
   }
 
   /**
@@ -104,14 +144,15 @@ export abstract class D3ChartBaseComponent implements OnInit {
     return this.renderer.parentNode(this.elementRef.nativeElement);
   }
 
-  /**
-   * Get dimetion for chart.
-   */
-  protected getChartDimetions(): [number, number] {
-    const container = this.getElementContainer();
-    const clientWidth = container.clientWidth || this.defaultWidth;
-    const clientHeight = container.clientHeight || this.defaultHeight;
+  protected getPadding(): Position {
 
-    return [clientWidth, clientHeight];
+    const labelBottomCorrection: number = this.labelConfig.labelOffsetTop + this.labelConfig.labelLineHeight + this.labelConfig.labelOffsetTop;
+
+    return {
+      top: this.padding.top,
+      right: this.padding.right,
+      bottom: this.padding.bottom + (this.useLabel ? labelBottomCorrection : 0),
+      left: this.padding.left,
+    }
   }
 }
