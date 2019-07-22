@@ -144,6 +144,10 @@ export abstract class D3ChartBaseComponent implements OnInit {
     return this.renderer.parentNode(this.elementRef.nativeElement);
   }
 
+  /**
+   * Get padding caclulated with required offsets 
+   * (e.g. reservation height for lables)
+   */
   protected getPadding(): Position {
 
     const labelBottomCorrection: number = this.labelConfig.labelOffsetTop + this.labelConfig.labelLineHeight + this.labelConfig.labelOffsetTop;
