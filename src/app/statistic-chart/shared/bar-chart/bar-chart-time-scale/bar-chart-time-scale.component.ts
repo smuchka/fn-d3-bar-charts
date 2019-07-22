@@ -413,13 +413,15 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
       .join('rect')
       .attr('x', d => this.x(d.identity) - Math.round(this.barWidth / 2))
       .attr('y', d => this.y(d.value))
-      .attr('height', d => this.y(0) - this.y(d.value))
-      // .attr('height', d => {
-      //   if (this.y(0) - this.y(d.value) < this.radiusRectangle) {
-      //     return this.radiusRectangle * 2;
-      //   }
-      //   return (this.y(0) - this.y(d.value));
-      // })
+      // .attr('height', d => this.y(0) - this.y(d.value))
+      .attr('height', d => {
+        let value = this.y(d.value);
+        if (value < this.radiusRectangle) {
+          value = this.radiusRectangle;
+        }
+
+        return this.y(0) - value;
+      })
       .attr('width', this.barWidth)
       .attr('rx', d => this.radiusRectangle)
       .attr('ry', d => this.radiusRectangle)
