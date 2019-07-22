@@ -48,7 +48,6 @@ export class ImpressionPriceChartComponent implements OnInit {
     const [from, to] = this.getLastCampaignDateRange();
     const list: ItemData[] = this.statistic.loadStaticticByDates(from, to);
     const mergedList: ItemData[] = this.mergeStatiscticWithChunk(list);
-    console.warn(mergedList);
     this.pagginableData$.next(mergedList);
 
     // TODO:
@@ -68,7 +67,11 @@ export class ImpressionPriceChartComponent implements OnInit {
    * todo: make it in chart - emit event correct
    */
   public onChartEmitPetBorderEvent(e): void {
-    console.log('Chart near of border!')
+    console.log('Chart near of border!');
+  }
+
+  public onActiveItemChange(data: ItemData): void {
+    console.log('Chart change active item: ', data);
   }
 
   public onClickPrevActivate(): void {

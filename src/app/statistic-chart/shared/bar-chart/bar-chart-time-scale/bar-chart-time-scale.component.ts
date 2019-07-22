@@ -37,8 +37,25 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
   private radiusRectangle: number;
   private minBarHeight: number;
 
+  private maxValueFromChart: number;
+  private translateWidthOneBar: number;
+  private dataList: ItemData[];
+  private mapItemData: Map<number, ItemData>;
+  private changeData: EventEmitter<ItemData[]>;
+  private activeDate: Date;
+  private subs: Subscription;
+  private canActivatePrevBar: boolean;
+  private canActivateNextBar: boolean;
+
   @Input()
-  public data: ItemData[];
+  public set data(items: ItemData[]) {
+    this.dataList = items;
+    this.updateMapItemData(items);
+  }
+  public get data(): ItemData[] {
+    return this.dataList;
+  }
+
   @Input()
   public barWidth: number;
   @Input('maxValue')
@@ -46,24 +63,18 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
 
   @Output()
   public petBorder: EventEmitter<any>;
-  @Output()
-  public activeDataChange: EventEmitter<any>;
+  @Output('activeItemChange')
+  public activeItemDataChange: EventEmitter<ItemData | null>;
 
-  private maxValueFromChart: number;
-  private translateWidthOneBar: number;
-  private changeData: EventEmitter<ItemData[]>;
-  private activeDate: Date;
-  private subs: Subscription;
-  private canActivatePrevBar: boolean;
-  private canActivateNextBar: boolean;
-
-  // public get activeBarDate(): Date {
-  //   return this. || null;
-  // }
+  protected activeDateChange: EventEmitter<Date | any>;
 
   public setActiveDate(date: Date) {
-    this.activeDate = date;
-    this.activeDataChange.emit(this.activeDate);
+    const data = this.mapItemData.get(date.getTime());
+    if (data) {
+      this.activeDate = date;
+      this.activeDateChange.emit(this.activeDate);
+      this.activeItemDataChange.emit(data);
+    }
   }
 
   public constructor(
@@ -84,10 +95,10 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
     this.maxValueFromChart = 0;
     this.translateWidthOneBar = 0;
     this.changeData = new EventEmitter();
-    this.activeDataChange = new EventEmitter();
+    this.activeDateChange = new EventEmitter();
+    this.activeItemDataChange = new EventEmitter();
     this.petBorder = new EventEmitter();
     this.subs = new Subscription();
-
   }
 
   public ngOnInit(): void {
@@ -156,7 +167,6 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
    * Handler of active date chnage
    */
   private onActiveDateChanged(newValue: any): void {
-    console.log('onActiveDateChanged')
     this.canActivatePrevBar = this.canChangeActiveOn(DirectionLeft);
     this.canActivateNextBar = this.canChangeActiveOn(DirectionRight);
     this.showActiveBarOnCenterViewport();
@@ -180,7 +190,7 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
   }
 
   private onZoomedEnd(e): void {
-    console.log('zoomEnd', D3.event.transform)
+    // console.log('zoomEnd', D3.event.transform)
 
     // TODO:
     // detect here zoom/scroll ending and emit event outside
@@ -330,7 +340,6 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
   }
 
   private initSubscribes(): void {
-    console.log('initSubscribes')
     // move to subscribe method
     this.subs.add(
       this.changeData
@@ -338,7 +347,7 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
     )
 
     this.subs.add(
-      this.activeDataChange.asObservable()
+      this.activeDateChange.asObservable()
         .pipe(filter(Boolean))
         .subscribe(this.onActiveDateChanged.bind(this))
     )
@@ -463,6 +472,18 @@ export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent im
   private drawAsActiveBar(selection: Selection): any {
     const fnActive = (d) => d.identity.getTime() === this.activeDate.getTime();
     selection.classed('active', fnActive);
+  }
+
+  private updateMapItemData(items: ItemData[]): void {
+    if (!this.mapItemData) {
+      this.mapItemData = new Map<number, ItemData>();
+    } else {
+      this.mapItemData.clear();
+    }
+
+    items.forEach((el: ItemData) => {
+      this.mapItemData.set(el.identity.getTime(), el)
+    });
   }
 
   /**

@@ -20,7 +20,8 @@
       #chart
       [data]="showChartData$ | async"
       (loadMore)="loadMore()"
-      (petBorder)="onChartEmitPetBorderEvent()"
+      (petBorder)="onChartEmitPetBorderEvent($event)"
+      (activeItemChange)="onActiveItemChange($event)"
     ></fn-daily-bar-chart>
 
     <!-- <fn-hour-bar-chart
