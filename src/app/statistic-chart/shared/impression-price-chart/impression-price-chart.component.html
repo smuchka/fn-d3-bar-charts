@@ -16,13 +16,13 @@
   </div>
   
   <div class="chart-container">
-    <fn-daily-bar-chart
+    <!-- <fn-daily-bar-chart
       #chart
       [data]="showChartData$ | async"
       (loadMore)="loadMore()"
       (petBorder)="onChartEmitPetBorderEvent($event)"
       (activeItemChange)="onActiveItemChange($event)"
-    ></fn-daily-bar-chart>
+    ></fn-daily-bar-chart> -->
 
     <!-- <fn-hour-bar-chart
       #chart
@@ -30,6 +30,8 @@
       (loadMore)="loadMore()"
       (petBorder)="onChartEmitPetBorderEvent()"
     ></fn-hour-bar-chart> -->
+
+    <ng-container #chartContainer></ng-container>
   </div>
 
 </div>
