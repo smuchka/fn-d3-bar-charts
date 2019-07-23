@@ -1,11 +1,11 @@
 import {
   Component, ElementRef, OnInit, Renderer2
 } from '@angular/core';
-import { BarChartAbstract } from '../bar-chart-abstract/bar-chart-abstract.component';
-import { addHours } from 'date-fns'
+import { BarChartAbstract } from './bar-chart-abstract/bar-chart-abstract.component';
+import { addWeeks, startOfWeek } from 'date-fns'
 
 @Component({
-  selector: 'fn-hour-bar-chart',
+  selector: 'fn-daily-bar-chart',
   template: `<!--d3 create template itself-->`,
   styles: [`
     :host {
@@ -15,7 +15,7 @@ import { addHours } from 'date-fns'
     }
   `]
 })
-export class HourBarChartComponent extends BarChartAbstract {
+export class WeekBarChartComponent extends BarChartAbstract {
 
   protected countBarsInViewport: number;
 
@@ -25,8 +25,8 @@ export class HourBarChartComponent extends BarChartAbstract {
   ) {
     super(element, renderer);
 
-    this.barWidth = 16;
-    this.countBarsInViewport = 16;
+    this.barWidth = 40;
+    this.countBarsInViewport = 11;
   }
 
   /**
@@ -34,24 +34,20 @@ export class HourBarChartComponent extends BarChartAbstract {
    * Depend of delimiter chart && start is 00 value
    */
   protected calcNowBarDate(): Date {
-    const now = new Date();
-    now.setMinutes(0);
-    now.setSeconds(0);
-    now.setMilliseconds(0);
-    return now;
+    return startOfWeek(new Date(), { weekStartsOn: 1 });
   }
 
   protected calcNextBarDate(from: Date): Date {
-    return addHours(from, 1);
+    return addWeeks(from, 1);
   }
 
   protected calcPrevBarDate(from: Date): Date {
-    return addHours(from, -1);
+    return addWeeks(from, -1);
   }
 
   protected viewportDateRange(): [Date, Date] {
     const from: Date = this.data[0].identity;
-    return [from, addHours(from, this.countBarsInViewport - 1)];
+    return [from, addWeeks(from, this.countBarsInViewport - 1)];
   }
 
 }

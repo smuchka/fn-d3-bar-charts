@@ -2,11 +2,14 @@ p {
   font-family: Lato;
 }
 
-.header {
-  padding: 10px;
-}
-
-.chart-container {
+.chart-wrapper {
   border: 1px solid #DFE3EC;
   border-radius: 4px;
+
+  .header {
+    padding: 10px;
+  }
+
+  .chart-container {
+  }
 }

@@ -1,10 +1,12 @@
 import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormControl } from '@angular/forms';
 import { Observable, of, BehaviorSubject } from 'rxjs';
 import { filter } from 'rxjs/operators'
 import { ImpressionStatistic } from './services/impression-statistic';
 import { StatisticHourDelimiterService } from './services/statistic-hour-delimiter.service';
 import { StatisticDayDelimiterService } from './services/statistic-day-delimiter.service';
 import { ItemData } from './statistic-chart/shared/bar-chart/core/interfaces/item-data';
+import { StatisticDelimiter } from './statistic-chart/shared/impression-price-chart/core/delimiter-data';
 import {
   format, parse,
   startOfToday, endOfToday,
@@ -23,8 +25,15 @@ export class AppComponent implements OnInit {
   private pagginableData$: BehaviorSubject<ItemData[]>
   private showChartData$: Observable<ItemData[]>
 
-  constructor(
-    private statistic: StatisticDayDelimiterService
+  private showDelimiter: StatisticDelimiter = StatisticDelimiter.Day;
+  public delimitersItems = [
+    StatisticDelimiter.Hour,
+    StatisticDelimiter.Day,
+    StatisticDelimiter.Week
+  ]
+
+  public constructor(
+    private statistic: StatisticDayDelimiterService,
   ) {
     this.pagginableData$ = new BehaviorSubject<ItemData[]>([]);
     this.showChartData$ = this.pagginableData$.pipe(
@@ -32,12 +41,12 @@ export class AppComponent implements OnInit {
     );
   }
 
-  ngOnInit() {
+  public ngOnInit(): void {
     this.loadFirstPeriod();
+  }
 
-    // TODO:
-    // - make depend of Delimiter
-    // - can next/prev getter
+  public onChangeDelimiter(delimiter: StatisticDelimiter): void {
+    this.loadFirstPeriod();
   }
 
   public loadMore(): void {

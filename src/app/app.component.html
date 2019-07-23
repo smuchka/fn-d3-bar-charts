@@ -1,11 +1,20 @@
-<div>
+<div class="chart-wrapper">
+	<select 
+    [(ngModel)]="showDelimiter" 
+    (ngModelChange)="onChangeDelimiter($event)">
+    <option *ngFor="let d of delimitersItems; let i = index" 
+      [value]="d"
+    >{{ d }}</option>
+</select>
+
 	<div class="header">
     <!-- <hello></hello> -->
 		<fn-chart-active-date-nav></fn-chart-active-date-nav>
 	</div>
 
 	<div class="chart-container">
-		<fn-impression-price-chart 
+		<fn-impression-price-chart
+      [delimiter]="showDelimiter"
       [data]="pagginableData$"
     ></fn-impression-price-chart>
 	</div>

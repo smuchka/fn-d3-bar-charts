@@ -1,7 +1,7 @@
 import {
   Component, ElementRef, OnInit, Renderer2
 } from '@angular/core';
-import { BarChartAbstract } from '../bar-chart-abstract/bar-chart-abstract.component';
+import { BarChartAbstract } from './bar-chart-abstract/bar-chart-abstract.component';
 import { addDays, addHours, startOfToday } from 'date-fns'
 
 @Component({
@@ -15,7 +15,7 @@ import { addDays, addHours, startOfToday } from 'date-fns'
     }
   `]
 })
-export class DailyBarChartComponent extends BarChartAbstract {
+export class DayBarChartComponent extends BarChartAbstract {
 
   protected countBarsInViewport: number;
 

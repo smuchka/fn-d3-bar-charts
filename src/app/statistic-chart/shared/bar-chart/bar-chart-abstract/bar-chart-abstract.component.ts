@@ -151,6 +151,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   }
 
   public ngOnDestroy(): void {
+    console.log('Destroyed chart!');
     this.subs.unsubscribe();
   }
 
