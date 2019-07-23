@@ -7,14 +7,8 @@ import { BarChartAbstract } from '../bar-chart/bar-chart-abstract/bar-chart-abst
 import { DayBarChartComponent } from '../bar-chart/day-bar-chart.component';
 import { HourBarChartComponent } from '../bar-chart/hour-bar-chart.component';
 import { WeekBarChartComponent } from '../bar-chart/week-bar-chart.component';
-import {
-  // startOfToday, endOfToday,
-  // startOfYesterday,
-  // differenceInHours, 
-  differenceInSeconds,
-  // addHours, addDays,
-  // format
-} from 'date-fns';
+import { ChartActiveDateNavComponent } from '../chart-active-date-nav/chart-active-date-nav.component';
+import { differenceInSeconds } from 'date-fns';
 import * as D3 from 'd3';
 
 @Component({
@@ -38,6 +32,9 @@ export class ImpressionPriceChartComponent implements OnInit, OnDestroy {
     return this.delimiterValue;
   }
   private delimiterValue: StatisticDelimiter;
+
+  @Input('navigation')
+  public navigation: ChartActiveDateNavComponent;
 
   @ViewChild('chartContainer', { read: ViewContainerRef, static: true })
   protected vc: ViewContainerRef;
@@ -73,6 +70,11 @@ export class ImpressionPriceChartComponent implements OnInit, OnDestroy {
     // Since the first initialization of a chart component 
     // can occur before data initialization, we call refresh component data
     this.refreshDataComponent();
+
+    //
+    // TODO !!!!!!!!!!
+    //
+    console.log(this.navigation)
   }
 
   public ngOnDestroy(): void {

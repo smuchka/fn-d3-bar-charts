@@ -9,13 +9,14 @@
 
 	<div class="header">
     <!-- <hello></hello> -->
-		<fn-chart-active-date-nav></fn-chart-active-date-nav>
+		<fn-chart-active-date-nav #navLink></fn-chart-active-date-nav>
 	</div>
 
 	<div class="chart-container">
 		<fn-impression-price-chart
       [delimiter]="showDelimiter"
       [data]="pagginableData$"
+      [navigation]="navLink"
     ></fn-impression-price-chart>
 	</div>
 </div>
