@@ -1,9 +1,9 @@
 import { Component, Input, OnInit, AfterViewInit, ViewChild, ViewContainerRef, ComponentFactoryResolver, ComponentRef, Type } from '@angular/core';
 import { Observable } from 'rxjs';
-import { HourDelimiterData, DayDelimiterData } from './core/delimiter-data';
+import { StatisticDelimiter, HourDelimiterData, DayDelimiterData } from './core/delimiter-data';
 import { ItemData } from '../bar-chart/core/interfaces/item-data';
-import { BarChartTimeScaleComponent } from '../bar-chart/bar-chart-time-scale/bar-chart-time-scale.component';
-import { DailyBarChartComponent } from '../bar-chart/daily-bar-chart/daily-bar-chart.component'; '../bar-chart/bar-chart-time-scale/bar-chart-time-scale.component';
+import { BarChartAbstract } from '../bar-chart/bar-chart-abstract/bar-chart-abstract.component';
+import { DailyBarChartComponent } from '../bar-chart/daily-bar-chart/daily-bar-chart.component';
 import { HourBarChartComponent } from '../bar-chart/hour-bar-chart/hour-bar-chart.component';
 import * as D3 from 'd3';
 
@@ -18,26 +18,41 @@ import * as D3 from 'd3';
 })
 export class ImpressionPriceChartComponent implements OnInit, AfterViewInit {
 
-  @ViewChild('chartContainer', { read: ViewContainerRef, static: true })
-  protected vc: ViewContainerRef;
-
   @Input()
   public data: Observable<ItemData[]>;
 
-  protected chart: BarChartTimeScaleComponent;
+  @Input()
+  public delimiter: StatisticDelimiter;
 
+  @ViewChild('chartContainer', { read: ViewContainerRef, static: true })
+  protected vc: ViewContainerRef;
 
-  constructor(
-    private r: ComponentFactoryResolver
-  ) {
+  protected chartRef: ComponentRef<BarChartAbstract>;
+  private mapDelimiterComponents: Map<StatisticDelimiter, Type<BarChartAbstract>>;
+
+  constructor(private r: ComponentFactoryResolver) {
+    this.mapDelimiterComponents = new Map([
+      // [StatisticDelimiter.Hour, HourBarChartComponent],
+      // [StatisticDelimiter.Day, DailyBarChartComponent],
+      // [StatisticDelimiter.Week, WeekBarChartComponent],
+    ])
   }
 
   ngOnInit() {
+    this.chartRef = this.createDymanicChart(DailyBarChartComponent);
+
+    if (this.data) {
+      this.data.subscribe((data: ItemData[]) => {
+        this.chartRef.instance.data = data;
+      })
+    }
   }
 
   ngAfterViewInit() {
-    const comp = this.createDymanicChart(DailyBarChartComponent);
-    console.log(comp);
+  }
+
+  private resolveChartComponent(): void {
+
   }
 
 
@@ -52,23 +67,7 @@ export class ImpressionPriceChartComponent implements OnInit, AfterViewInit {
     console.log('Chart change active item: ', data);
   }
 
-  // public onClickPrevActivate(): void {
-  //   this.chart.goToPrevBar();
-  // }
-
-  // public canPrevActivate(): boolean {
-  //   return this.chart && this.chart.canActivatePrevBar;
-  // }
-
-  // public onClickNextActivate(): void {
-  //   this.chart.goToNextBar();
-  // }
-
-  // public canNextActivate(): boolean {
-  //   return this.chart && this.chart.canActivateNextBar;
-  // }
-
-  private createDymanicChart(component: Type<BarChartTimeScaleComponent>): ComponentRef<BarChartTimeScaleComponent> {
+  private createDymanicChart(component: Type<BarChartAbstract>): ComponentRef<BarChartAbstract> {
     const factory = this.r.resolveComponentFactory(component);
     return this.vc.createComponent(factory);
   }

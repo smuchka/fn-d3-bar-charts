@@ -1,37 +1,11 @@
-<div>
-	<div class="header">
-		<div class="nav">
-			<button 
-        (click)="onClickPrevActivate()"
-        [disabled]="!canPrevActivate()"
-        class="nav-item"
-      >︎←</button>
-
-      <button
-        (click)="onClickNextActivate()"
-        [disabled]="!canNextActivate()"
-        class="nav-item"
-      >→</button>
-    </div>
-  </div>
-  
-  <div class="chart-container">
-    <!-- <fn-daily-bar-chart
-      #chart
-      [data]="showChartData$ | async"
-      (loadMore)="loadMore()"
-      (petBorder)="onChartEmitPetBorderEvent($event)"
-      (activeItemChange)="onActiveItemChange($event)"
-    ></fn-daily-bar-chart> -->
-
-    <!-- <fn-hour-bar-chart
-      #chart
-      [data]="showChartData$ | async"
-      (loadMore)="loadMore()"
-      (petBorder)="onChartEmitPetBorderEvent()"
-    ></fn-hour-bar-chart> -->
-
-    <ng-container #chartContainer></ng-container>
-  </div>
-
+<div class="chart-container">
+	<ng-container #chartContainer></ng-container>
 </div>
+
+<!-- <fn-daily-bar-chart
+  #chart
+  [data]="showChartData$ | async"
+  (loadMore)="loadMore()"
+  (petBorder)="onChartEmitPetBorderEvent($event)"
+  (activeItemChange)="onActiveItemChange($event)"
+></fn-daily-bar-chart> -->

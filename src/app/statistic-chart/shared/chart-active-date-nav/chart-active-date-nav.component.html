@@ -1,0 +1,13 @@
+<div class="nav">
+	<button 
+    (click)="onClickPrevActivate()"
+    [disabled]="!canPrevActivate()"
+    class="nav-item"
+  >︎←</button>
+
+  <button
+    (click)="onClickNextActivate()"
+    [disabled]="!canNextActivate()"
+    class="nav-item"
+  >→</button>
+</div>

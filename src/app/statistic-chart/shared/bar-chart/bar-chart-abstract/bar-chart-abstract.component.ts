@@ -22,9 +22,8 @@ import * as D3 from 'd3';
 @Component({
   selector: 'fn-bar-chart-time-scale',
   template: `<!--d3 create template itself-->`,
-  styles: ['./bar-chart-time-scale.scss'],
 })
-export abstract class BarChartTimeScaleComponent extends D3ChartBaseComponent implements OnInit, OnChanges, OnDestroy {
+export abstract class BarChartAbstract extends D3ChartBaseComponent implements OnInit, OnChanges, OnDestroy {
 
   private groupPlaceholderBars;
   private groupDataBars;

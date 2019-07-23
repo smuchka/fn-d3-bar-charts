@@ -1,15 +1,21 @@
 import {
   Component, ElementRef, OnInit, Renderer2
 } from '@angular/core';
-import { BarChartTimeScaleComponent } from '../bar-chart-time-scale/bar-chart-time-scale.component';
+import { BarChartAbstract } from '../bar-chart-abstract/bar-chart-abstract.component';
 import { addDays, addHours, startOfToday } from 'date-fns'
 
 @Component({
   selector: 'fn-daily-bar-chart',
   template: `<!--d3 create template itself-->`,
-  styleUrls: ['./daily-bar-chart.component.scss']
+  styles: [`
+    :host {
+      width: 100%;
+      height: 100%;
+      display: flex;
+    }
+  `]
 })
-export class DailyBarChartComponent extends BarChartTimeScaleComponent {
+export class DailyBarChartComponent extends BarChartAbstract {
 
   protected countBarsInViewport: number;
 

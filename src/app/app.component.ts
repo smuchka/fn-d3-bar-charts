@@ -17,7 +17,7 @@ import {
 @Component({
   selector: 'my-app',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+  styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
   private pagginableData$: BehaviorSubject<ItemData[]>
@@ -82,5 +82,24 @@ export class AppComponent implements OnInit {
       ...chunk,
       ...this.pagginableData$.value,
     ]
+  }
+
+  ///
+  public onClickPrevActivate(): void {
+    // this.chart.goToPrevBar();
+  }
+
+  public canPrevActivate(): boolean {
+    return false;
+    // return this.chart && this.chart.canActivatePrevBar;
+  }
+
+  public onClickNextActivate(): void {
+    // this.chart.goToNextBar();
+  }
+
+  public canNextActivate(): boolean {
+    return false;
+    // return this.chart && this.chart.canActivateNextBar;
   }
 }

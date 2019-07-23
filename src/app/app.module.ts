@@ -6,6 +6,9 @@ import { AppComponent } from './app.component';
 import { HelloComponent } from './hello.component';
 import { StatisticChartModule } from './statistic-chart/statistic-chart.module';
 
+import { StatisticHourDelimiterService } from './services/statistic-hour-delimiter.service';
+import { StatisticDayDelimiterService } from './services/statistic-day-delimiter.service';
+
 @NgModule({
   imports: [
     BrowserModule,
@@ -13,6 +16,10 @@ import { StatisticChartModule } from './statistic-chart/statistic-chart.module';
     StatisticChartModule,
   ],
   declarations: [AppComponent, HelloComponent],
+  providers: [
+    StatisticHourDelimiterService,
+    StatisticDayDelimiterService
+  ],
   bootstrap: [AppComponent],
 })
 export class AppModule {

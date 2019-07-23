@@ -43,7 +43,7 @@ export abstract class D3ChartBaseComponent implements OnInit {
    * Margin for chart inside svg
    */
   protected margin: Position = {
-    top: 0,
+    top: 10,
     right: 10,
     bottom: 0,
     left: 10,
