@@ -66,8 +66,13 @@ export class ImpressionPriceChartComponent implements OnInit, OnDestroy {
       throw Error('Not specified statistic data')
     }
 
+    // Subscribe on input data change
     this.componentDataSubsciption = this.data
       .subscribe((data: ItemData[]) => this.renderData.next(data))
+
+    // Since the first initialization of a chart component 
+    // can occur before data initialization, we call refresh component data
+    this.refreshDataComponent();
   }
 
   public ngOnDestroy(): void {
@@ -104,7 +109,7 @@ export class ImpressionPriceChartComponent implements OnInit, OnDestroy {
     /** Detect component type & create it */
     const typeComponent: Type<BarChartAbstract> = this.mapDelimiterComponents.get(this.delimiter);
     this.chartRef = this.createDymanicChart(typeComponent);
-    
+
     /** Subscribe on change active from new chart component */
     this.activeItemChangeSubscription = this.chartRef.instance
       .activeItemDataChange.asObservable()

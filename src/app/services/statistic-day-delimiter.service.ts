@@ -38,7 +38,6 @@ export class StatisticDayDelimiterService implements ImpressionStatistic {
     if (differenceInDays(d1, firstChunkStart) <= 0
       && differenceInDays(d2, firstChunkEnd) <= 0) {
 
-    console.log('!', this.loadMockStaticData())
       return this.extendDateRangeByEmptyData(this.loadMockStaticData(), d1, d2);
     }
     const map = this.generateRandomChunk(d1, d2, this.countRandom);

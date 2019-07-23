@@ -128,7 +128,6 @@ export abstract class D3ChartBaseComponent implements OnInit {
    */
   protected getChartDimetions(): [number, number] {
     const container = this.getElementContainer();
-    console.warn(container);
     const clientWidth = container.clientWidth || this.defaultWidth;
     const clientHeight = container.clientHeight || this.defaultHeight;
 
