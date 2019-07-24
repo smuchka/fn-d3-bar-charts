@@ -25,7 +25,7 @@ export class AppComponent implements OnInit {
   private pagginableData$: BehaviorSubject<ItemData[]>
   private showChartData$: Observable<ItemData[]>
 
-  private showDelimiter: StatisticDelimiter = StatisticDelimiter.Hour;
+  private showDelimiter: StatisticDelimiter = StatisticDelimiter.Week;
   public delimitersItems = [
     StatisticDelimiter.Hour,
     StatisticDelimiter.Day,
@@ -47,7 +47,7 @@ export class AppComponent implements OnInit {
 
   public onChangeDelimiter(delimiter: StatisticDelimiter): void {
     // this.pagginableData$.next([])
-    this.loadFirstPeriod();
+    // this.loadFirstPeriod();
   }
 
   public loadMore(): void {
