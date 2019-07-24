@@ -29,7 +29,6 @@ export class ImpressionPriceChartComponent implements OnInit, OnDestroy {
   @Input()
   public data: Observable<ItemData[]>;
 
-  // @Input()
   private dateStrategy: DateChartStrategy;
   private barWidth: number;
   private barCountInViewport: number;

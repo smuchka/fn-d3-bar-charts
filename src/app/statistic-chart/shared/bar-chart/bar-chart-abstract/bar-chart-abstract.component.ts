@@ -30,8 +30,6 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   private x;
   private x2;
   private y;
-  private xAxis;
-  private xAxisG;
   private zoom;
   private radiusRectangle: number;
   private minBarHeight: number;
@@ -143,6 +141,8 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
 
   public ngOnChanges(changes: SimpleChanges): void {
 
+    console.log(changes);
+    
     // skip any changes until onInit unavailable
     if (changes.data && changes.data.firstChange) {
       return;
@@ -150,7 +150,6 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
 
     if (changes.data && changes.data.currentValue) {
       this.changeData.emit(changes.data.currentValue);
-      this.showActiveBarOnCenterViewport();
     }
   }
 
@@ -172,19 +171,15 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   private onActiveDateChanged(newValue: any): void {
     this.canActivatePrevBar = this.canChangeActiveOn(DirectionLeft);
     this.canActivateNextBar = this.canChangeActiveOn(DirectionRight);
-    this.showActiveBarOnCenterViewport();
+    // this.showActiveBarOnCenterViewport();
     this.updateChart();
   }
 
   private onZoomed(): void {
     // console.log('onZoomed');
 
-    // recalc X Scale and redraw xAxis
+    // recalc X Scale
     this.x = D3.event.transform.rescaleX(this.x2);
-
-    // todo: debug X axis & it group
-    if (this.xAxis) this.xAxis.scale(this.x);
-    if (this.xAxisG) this.xAxisG.call(this.xAxis);
 
     // redraw groups of bars 
     const { x } = D3.event.transform || {};
@@ -273,6 +268,8 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
       .selectAll('rect')
       .data(this.data.filter(el => el.value))
       .call(this.drawDataBar.bind(this))
+
+    this.showActiveBarOnCenterViewport();
   }
 
   private initActiveDate(): void {
@@ -308,10 +305,10 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
     const [d1, d2] = this.viewportDateRange();
     const { left, right } = this.getPadding();
 
-    console.warn(d1, d2, left, right);
+    console.warn(d1, d2);
 
     this.x = D3.scaleTime()
-      .domain(this.viewportDateRange())
+      .domain([d1, d2])
       .rangeRound([
         this.margin.left + left,
         this.width - this.margin.right - right,

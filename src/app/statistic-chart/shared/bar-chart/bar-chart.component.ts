@@ -7,7 +7,7 @@ import {
   getBarChartEmptyDateStrategyError,
   getEmptyCountBarInViewportError
 } from './bar-chart-errors';
-import { addDays, addHours, startOfToday } from 'date-fns'
+import { addDays, subDays, addHours, startOfToday } from 'date-fns'
 
 const DEFAULT_COUNT_BARS_IN_VIEWPORT: number = 10;
 
@@ -44,7 +44,6 @@ export class BarChartComponent extends BarChartAbstract implements OnInit {
     protected renderer: Renderer2,
   ) {
     super(element, renderer);
-    // this.countBarsInViewport = DEFAULT_COUNT_BARS_IN_VIEWPORT;
   }
 
   public ngOnInit(): void {
@@ -71,13 +70,19 @@ export class BarChartComponent extends BarChartAbstract implements OnInit {
     return this.dateRangeStrategy.calcPrevBarDate(from);
   }
 
+  /**
+   * How much dates need show on x axis - [from;to]
+   */
   protected viewportDateRange(): [Date, Date] {
-    const from: Date = this.data[0].identity;
-    const to: Date = addDays(from, this.countBarsInViewport - 1);
+    // const from: Date = this.data[0].identity;
+    // const to: Date = addDays(from, this.countBarsInViewport - 1);
+    
+    // const to: Date = this.data[this.data.length - 1].identity;
+    // const from: Date = subDays(to, this.countBarsInViewport - 1);
+    const to: Date = subDays(this.data[this.data.length - 1].identity, 100);
+    const from: Date = subDays(to, this.countBarsInViewport - 1);
+
     console.warn(':', this.countBarsInViewport)
     return [from, to];
-
-    // const from: Date = startOfToday();
-    // return [from, addDays(from, this.countBarsInViewport - 1)];
   }
 }
