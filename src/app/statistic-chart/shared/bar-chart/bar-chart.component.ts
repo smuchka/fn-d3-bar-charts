@@ -3,8 +3,13 @@ import {
 } from '@angular/core';
 import { BarChartAbstract } from './bar-chart-abstract/bar-chart-abstract.component';
 import { DateChartStrategy } from './core/date-delimiter-strategies';
-import { getBarChartEmptyDateStrategyError } from './bar-chart-errors';
+import {
+  getBarChartEmptyDateStrategyError,
+  getEmptyCountBarInViewportError
+} from './bar-chart-errors';
 import { addDays, addHours, startOfToday } from 'date-fns'
+
+const DEFAULT_COUNT_BARS_IN_VIEWPORT: number = 10;
 
 @Component({
   selector: 'fn-bar-chart',
@@ -34,9 +39,21 @@ export class BarChartComponent extends BarChartAbstract implements OnInit {
   }
   private dateRangeStrategyValue: DateChartStrategy;
 
+  public constructor(
+    protected element: ElementRef,
+    protected renderer: Renderer2,
+  ) {
+    super(element, renderer);
+    // this.countBarsInViewport = DEFAULT_COUNT_BARS_IN_VIEWPORT;
+  }
+
   public ngOnInit(): void {
     if (!this.dateRangeStrategy) {
       throw getBarChartEmptyDateStrategyError();
+    }
+
+    if (!this.countBarsInViewport) {
+      throw getEmptyCountBarInViewportError();
     }
 
     super.ngOnInit()
@@ -47,15 +64,19 @@ export class BarChartComponent extends BarChartAbstract implements OnInit {
   }
 
   protected calcNextBarDate(from: Date): Date {
-    return this.dateRangeStrategy.calcNowBarDate();
+    return this.dateRangeStrategy.calcNextBarDate(from);
   }
 
   protected calcPrevBarDate(from: Date): Date {
-    return this.dateRangeStrategy.calcPrevBarDate();
+    return this.dateRangeStrategy.calcPrevBarDate(from);
   }
 
   protected viewportDateRange(): [Date, Date] {
     const from: Date = this.data[0].identity;
+    console.warn(':', this.countBarsInViewport)
     return [from, addDays(from, this.countBarsInViewport - 1)];
+
+    // const from: Date = startOfToday();
+    // return [from, addDays(from, this.countBarsInViewport - 1)];
   }
 }

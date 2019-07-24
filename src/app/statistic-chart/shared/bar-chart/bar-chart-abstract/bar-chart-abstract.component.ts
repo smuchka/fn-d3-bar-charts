@@ -142,6 +142,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
+
     // skip any changes until onInit unavailable
     if (changes.data && changes.data.firstChange) {
       return;
@@ -306,6 +307,8 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   private initXScale(): void {
     const [d1, d2] = this.viewportDateRange();
     const { left, right } = this.getPadding();
+
+    console.warn(d1, d2, left, right);
 
     this.x = D3.scaleTime()
       .domain(this.viewportDateRange())

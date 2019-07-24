@@ -2,6 +2,8 @@
   <fn-bar-chart
     #chart
     [data]="renderData$ | async"
-    [dateRangeStrategy]="delimiterDateStrategy"
+    [dateRangeStrategy]="dateStrategy"
+    [barWidth]="barWidth"
+    [countBarsInViewport]="barCountInViewport"
   ></fn-bar-chart>
 </div>

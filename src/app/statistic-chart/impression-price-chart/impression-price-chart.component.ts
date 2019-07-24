@@ -15,6 +15,7 @@ import {
   DayChartNavigation,
   WeekChartNavigation
 } from '../shared/bar-chart/core/date-delimiter-strategies';
+import { DelimiterChartStrategyService } from '../shared/services/delimiter-chart-strategy.service';
 import { differenceInSeconds } from 'date-fns';
 import * as D3 from 'd3';
 
@@ -25,28 +26,18 @@ import * as D3 from 'd3';
 })
 export class ImpressionPriceChartComponent implements OnInit, OnDestroy {
 
-  // day
-  // barWidth = 24;
-  // countBarsInViewport = 14;
-
-  // hour
-  // barWidth = 16;
-  // countBarsInViewport = 16;
-
-  // week
-  // barWidth = 40;
-  // countBarsInViewport = 11;
-
   @Input()
   public data: Observable<ItemData[]>;
 
-  @Input()
-  private dateStrategyValue: DateChartStrategy;
+  // @Input()
+  private dateStrategy: DateChartStrategy;
+  private barWidth: number;
+  private barCountInViewport: number;
 
   @Input()
   public set delimiter(delimiter: StatisticDelimiter) {
     this.delimiterValue = delimiter;
-    this.switchChartDelimiter();
+    this.resolveDelimiterConfig();
   }
   public get delimiter(): StatisticDelimiter {
     return this.delimiterValue;
@@ -67,11 +58,12 @@ export class ImpressionPriceChartComponent implements OnInit, OnDestroy {
   protected chart: BarChartAbstract;
 
   private inputDataSubsciption: Subscription;
-  private activeItemChangeSubscription: Subscription;
+  private chartActiveItemChangeSubscription: Subscription;
   private renderData$: BehaviorSubject<ItemData[]>;
 
   public constructor(
-    private r: ComponentFactoryResolver
+    private r: ComponentFactoryResolver,
+    private dateDelimiter: DelimiterChartStrategyService,
   ) {
     this.renderData$ = new BehaviorSubject<ItemData[]>([]);
   }
@@ -86,22 +78,25 @@ export class ImpressionPriceChartComponent implements OnInit, OnDestroy {
     }
 
     /** Subscribe on change active from chart component */
-    this.activeItemChangeSubscription = this.chart
+    this.chartActiveItemChangeSubscription = this.chart
       .activeItemDataChange.asObservable()
       .subscribe(this.onActiveItemChange.bind(this))
 
     // Subscribe on input data change
     this.inputDataSubsciption = this.data
+      //
+      // todo !!!!!!!!! - fill empty DelimiterChartStrategyService//
+      .pipe(map((data: ItemData[]) => data))
       .subscribe((data: ItemData[]) => this.renderData$.next(data))
 
     // Since the first initialization of a chart component 
     // can occur before data initialization, we call refresh component data
-    // this.refreshDataComponent();
+    this.resolveDelimiterConfig();
 
     //
     // TODO: Navigation Toolbar
     //
-    console.log(this.navigation)
+    // console.log(this.navigation)
   }
 
   public ngOnDestroy(): void {
@@ -111,30 +106,15 @@ export class ImpressionPriceChartComponent implements OnInit, OnDestroy {
       this.inputDataSubsciption = null;
     }
 
-    if (this.activeItemChangeSubscription) {
-      this.activeItemChangeSubscription.unsubscribe()
-      this.activeItemChangeSubscription = null;
+    if (this.chartActiveItemChangeSubscription) {
+      this.chartActiveItemChangeSubscription.unsubscribe()
+      this.chartActiveItemChangeSubscription = null;
     }
   }
 
   /**
-   * Switch chart component.
-   * Clear all subscribe on old component, and subscribe on newest.
-   */
-  private switchChartDelimiter(): void {
-
-    /** Set to chart copmponent strategy */
-    // const strategy = this.resolveDateDelimiterStrategy(this.delimiter);
-
-    // this.chart.dateDelimiter = strategy;
-    // this.chart.barWidth = strategy;
-    // this.chart.countBarsInViewport = strategy;
-
-    // this.refreshDataComponent();
-  }
-
-  /**
-   * Switch navigation component
+   * Switch navigation component.
+   * ???? Clear all subscribe on old component, and subscribe on newest.
    */
   private switchNavigationComponent(): void {
     if (this.navigation) {
@@ -144,11 +124,15 @@ export class ImpressionPriceChartComponent implements OnInit, OnDestroy {
   /**
    * Set to chart component new data
    */
-  // private refreshDataComponent(): void {
-  //   if (this.chart) {
-  //     this.chart.data = this.renderData$.value;
-  //   }
-  // }
+  private resolveDelimiterConfig(): void {
+    /** Set to chart copmponent strategy */
+    const strategy = this.dateDelimiter.resolveDateDelimiterStrategy(this.delimiter);
+    this.dateStrategy = strategy;
+
+    let config = this.dateDelimiter.resolveChartDimetions(this.delimiter);
+    this.barWidth = config.barWidth;
+    this.barCountInViewport = config.countBarsInViewport;
+  }
 
   /**
    * todo: make it in chart - emit event correct

@@ -1,7 +1,7 @@
 import { DateChartStrategy } from './date-chart-strategy'
 import { addHours } from 'date-fns'
 
-export class DayChartNavigation implements DateChartStrategy {
+export class HourChartNavigation implements DateChartStrategy {
   public calcNowBarDate(): Date {
     const now = new Date();
     now.setMinutes(0);
