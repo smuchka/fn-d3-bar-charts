@@ -150,6 +150,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
 
     if (changes.data && changes.data.currentValue) {
       this.changeData.emit(changes.data.currentValue);
+      this.showActiveBarOnCenterViewport();
     }
   }
 
@@ -162,7 +163,6 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
    * Handler of changing input data
    */
   private onDataChanged(): void {
-
     this.updateChart();
   }
 

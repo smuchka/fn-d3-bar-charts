@@ -73,8 +73,9 @@ export class BarChartComponent extends BarChartAbstract implements OnInit {
 
   protected viewportDateRange(): [Date, Date] {
     const from: Date = this.data[0].identity;
+    const to: Date = addDays(from, this.countBarsInViewport - 1);
     console.warn(':', this.countBarsInViewport)
-    return [from, addDays(from, this.countBarsInViewport - 1)];
+    return [from, to];
 
     // const from: Date = startOfToday();
     // return [from, addDays(from, this.countBarsInViewport - 1)];
