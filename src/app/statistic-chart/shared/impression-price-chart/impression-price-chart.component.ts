@@ -34,7 +34,14 @@ export class ImpressionPriceChartComponent implements OnInit, OnDestroy {
   private delimiterValue: StatisticDelimiter;
 
   @Input('navigation')
-  public navigation: ChartActiveDateNavComponent;
+  public set navigation(navigation: ChartActiveDateNavComponent) {
+    this.navigationValue = navigation;
+    this.switchNavigationComponent();
+  }
+  public get navigation(): ChartActiveDateNavComponent {
+    return this.navigationValue;
+  }
+  private navigationValue: ChartActiveDateNavComponent;
 
   @ViewChild('chartContainer', { read: ViewContainerRef, static: true })
   protected vc: ViewContainerRef;
@@ -118,6 +125,14 @@ export class ImpressionPriceChartComponent implements OnInit, OnDestroy {
       .subscribe(this.onActiveItemChange.bind(this))
 
     this.refreshDataComponent();
+  }
+
+  /**
+   * Switch navigation component
+   */
+  private switchNavigationComponent(): void {
+    if (this.navigation) {
+    }
   }
 
   /**

@@ -1,4 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import {
+  DirectionActiveChange,
+  DirectionLeft,
+  DirectionRight
+} from '../bar-chart/core/types/direction-active-change';
 
 @Component({
   selector: 'fn-chart-active-date-nav',
@@ -7,23 +12,42 @@ import { Component, OnInit } from '@angular/core';
 })
 export class ChartActiveDateNavComponent implements OnInit {
 
-  constructor() { }
+  public set activeDate(date: Date) {
+    this.activeDateValue = date;
+  }
+  public get activeDate(): Date {
+    return this.activeDateValue;
+  }
+  private activeDateValue: Date;
 
-  ngOnInit() {
+  @Output()
+  public activeDateDirectionChange: EventEmitter<DirectionActiveChange>;
+
+  constructor() {
+    this.activeDateDirectionChange = new EventEmitter<DirectionActiveChange>();
   }
 
-  public onClickPrevActivate(): void {
+  ngOnInit() {
   }
 
   public canPrevActivate(): boolean {
     return false;
   }
 
-  public onClickNextActivate(): void {
-  }
-
   public canNextActivate(): boolean {
     return false;
+  }
+
+  public onClickPrevActivate(): void {
+    this.activeDateDirectionChange.next(DirectionLeft);
+  }
+
+  public onClickNextActivate(): void {
+    this.activeDateDirectionChange.next(DirectionRight);
+  }
+
+  public setActive(date: Date): void {
+    this.activeDateValue = date;
   }
 
 }
