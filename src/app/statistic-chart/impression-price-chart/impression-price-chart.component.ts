@@ -4,6 +4,7 @@ import {
 } from '@angular/core';
 import { Observable, Subscription, BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { StatisticDelimiter } from '../core';
 import { ItemData } from '../shared/bar-chart/core/interfaces/item-data';
 import { BarChartAbstract } from '../shared/bar-chart/bar-chart-abstract/bar-chart-abstract.component';
 import { BarChartComponent } from '../shared/bar-chart/bar-chart.component';
