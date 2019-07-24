@@ -22,8 +22,12 @@ import {
 @Injectable()
 export class DelimiterChartStrategyService {
 
+  private isMobile: boolean;
+
   // TODO: Can create dependence of WEB/MOB env
-  constructor() { }
+  constructor() {
+    this.isMobile = true;
+  }
 
   public resolveDateDelimiterStrategy(delimiter: StatisticDelimiter): DateChartStrategy {
     switch (delimiter) {
@@ -36,36 +40,38 @@ export class DelimiterChartStrategyService {
     }
   }
 
-  public resolveChartDimetions(delimiter: StatisticDelimiter):
-    Record<'barWidth' | 'countBarsInViewport', number> {
-
-    let config = {};
+  public getBarWidth(delimiter: StatisticDelimiter): number {
 
     switch (delimiter) {
       case StatisticDelimiter.Hour:
-        return {
-          barWidth: 16,
-          countBarsInViewport: 16,
-        }
+        return 16;
 
       case StatisticDelimiter.Day:
-        return {
-          barWidth: 24,
-          countBarsInViewport: 14,
-        }
+        return 24
 
       case StatisticDelimiter.Week:
-        return {
-          barWidth: 40,
-          countBarsInViewport: 11,
-        }
+        return 40;
 
       default:
-        return {
-          barWidth: 10,
-          countBarsInViewport: 10,
-        };
+        return 10;
     }
+  }
+
+  public getCountBars(delimiter: StatisticDelimiter): number {
+
+    let count: [number, number] = 10;
+
+    switch (delimiter) {
+      case StatisticDelimiter.Hour:
+        count = [7, 16];
+
+      case StatisticDelimiter.Day:
+        count = [5, 14]
+
+      case StatisticDelimiter.Week:
+        count = [5, 11];
+    }
+    return this.isMobile ? count[0] : count[1]
   }
 
 }

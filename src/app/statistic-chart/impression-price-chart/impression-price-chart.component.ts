@@ -128,9 +128,8 @@ export class ImpressionPriceChartComponent implements OnInit, OnDestroy {
     const strategy = this.dateDelimiter.resolveDateDelimiterStrategy(this.delimiter);
     this.dateStrategy = strategy;
 
-    let config = this.dateDelimiter.resolveChartDimetions(this.delimiter);
-    this.barWidth = config.barWidth;
-    this.barCountInViewport = config.countBarsInViewport;
+    this.barWidth = this.dateDelimiter.getBarWidth(this.delimiter);
+    this.barCountInViewport = this.dateDelimiter.getCountBars(this.delimiter);
   }
 
   /**

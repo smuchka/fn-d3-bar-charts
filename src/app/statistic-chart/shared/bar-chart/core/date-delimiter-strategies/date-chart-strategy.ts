@@ -8,4 +8,6 @@ export interface DateChartStrategy {
   calcNextBarDate(from: Date): Date;
 
   calcPrevBarDate(from: Date): Date;
+
+  getCountBarDateInViewPort(): number;
 }
