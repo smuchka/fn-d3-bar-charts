@@ -46,6 +46,8 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   private canActivatePrevBar: boolean;
   private canActivateNextBar: boolean;
 
+  protected activeDateChange: EventEmitter<Date | any>;
+
   @Input()
   public set data(items: ItemData[]) {
     this.dataList = items;
@@ -57,15 +59,15 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
 
   @Input()
   public barWidth: number;
+
   @Input('maxValue')
   public initMaxValue: number;
 
   @Output()
   public petBorder: EventEmitter<any>;
+
   @Output('activeItemChange')
   public activeItemDataChange: EventEmitter<ItemData | null>;
-
-  protected activeDateChange: EventEmitter<Date | any>;
 
   public setActiveDate(date: Date) {
     const data = this.mapItemData.get(date.getTime());
@@ -89,7 +91,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
     this.radiusRectangle = 4;
     this.minBarHeight = 0;
     this.minBarHeight = 10;
-    // this.heightCorrection = -10;
+    this.barWidth = 10;
     this.initMaxValue = 1;
     this.maxValueFromChart = 0;
     this.translateWidthOneBar = 0;
@@ -151,6 +153,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   }
 
   public ngOnDestroy(): void {
+    console.log('Destroyed chart!');
     this.subs.unsubscribe();
   }
 

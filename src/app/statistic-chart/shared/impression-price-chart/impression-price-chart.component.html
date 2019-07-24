@@ -1,11 +1,7 @@
 <div class="chart-container">
-	<ng-container #chartContainer></ng-container>
+  <fn-bar-chart
+    #chart
+    [data]="renderData$ | async"
+    [dateRangeStrategy]="delimiterDateStrategy"
+  ></fn-daily-bar-chart>
 </div>
-
-<!-- <fn-daily-bar-chart
-  #chart
-  [data]="showChartData$ | async"
-  (loadMore)="loadMore()"
-  (petBorder)="onChartEmitPetBorderEvent($event)"
-  (activeItemChange)="onActiveItemChange($event)"
-></fn-daily-bar-chart> -->

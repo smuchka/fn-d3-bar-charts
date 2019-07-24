@@ -4,10 +4,9 @@ import { map } from 'rxjs/operators';
 import { StatisticDelimiter, HourDelimiterData, DayDelimiterData } from './core/delimiter-data';
 import { ItemData } from '../bar-chart/core/interfaces/item-data';
 import { BarChartAbstract } from '../bar-chart/bar-chart-abstract/bar-chart-abstract.component';
-import { DayBarChartComponent } from '../bar-chart/day-bar-chart.component';
-import { HourBarChartComponent } from '../bar-chart/hour-bar-chart.component';
-import { WeekBarChartComponent } from '../bar-chart/week-bar-chart.component';
+import { BarChartComponent } from '../bar-chart/bar-chart.component';
 import { ChartActiveDateNavComponent } from '../chart-active-date-nav/chart-active-date-nav.component';
+import { DateChartStrategy, HourChartNavigation, DayChartNavigation, WeekChartNavigation } from '../strategy';
 import { differenceInSeconds } from 'date-fns';
 import * as D3 from 'd3';
 
@@ -18,15 +17,28 @@ import * as D3 from 'd3';
 })
 export class ImpressionPriceChartComponent implements OnInit, OnDestroy {
 
+  // day
+  // barWidth = 24;
+  // countBarsInViewport = 14;
+
+  // hour
+  // barWidth = 16;
+  // countBarsInViewport = 16;
+
+  // week
+  // barWidth = 40;
+  // countBarsInViewport = 11;
+
   @Input()
   public data: Observable<ItemData[]>;
 
-  private renderData: BehaviorSubject<ItemData[]>;
+  @Input()
+  private dateStrategyValue: DateChartStrategy;
 
   @Input()
   public set delimiter(delimiter: StatisticDelimiter) {
     this.delimiterValue = delimiter;
-    this.switchChartComponent();
+    this.switchChartDelimiter();
   }
   public get delimiter(): StatisticDelimiter {
     return this.delimiterValue;
@@ -43,22 +55,17 @@ export class ImpressionPriceChartComponent implements OnInit, OnDestroy {
   }
   private navigationValue: ChartActiveDateNavComponent;
 
-  @ViewChild('chartContainer', { read: ViewContainerRef, static: true })
-  protected vc: ViewContainerRef;
-  protected chartRef: ComponentRef<BarChartAbstract>;
-  private mapDelimiterComponents: Map<StatisticDelimiter, Type<BarChartAbstract>>;
-  private componentDataSubsciption: Subscription;
+  @ViewChild('chart', { static: true })
+  protected chart: BarChartAbstract;
+
+  private inputDataSubsciption: Subscription;
   private activeItemChangeSubscription: Subscription;
+  private renderData$: BehaviorSubject<ItemData[]>;
 
   public constructor(
     private r: ComponentFactoryResolver
   ) {
-    this.mapDelimiterComponents = new Map([]);
-    this.mapDelimiterComponents.set(StatisticDelimiter.Hour, HourBarChartComponent)
-    this.mapDelimiterComponents.set(StatisticDelimiter.Day, DayBarChartComponent)
-    this.mapDelimiterComponents.set(StatisticDelimiter.Week, WeekBarChartComponent)
-
-    this.renderData = new BehaviorSubject<ItemData[]>([]);
+    this.renderData$ = new BehaviorSubject<ItemData[]>([]);
   }
 
   public ngOnInit(): void {
@@ -70,28 +77,30 @@ export class ImpressionPriceChartComponent implements OnInit, OnDestroy {
       throw Error('Not specified statistic data')
     }
 
+    /** Subscribe on change active from chart component */
+    this.activeItemChangeSubscription = this.chart
+      .activeItemDataChange.asObservable()
+      .subscribe(this.onActiveItemChange.bind(this))
+
     // Subscribe on input data change
-    this.componentDataSubsciption = this.data
-      .subscribe((data: ItemData[]) => this.renderData.next(data))
+    this.inputDataSubsciption = this.data
+      .subscribe((data: ItemData[]) => this.renderData$.next(data))
 
     // Since the first initialization of a chart component 
     // can occur before data initialization, we call refresh component data
-    this.refreshDataComponent();
+    // this.refreshDataComponent();
 
     //
-    // TODO !!!!!!!!!!
+    // TODO: Navigation Toolbar
     //
     console.log(this.navigation)
   }
 
   public ngOnDestroy(): void {
-    if (this.chartRef) {
-      this.chartRef.destroy()
-    }
 
-    if (this.componentDataSubsciption) {
-      this.componentDataSubsciption.unsubscribe()
-      this.componentDataSubsciption = null;
+    if (this.inputDataSubsciption) {
+      this.inputDataSubsciption.unsubscribe()
+      this.inputDataSubsciption = null;
     }
 
     if (this.activeItemChangeSubscription) {
@@ -104,27 +113,26 @@ export class ImpressionPriceChartComponent implements OnInit, OnDestroy {
    * Switch chart component.
    * Clear all subscribe on old component, and subscribe on newest.
    */
-  private switchChartComponent(): void {
+  private switchChartDelimiter(): void {
 
-    /** Destroy eaarly created components */
-    if (this.chartRef) {
-      // unsubscribe from component change active item events
-      if (this.activeItemChangeSubscription) {
-        this.activeItemChangeSubscription.unsubscribe()
-      }
-      this.chartRef.destroy()
+    /** Set to chart copmponent strategy */
+    const strategy = this.resolveDateDelimiterStrategy(this.delimiter);
+    // this.chart.dateDelimiter = strategy;
+    // this.chart.barWidth = strategy;
+    // this.chart.countBarsInViewport = strategy;
+
+    // this.refreshDataComponent();
+  }
+
+  private resolveDateDelimiterStrategy(delimiter: StatisticDelimiter): DateChartStrategy {
+    switch (delimiter) {
+      case StatisticDelimiter.Hour:
+        return new HourChartNavigation();
+      case StatisticDelimiter.Day:
+        return new DayChartNavigation();
+      case StatisticDelimiter.Week:
+        return new WeekChartNavigation();
     }
-
-    /** Detect component type & create it */
-    const typeComponent: Type<BarChartAbstract> = this.mapDelimiterComponents.get(this.delimiter);
-    this.chartRef = this.createDymanicChart(typeComponent);
-
-    /** Subscribe on change active from new chart component */
-    this.activeItemChangeSubscription = this.chartRef.instance
-      .activeItemDataChange.asObservable()
-      .subscribe(this.onActiveItemChange.bind(this))
-
-    this.refreshDataComponent();
   }
 
   /**
@@ -138,19 +146,11 @@ export class ImpressionPriceChartComponent implements OnInit, OnDestroy {
   /**
    * Set to chart component new data
    */
-  private refreshDataComponent(): void {
-    if (this.chartRef) {
-      this.chartRef.instance.data = this.renderData.value;
-    }
-  }
-
-  /**
-   * Create dynamic component
-   */
-  private createDymanicChart(component: Type<BarChartAbstract>): ComponentRef<BarChartAbstract> {
-    const factory = this.r.resolveComponentFactory(component);
-    return this.vc.createComponent(factory);
-  }
+  // private refreshDataComponent(): void {
+  //   if (this.chart) {
+  //     this.chart.data = this.renderData$.value;
+  //   }
+  // }
 
   /**
    * todo: make it in chart - emit event correct
