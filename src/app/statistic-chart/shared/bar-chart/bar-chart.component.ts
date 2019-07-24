@@ -1,6 +1,7 @@
 import {
-  Component, ElementRef, OnInit, Renderer2, Input
+  Component, ElementRef, OnInit, Renderer2, Input, EventEmitter
 } from '@angular/core';
+import { Observable } from 'rxjs';
 import { BarChartAbstract } from './bar-chart-abstract/bar-chart-abstract.component';
 import { DateChartStrategy } from './core/date-delimiter-strategies';
 import {
@@ -25,7 +26,15 @@ const DEFAULT_COUNT_BARS_IN_VIEWPORT: number = 10;
 export class BarChartComponent extends BarChartAbstract implements OnInit {
 
   @Input()
-  public countBarsInViewport: number;
+  public get countBarsInViewport(): number {
+    return this.countBarsInViewportValue;
+  }
+  public set countBarsInViewport(count: number) {
+    this.countBarsInViewportValue = count;
+    this.countBarsInViewportChange.emit();
+  }
+  private countBarsInViewportValue: number;
+  private countBarsInViewportChange: EventEmitter<undefined>;
 
   @Input()
   public barWidth: number;
@@ -44,6 +53,7 @@ export class BarChartComponent extends BarChartAbstract implements OnInit {
     protected renderer: Renderer2,
   ) {
     super(element, renderer);
+    this.countBarsInViewportChange = new EventEmitter();
   }
 
   public ngOnInit(): void {
@@ -56,6 +66,13 @@ export class BarChartComponent extends BarChartAbstract implements OnInit {
     }
 
     super.ngOnInit()
+  }
+
+  protected getObserveSource(): Observable<any>[] {
+    return [
+      ...super.getObserveSource(),
+      this.countBarsInViewportChange,
+    ];
   }
 
   protected calcNowBarDate(): Date {

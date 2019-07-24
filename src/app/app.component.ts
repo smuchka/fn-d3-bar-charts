@@ -47,7 +47,8 @@ export class AppComponent implements OnInit {
 
   public onChangeDelimiter(delimiter: StatisticDelimiter): void {
     // this.pagginableData$.next([])
-    this.loadFirstPeriod();
+    // this.loadFirstPeriod();
+    // console.warn(this.)
   }
 
   public loadMore(): void {

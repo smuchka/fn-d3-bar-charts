@@ -64,12 +64,15 @@ export class DelimiterChartStrategyService {
     switch (delimiter) {
       case StatisticDelimiter.Hour:
         count = [7, 16];
+        break;
 
       case StatisticDelimiter.Day:
-        count = [5, 14]
+        count = [5, 14];
+        break;
 
       case StatisticDelimiter.Week:
         count = [5, 11];
+        break;
     }
     return this.isMobile ? count[0] : count[1]
   }

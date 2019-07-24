@@ -15,7 +15,7 @@ import {
   DirectionLeft,
   DirectionRight
 } from '../core/types/direction-active-change';
-import { Subscription, combineLatest } from 'rxjs';
+import { Observable, Subscription, merge } from 'rxjs';
 import { filter, delay, tap } from 'rxjs/operators';
 import * as D3 from 'd3';
 
@@ -132,7 +132,8 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
     this.groupDataBars = this.svg.append('g').attr('class', 'bar');
 
     this.showActiveBarOnCenterViewport();
-    this.changeData.emit(this.data);
+    // this.changeData.emit(this.data);
+    this.updateChart()
 
     // TODO:
     // + click on bar - make it as active date
@@ -147,8 +148,6 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
-
-    console.log(changes);
 
     // skip any changes until onInit unavailable
     if (changes.data && changes.data.firstChange) {
@@ -348,22 +347,28 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   }
 
   private initSubscribes(): void {
+
+    const observe = this.getObserveSource();
     this.subs.add(
-      combineLatest(this.changeData)
+      merge(...observe)
+        .pipe(tap(() => console.log('2...')))
         .subscribe(this.recalculateAndUpdateChart.bind(this))
     )
 
     this.subs.add(
-      this.activeItemDataChange.asObservable()
-        .pipe(tap(() => console.log('...')))
+      merge(
+        this.changeBarWidth,
+        this.activeItemDataChange,
+      )
+        .pipe(tap(() => console.log('1...')))
         .subscribe(this.updateChart.bind(this))
-    )
+    );
+  }
 
-    this.subs.add(
-      this.changeBarWidth
-        .pipe(tap(() => console.log('...')))
-        .subscribe(this.updateChart.bind(this))
-    )
+  protected getObserveSource(): Observable<any>[] {
+    return [
+      this.changeData
+    ];
   }
 
   /**
