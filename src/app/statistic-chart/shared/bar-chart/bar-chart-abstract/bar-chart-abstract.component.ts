@@ -15,8 +15,8 @@ import {
   DirectionLeft,
   DirectionRight
 } from '../core/types/direction-active-change';
-import { Subscription } from 'rxjs';
-import { filter } from 'rxjs/operators';
+import { Subscription, combineLatest } from 'rxjs';
+import { filter, delay, tap } from 'rxjs/operators';
 import * as D3 from 'd3';
 
 @Component({
@@ -38,13 +38,12 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   private translateWidthOneBar: number;
   private dataList: ItemData[];
   private mapItemData: Map<number, ItemData>;
-  private changeData: EventEmitter<ItemData[]>;
   private activeDate: Date;
   private subs: Subscription;
   private canActivatePrevBar: boolean;
   private canActivateNextBar: boolean;
-
-  protected activeDateChange: EventEmitter<Date | any>;
+  private changeData: EventEmitter<ItemData[]>;
+  private changeBarWidth: EventEmitter<null>;
 
   @Input()
   public set data(items: ItemData[]) {
@@ -56,7 +55,13 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   }
 
   @Input()
-  public barWidth: number;
+  public get barWidth(): number {
+    return this.barWidthValue;
+  }
+  public set barWidth(width: number) {
+    this.barWidthValue = width;
+  }
+  private barWidthValue: number;
 
   @Input('maxValue')
   public initMaxValue: number;
@@ -71,7 +76,8 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
     const data = this.mapItemData.get(date.getTime());
     if (data) {
       this.activeDate = date;
-      this.activeDateChange.emit(this.activeDate);
+      this.canActivatePrevBar = this.canChangeActiveOn(DirectionLeft);
+      this.canActivateNextBar = this.canChangeActiveOn(DirectionRight);
       this.activeItemDataChange.emit(data);
     }
   }
@@ -89,12 +95,13 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
     this.radiusRectangle = 4;
     this.minBarHeight = 0;
     this.minBarHeight = 10;
-    this.barWidth = 10;
+    this.barWidthValue = 10;
     this.initMaxValue = 1;
     this.maxValueFromChart = 0;
     this.translateWidthOneBar = 0;
+
     this.changeData = new EventEmitter();
-    this.activeDateChange = new EventEmitter();
+    this.changeBarWidth = new EventEmitter();
     this.activeItemDataChange = new EventEmitter();
     this.petBorder = new EventEmitter();
     this.subs = new Subscription();
@@ -142,10 +149,14 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   public ngOnChanges(changes: SimpleChanges): void {
 
     console.log(changes);
-    
+
     // skip any changes until onInit unavailable
     if (changes.data && changes.data.firstChange) {
       return;
+    }
+
+    if (changes.barWidth && changes.barWidth.currentValue) {
+      this.changeBarWidth.next();
     }
 
     if (changes.data && changes.data.currentValue) {
@@ -156,23 +167,6 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   public ngOnDestroy(): void {
     console.log('Destroyed chart!');
     this.subs.unsubscribe();
-  }
-
-  /**
-   * Handler of changing input data
-   */
-  private onDataChanged(): void {
-    this.updateChart();
-  }
-
-  /**
-   * Handler of active date chnage
-   */
-  private onActiveDateChanged(newValue: any): void {
-    this.canActivatePrevBar = this.canChangeActiveOn(DirectionLeft);
-    this.canActivateNextBar = this.canChangeActiveOn(DirectionRight);
-    // this.showActiveBarOnCenterViewport();
-    this.updateChart();
   }
 
   private onZoomed(): void {
@@ -238,9 +232,20 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   }
 
   /**
+   * Handler of changing input data
+   */
+  private recalculateAndUpdateChart(): void {
+    console.warn('Recalculate & Update chart!');
+    this.initXScale();
+    this.updateChart();
+  }
+
+  /**
    * Update any chart elements
    */
   private updateChart(): void {
+    console.warn('Update chart!');
+
     const isChanged: boolean = this.updateMaxChartValue()
     if (isChanged) {
       this.initYScale();
@@ -269,6 +274,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
       .data(this.data.filter(el => el.value))
       .call(this.drawDataBar.bind(this))
 
+    // update active item viewport position
     this.showActiveBarOnCenterViewport();
   }
 
@@ -342,16 +348,21 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   }
 
   private initSubscribes(): void {
-    // move to subscribe method
     this.subs.add(
-      this.changeData
-        .subscribe(this.onDataChanged.bind(this))
+      combineLatest(this.changeData)
+        .subscribe(this.recalculateAndUpdateChart.bind(this))
     )
 
     this.subs.add(
-      this.activeDateChange.asObservable()
-        .pipe(filter(Boolean))
-        .subscribe(this.onActiveDateChanged.bind(this))
+      this.activeItemDataChange.asObservable()
+        .pipe(tap(() => console.log('...')))
+        .subscribe(this.updateChart.bind(this))
+    )
+
+    this.subs.add(
+      this.changeBarWidth
+        .pipe(tap(() => console.log('...')))
+        .subscribe(this.updateChart.bind(this))
     )
   }
 

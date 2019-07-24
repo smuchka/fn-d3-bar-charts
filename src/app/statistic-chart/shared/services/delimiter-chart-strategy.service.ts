@@ -26,7 +26,7 @@ export class DelimiterChartStrategyService {
 
   // TODO: Can create dependence of WEB/MOB env
   constructor() {
-    this.isMobile = true;
+    this.isMobile = false;
   }
 
   public resolveDateDelimiterStrategy(delimiter: StatisticDelimiter): DateChartStrategy {

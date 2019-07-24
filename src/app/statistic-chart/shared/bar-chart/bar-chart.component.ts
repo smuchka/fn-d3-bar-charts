@@ -77,7 +77,8 @@ export class BarChartComponent extends BarChartAbstract implements OnInit {
     const to: Date = subDays(this.data[this.data.length - 1].identity, 100);
     const from: Date = subDays(to, this.countBarsInViewport - 1);
 
-    console.warn(':', this.countBarsInViewport)
+
+    console.error(':', this.countBarsInViewport)
     return [from, to];
   }
 }
