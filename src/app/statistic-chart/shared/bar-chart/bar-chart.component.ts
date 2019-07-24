@@ -2,7 +2,7 @@ import {
   Component, ElementRef, OnInit, Renderer2, Input
 } from '@angular/core';
 import { BarChartAbstract } from './bar-chart-abstract/bar-chart-abstract.component';
-import { DateChartStrategy } from '../strategy';
+import { DateChartStrategy } from './core/date-delimiter-strategies';
 import { getBarChartEmptyDateStrategyError } from './bar-chart-errors';
 import { addDays, addHours, startOfToday } from 'date-fns'
 
@@ -26,7 +26,7 @@ export class BarChartComponent extends BarChartAbstract implements OnInit {
   public barWidth: number;
 
   @Input()
-  public set elimiateRangeStrategy(strtategy: DateChartStrategy) {
+  public set dateRangeStrategy(strtategy: DateChartStrategy) {
     this.dateRangeStrategyValue = strtategy;
   }
   public get dateRangeStrategy(): DateChartStrategy {

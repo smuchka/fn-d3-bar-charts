@@ -1,7 +1,8 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ImpressionPriceChartModule } from './shared/impression-price-chart/impression-price-chart.module';
-import { ChartActiveDateNavModule } from './shared/chart-active-date-nav/chart-active-date-nav.module';
+import { ImpressionPriceChartModule } from './impression-price-chart/impression-price-chart.module';
+import { ChartActiveDateNavModule } from './chart-active-date-nav/chart-active-date-nav.module';
+import { DelimiterChartStrategyService } from './shared/services/delimiter-chart-strategy.service';
 
 @NgModule({
   imports: [
@@ -12,6 +13,9 @@ import { ChartActiveDateNavModule } from './shared/chart-active-date-nav/chart-a
   exports: [
     ImpressionPriceChartModule,
     ChartActiveDateNavModule,
+  ],
+  providers: [
+    DelimiterChartStrategyService
   ],
 })
 export class StatisticChartModule {

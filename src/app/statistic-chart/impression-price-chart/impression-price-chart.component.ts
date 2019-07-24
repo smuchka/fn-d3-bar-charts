@@ -1,12 +1,19 @@
-import { Component, Input, OnInit, AfterViewInit, OnChanges, OnDestroy, ViewChild, ViewContainerRef, ComponentFactoryResolver, ComponentRef, Type, SimpleChanges } from '@angular/core';
+import {
+  Component, ViewChild, ViewContainerRef, ComponentFactoryResolver, ComponentRef, Type,
+  Input, OnInit, AfterViewInit, OnChanges, OnDestroy, SimpleChange
+} from '@angular/core';
 import { Observable, Subscription, BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { StatisticDelimiter, HourDelimiterData, DayDelimiterData } from './core/delimiter-data';
-import { ItemData } from '../bar-chart/core/interfaces/item-data';
-import { BarChartAbstract } from '../bar-chart/bar-chart-abstract/bar-chart-abstract.component';
-import { BarChartComponent } from '../bar-chart/bar-chart.component';
+import { ItemData } from '../shared/bar-chart/core/interfaces/item-data';
+import { BarChartAbstract } from '../shared/bar-chart/bar-chart-abstract/bar-chart-abstract.component';
+import { BarChartComponent } from '../shared/bar-chart/bar-chart.component';
 import { ChartActiveDateNavComponent } from '../chart-active-date-nav/chart-active-date-nav.component';
-import { DateChartStrategy, HourChartNavigation, DayChartNavigation, WeekChartNavigation } from '../strategy';
+import {
+  DateChartStrategy,
+  HourChartNavigation,
+  DayChartNavigation,
+  WeekChartNavigation
+} from '../shared/bar-chart/core/date-delimiter-strategies';
 import { differenceInSeconds } from 'date-fns';
 import * as D3 from 'd3';
 
@@ -116,23 +123,13 @@ export class ImpressionPriceChartComponent implements OnInit, OnDestroy {
   private switchChartDelimiter(): void {
 
     /** Set to chart copmponent strategy */
-    const strategy = this.resolveDateDelimiterStrategy(this.delimiter);
+    // const strategy = this.resolveDateDelimiterStrategy(this.delimiter);
+
     // this.chart.dateDelimiter = strategy;
     // this.chart.barWidth = strategy;
     // this.chart.countBarsInViewport = strategy;
 
     // this.refreshDataComponent();
-  }
-
-  private resolveDateDelimiterStrategy(delimiter: StatisticDelimiter): DateChartStrategy {
-    switch (delimiter) {
-      case StatisticDelimiter.Hour:
-        return new HourChartNavigation();
-      case StatisticDelimiter.Day:
-        return new DayChartNavigation();
-      case StatisticDelimiter.Week:
-        return new WeekChartNavigation();
-    }
   }
 
   /**

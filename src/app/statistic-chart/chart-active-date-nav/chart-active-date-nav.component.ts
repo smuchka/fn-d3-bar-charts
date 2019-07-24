@@ -3,7 +3,7 @@ import {
   DirectionActiveChange,
   DirectionLeft,
   DirectionRight
-} from '../bar-chart/core/types/direction-active-change';
+} from '../shared/bar-chart/core/types/direction-active-change';
 
 @Component({
   selector: 'fn-chart-active-date-nav',
