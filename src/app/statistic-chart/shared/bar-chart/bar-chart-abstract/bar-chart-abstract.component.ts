@@ -15,8 +15,8 @@ import {
   DirectionLeft,
   DirectionRight
 } from '../core/types/direction-active-change';
-import { Subscription } from 'rxjs';
-import { filter } from 'rxjs/operators';
+import { Observable, Subscription, merge } from 'rxjs';
+import { filter, delay, tap } from 'rxjs/operators';
 import * as D3 from 'd3';
 
 @Component({
@@ -30,8 +30,6 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   private x;
   private x2;
   private y;
-  private xAxis;
-  private xAxisG;
   private zoom;
   private radiusRectangle: number;
   private minBarHeight: number;
@@ -40,11 +38,12 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   private translateWidthOneBar: number;
   private dataList: ItemData[];
   private mapItemData: Map<number, ItemData>;
-  private changeData: EventEmitter<ItemData[]>;
   private activeDate: Date;
   private subs: Subscription;
   private canActivatePrevBar: boolean;
   private canActivateNextBar: boolean;
+  private changeData: EventEmitter<ItemData[]>;
+  private changeBarWidth: EventEmitter<null>;
 
   @Input()
   public set data(items: ItemData[]) {
@@ -56,22 +55,29 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   }
 
   @Input()
-  public barWidth: number;
+  public get barWidth(): number {
+    return this.barWidthValue;
+  }
+  public set barWidth(width: number) {
+    this.barWidthValue = width;
+  }
+  private barWidthValue: number;
+
   @Input('maxValue')
   public initMaxValue: number;
 
   @Output()
   public petBorder: EventEmitter<any>;
+
   @Output('activeItemChange')
   public activeItemDataChange: EventEmitter<ItemData | null>;
 
-  protected activeDateChange: EventEmitter<Date | any>;
-
   public setActiveDate(date: Date) {
     const data = this.mapItemData.get(date.getTime());
-    if (data) {
+    if (data && this.activeDate !== date) {
       this.activeDate = date;
-      this.activeDateChange.emit(this.activeDate);
+      this.canActivatePrevBar = this.canChangeActiveOn(DirectionLeft);
+      this.canActivateNextBar = this.canChangeActiveOn(DirectionRight);
       this.activeItemDataChange.emit(data);
     }
   }
@@ -89,12 +95,13 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
     this.radiusRectangle = 4;
     this.minBarHeight = 0;
     this.minBarHeight = 10;
-    // this.heightCorrection = -10;
+    this.barWidthValue = 10;
     this.initMaxValue = 1;
     this.maxValueFromChart = 0;
     this.translateWidthOneBar = 0;
+
     this.changeData = new EventEmitter();
-    this.activeDateChange = new EventEmitter();
+    this.changeBarWidth = new EventEmitter();
     this.activeItemDataChange = new EventEmitter();
     this.petBorder = new EventEmitter();
     this.subs = new Subscription();
@@ -125,7 +132,8 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
     this.groupDataBars = this.svg.append('g').attr('class', 'bar');
 
     this.showActiveBarOnCenterViewport();
-    this.changeData.emit(this.data);
+    // this.changeData.emit(this.data);
+    this.updateChart()
 
     // TODO:
     // + click on bar - make it as active date
@@ -140,9 +148,14 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
+
     // skip any changes until onInit unavailable
     if (changes.data && changes.data.firstChange) {
       return;
+    }
+
+    if (changes.barWidth && changes.barWidth.currentValue) {
+      this.changeBarWidth.next();
     }
 
     if (changes.data && changes.data.currentValue) {
@@ -151,36 +164,15 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   }
 
   public ngOnDestroy(): void {
+    console.log('Destroyed chart!');
     this.subs.unsubscribe();
-  }
-
-  /**
-   * Handler of changing input data
-   */
-  private onDataChanged(): void {
-
-    this.updateChart();
-  }
-
-  /**
-   * Handler of active date chnage
-   */
-  private onActiveDateChanged(newValue: any): void {
-    this.canActivatePrevBar = this.canChangeActiveOn(DirectionLeft);
-    this.canActivateNextBar = this.canChangeActiveOn(DirectionRight);
-    this.showActiveBarOnCenterViewport();
-    this.updateChart();
   }
 
   private onZoomed(): void {
     // console.log('onZoomed');
 
-    // recalc X Scale and redraw xAxis
+    // recalc X Scale
     this.x = D3.event.transform.rescaleX(this.x2);
-
-    // todo: debug X axis & it group
-    if (this.xAxis) this.xAxis.scale(this.x);
-    if (this.xAxisG) this.xAxisG.call(this.xAxis);
 
     // redraw groups of bars 
     const { x } = D3.event.transform || {};
@@ -239,9 +231,18 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   }
 
   /**
+   * Handler of changing input data
+   */
+  private recalculateAndUpdateChart(): void {
+    this.initXScale();
+    this.updateChart();
+  }
+
+  /**
    * Update any chart elements
    */
   private updateChart(): void {
+
     const isChanged: boolean = this.updateMaxChartValue()
     if (isChanged) {
       this.initYScale();
@@ -269,6 +270,26 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
       .selectAll('rect')
       .data(this.data.filter(el => el.value))
       .call(this.drawDataBar.bind(this))
+
+    // update active item viewport position
+    this.showActiveBarOnCenterViewport();
+  }
+
+  private initSubscribes(): void {
+
+    const observe = this.getObserveSource();
+    this.subs.add(
+      merge(...observe)
+        .subscribe(this.recalculateAndUpdateChart.bind(this))
+    )
+
+    this.subs.add(
+      merge(
+        this.changeBarWidth,
+        this.activeItemDataChange,
+      )
+        .subscribe(this.updateChart.bind(this))
+    );
   }
 
   private initActiveDate(): void {
@@ -304,8 +325,11 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
     const [d1, d2] = this.viewportDateRange();
     const { left, right } = this.getPadding();
 
+    // console.warn(d1);
+    // console.warn(d2);
+
     this.x = D3.scaleTime()
-      .domain(this.viewportDateRange())
+      .domain([d1, d2])
       .rangeRound([
         this.margin.left + left,
         this.width - this.margin.right - right,
@@ -325,7 +349,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   private initYScale(): void {
     const { top, bottom } = this.getPadding();
     this.y = D3.scaleLinear()
-      .domain([1, this.maxValueFromChart])
+      .domain([0, this.maxValueFromChart])
       .range([
         // this.height - bottom,
         this.height - bottom - this.minBarHeight,
@@ -338,18 +362,10 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
     }
   }
 
-  private initSubscribes(): void {
-    // move to subscribe method
-    this.subs.add(
+  protected getObserveSource(): Observable<any>[] {
+    return [
       this.changeData
-        .subscribe(this.onDataChanged.bind(this))
-    )
-
-    this.subs.add(
-      this.activeDateChange.asObservable()
-        .pipe(filter(Boolean))
-        .subscribe(this.onActiveDateChanged.bind(this))
-    )
+    ];
   }
 
   /**
@@ -454,7 +470,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
 
     selection
       .join('text')
-      .text((d, i) => d.label)
+      .text((d, i) => this.formatLabel(d))
       .attr('class', 'label')
       // set label by center of bar
       .attr('x', d => this.x(d.identity))
@@ -483,7 +499,11 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
     items.forEach((el: ItemData) => {
       this.mapItemData.set(el.identity.getTime(), el)
     });
+
+    // console.warn('list:', items.map(el => el.value))
   }
+
+  protected abstract formatLabel(date: ItemData): string;
 
   /**
    * Get start of step/bar date.
@@ -491,9 +511,12 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
    */
   protected abstract calcNowBarDate(): Date;
 
+  /**
+   * How much dates need show on x axis - [from;to]
+   */
+  protected abstract viewportDateRange(): [Date, Date];
+
   protected abstract calcNextBarDate(from: Date): Date;
 
   protected abstract calcPrevBarDate(from: Date): Date;
-
-  protected abstract viewportDateRange(): [Date, Date];
 }

@@ -1,12 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormControl } from '@angular/forms';
 import { Observable, of, BehaviorSubject } from 'rxjs';
-import { filter } from 'rxjs/operators'
+import { filter, tap } from 'rxjs/operators'
 import { ImpressionStatistic } from './services/impression-statistic';
 import { StatisticHourDelimiterService } from './services/statistic-hour-delimiter.service';
 import { StatisticDayDelimiterService } from './services/statistic-day-delimiter.service';
 import { ItemData } from './statistic-chart/shared/bar-chart/core/interfaces/item-data';
-import { StatisticDelimiter } from './statistic-chart/shared/impression-price-chart/core/delimiter-data';
+import { StatisticDelimiter } from './statistic-chart/core';
 import {
   format, parse,
   startOfToday, endOfToday,
@@ -25,7 +25,7 @@ export class AppComponent implements OnInit {
   private pagginableData$: BehaviorSubject<ItemData[]>
   private showChartData$: Observable<ItemData[]>
 
-  private showDelimiter: StatisticDelimiter = StatisticDelimiter.Day;
+  private showDelimiter: StatisticDelimiter = StatisticDelimiter.Hour;
   public delimitersItems = [
     StatisticDelimiter.Hour,
     StatisticDelimiter.Day,
@@ -33,7 +33,8 @@ export class AppComponent implements OnInit {
   ]
 
   public constructor(
-    private statistic: StatisticDayDelimiterService,
+    // private statistic: StatisticDayDelimiterService,
+    private statistic: StatisticHourDelimiterService,
   ) {
     this.pagginableData$ = new BehaviorSubject<ItemData[]>([]);
     this.showChartData$ = this.pagginableData$.pipe(
@@ -46,7 +47,9 @@ export class AppComponent implements OnInit {
   }
 
   public onChangeDelimiter(delimiter: StatisticDelimiter): void {
-    this.loadFirstPeriod();
+    // this.pagginableData$.next([])
+    // this.loadFirstPeriod();
+    // console.warn(this.)
   }
 
   public loadMore(): void {
@@ -89,7 +92,7 @@ export class AppComponent implements OnInit {
   private mergeStatiscticWithChunk(chunk: ItemData[]): ItemData[] {
     return [
       ...chunk,
-      ...this.pagginableData$.value,
+      ...this.pagginableData$.value || [],
     ]
   }
 

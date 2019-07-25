@@ -1,0 +1,9 @@
+<div class="chart-container">
+  <fn-bar-chart
+    #chart
+    [data]="renderData$ | async"
+    [dateRangeStrategy]="dateStrategy"
+    [barWidth]="barWidth"
+    [countBarsInViewport]="barCountInViewport"
+  ></fn-bar-chart>
+</div>

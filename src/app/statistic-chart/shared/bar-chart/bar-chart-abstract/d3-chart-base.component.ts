@@ -112,8 +112,15 @@ export abstract class D3ChartBaseComponent implements OnInit {
   }
 
   protected buildSVG() {
-    this.host.html('');
+    this.clearHost();
+    this.createSVG();
+  }
 
+  protected clearHost(): void {
+    this.host.html('');
+  }
+
+  protected createSVG(): void {
     this.svg = this.host.append('svg')
       .attr('width', this.width)
       .attr('height', this.height)
