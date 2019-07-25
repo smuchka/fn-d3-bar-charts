@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormControl } from '@angular/forms';
 import { Observable, of, BehaviorSubject } from 'rxjs';
-import { filter } from 'rxjs/operators'
+import { filter, tap } from 'rxjs/operators'
 import { ImpressionStatistic } from './services/impression-statistic';
 import { StatisticHourDelimiterService } from './services/statistic-hour-delimiter.service';
 import { StatisticDayDelimiterService } from './services/statistic-day-delimiter.service';
@@ -25,7 +25,7 @@ export class AppComponent implements OnInit {
   private pagginableData$: BehaviorSubject<ItemData[]>
   private showChartData$: Observable<ItemData[]>
 
-  private showDelimiter: StatisticDelimiter = StatisticDelimiter.Week;
+  private showDelimiter: StatisticDelimiter = StatisticDelimiter.Hour;
   public delimitersItems = [
     StatisticDelimiter.Hour,
     StatisticDelimiter.Day,
@@ -33,9 +33,12 @@ export class AppComponent implements OnInit {
   ]
 
   public constructor(
-    private statistic: StatisticDayDelimiterService,
+    // private statistic: StatisticDayDelimiterService,
+    private statistic: StatisticHourDelimiterService,
   ) {
-    this.pagginableData$ = new BehaviorSubject<ItemData[]>([]);
+    this.pagginableData$ = new BehaviorSubject<ItemData[]>([]).pipe(
+      tap(data => console.error(data))
+    );
     this.showChartData$ = this.pagginableData$.pipe(
       filter(list => Boolean(list.length)),
     );
@@ -91,7 +94,7 @@ export class AppComponent implements OnInit {
   private mergeStatiscticWithChunk(chunk: ItemData[]): ItemData[] {
     return [
       ...chunk,
-      ...this.pagginableData$.value,
+      ...this.pagginableData$.value || [],
     ]
   }
 

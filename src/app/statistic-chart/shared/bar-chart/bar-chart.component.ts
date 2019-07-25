@@ -8,6 +8,7 @@ import {
   getBarChartEmptyDateStrategyError,
   getEmptyCountBarInViewportError
 } from './bar-chart-errors';
+import { ItemData } from './core/interfaces/item-data';
 import { addDays, subDays, addHours, startOfToday } from 'date-fns'
 
 const DEFAULT_COUNT_BARS_IN_VIEWPORT: number = 10;
@@ -75,6 +76,11 @@ export class BarChartComponent extends BarChartAbstract implements OnInit {
     ];
   }
 
+  protected formatLabel(data: ItemData): string {
+    // console.log((data.identity))
+    return this.dateRangeStrategy.formatLabel(data.identity);
+  }
+
   protected calcNowBarDate(): Date {
     return this.dateRangeStrategy.calcNowBarDate();
   }
@@ -87,15 +93,12 @@ export class BarChartComponent extends BarChartAbstract implements OnInit {
     return this.dateRangeStrategy.calcPrevBarDate(from);
   }
 
-  /**
-   * How much dates need show on x axis - [from;to]
-   */
   protected viewportDateRange(): [Date, Date] {
-    const to: Date = subDays(this.data[this.data.length - 1].identity, 100);
-    const from: Date = subDays(to, this.countBarsInViewport - 1);
-
-
-    console.error(':', this.countBarsInViewport)
-    return [from, to];
+    const startingDatePoint: Date = this.data[this.data.length - 1].identity;
+    const from: Date = this.dateRangeStrategy.calcSomeDateOnDistance(
+      startingDatePoint,
+      -1 * (this.countBarsInViewport)
+    );
+    return [from, startingDatePoint];
   }
 }

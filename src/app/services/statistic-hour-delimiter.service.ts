@@ -25,13 +25,14 @@ export class StatisticHourDelimiterService implements ImpressionStatistic {
 
   public getFirstChunkDateRange(): [Date, Date] {
     return [
-      subHours(startOfToday(), 24),
-      subHours(endOfToday(), 24)
+      subHours(startOfToday(), 0),
+      subHours(endOfToday(), 0)
     ];
   }
 
   public loadStaticticByDates(d1: Date, d2: Date): ItemData[] {
     const [firstChunkStart, firstChunkEnd] = this.getFirstChunkDateRange();
+
     if (differenceInHours(d1, firstChunkStart) <= 0
       && differenceInHours(d2, firstChunkEnd) <= 0) {
       return this.extendDateRangeByEmptyData(this.loadMockStaticData(), d1, d2);

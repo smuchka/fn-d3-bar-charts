@@ -54,7 +54,7 @@ export class StatisticDayDelimiterService implements ImpressionStatistic {
         ? data.get(getTimestamInSecond(date))
         : <ItemData>{
           identity: date,
-          label: format(date, 'ddd'),
+          label: `[${format(date, 'ddd')}]`,
           value: 0,
         };
     };
@@ -77,7 +77,7 @@ export class StatisticDayDelimiterService implements ImpressionStatistic {
         getTimestamInSecond(date),
         {
           identity: date,
-          label: format(date, 'ddd'),
+          label: `[[${format(date, 'ddd')}]]`,
           value: item.views,
         }
       );
@@ -100,7 +100,7 @@ export class StatisticDayDelimiterService implements ImpressionStatistic {
         {
           identity: date,
           value: random(0, 999),
-          label: format(date, 'ddd'),
+          label: `<${format(date, 'ddd')}>`,
         }
       )
     });

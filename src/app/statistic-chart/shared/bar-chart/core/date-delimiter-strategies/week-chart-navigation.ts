@@ -1,16 +1,29 @@
 import { DateChartStrategy } from './date-chart-strategy'
-import { startOfWeek, addWeeks } from 'date-fns'
+import { startOfWeek, addWeeks, format } from 'date-fns'
 
 export class WeekChartNavigation implements DateChartStrategy {
+
+  public formatLabel(date: Date | string): string {
+    return idDate(date) ? format(date, 'ddd') : date.toString();
+  }
+
   public calcNowBarDate(): Date {
     return startOfWeek(new Date(), { weekStartsOn: 1 });
   }
 
   public calcNextBarDate(from: Date): Date {
-    return addWeeks(from, 1);
+    return this.calcSomeDateOnDistance(from, 1);
   }
 
   public calcPrevBarDate(from: Date): Date {
-    return addWeeks(from, -1);
+    return this.calcSomeDateOnDistance(from, -1);
   }
+
+  public calcSomeDateOnDistance(date: Date, calcDateDelimiter: number): Date {
+    return addWeeks(date, calcDateDelimiter);
+  }
+}
+
+function idDate(value: any): boolean {
+  return value instanceof Date;
 }

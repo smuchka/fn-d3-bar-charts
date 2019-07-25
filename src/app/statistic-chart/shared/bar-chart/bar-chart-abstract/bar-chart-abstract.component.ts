@@ -234,7 +234,6 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
    * Handler of changing input data
    */
   private recalculateAndUpdateChart(): void {
-    console.warn('Recalculate & Update chart!');
     this.initXScale();
     this.updateChart();
   }
@@ -243,7 +242,6 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
    * Update any chart elements
    */
   private updateChart(): void {
-    console.warn('Update chart!');
 
     const isChanged: boolean = this.updateMaxChartValue()
     if (isChanged) {
@@ -275,6 +273,23 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
 
     // update active item viewport position
     this.showActiveBarOnCenterViewport();
+  }
+
+  private initSubscribes(): void {
+
+    const observe = this.getObserveSource();
+    this.subs.add(
+      merge(...observe)
+        .subscribe(this.recalculateAndUpdateChart.bind(this))
+    )
+
+    this.subs.add(
+      merge(
+        this.changeBarWidth,
+        this.activeItemDataChange,
+      )
+        .subscribe(this.updateChart.bind(this))
+    );
   }
 
   private initActiveDate(): void {
@@ -310,7 +325,8 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
     const [d1, d2] = this.viewportDateRange();
     const { left, right } = this.getPadding();
 
-    console.warn(d1, d2);
+    console.warn(d1);
+    console.warn(d2);
 
     this.x = D3.scaleTime()
       .domain([d1, d2])
@@ -344,25 +360,6 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
     if (this.useYAxisValuesRound) {
       this.y = this.y.nice();
     }
-  }
-
-  private initSubscribes(): void {
-
-    const observe = this.getObserveSource();
-    this.subs.add(
-      merge(...observe)
-        .pipe(tap(() => console.log('2...')))
-        .subscribe(this.recalculateAndUpdateChart.bind(this))
-    )
-
-    this.subs.add(
-      merge(
-        this.changeBarWidth,
-        this.activeItemDataChange,
-      )
-        .pipe(tap(() => console.log('1...')))
-        .subscribe(this.updateChart.bind(this))
-    );
   }
 
   protected getObserveSource(): Observable<any>[] {
@@ -473,7 +470,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
 
     selection
       .join('text')
-      .text((d, i) => d.label)
+      .text((d, i) => this.formatLabel(d))
       .attr('class', 'label')
       // set label by center of bar
       .attr('x', d => this.x(d.identity))
@@ -502,7 +499,12 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
     items.forEach((el: ItemData) => {
       this.mapItemData.set(el.identity.getTime(), el)
     });
+
+
+    console.warn('list:', items.map(el => el.value))
   }
+
+  protected abstract formatLabel(date: ItemData): string;
 
   /**
    * Get start of step/bar date.
@@ -510,9 +512,12 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
    */
   protected abstract calcNowBarDate(): Date;
 
+  /**
+   * How much dates need show on x axis - [from;to]
+   */
+  protected abstract viewportDateRange(): [Date, Date];
+
   protected abstract calcNextBarDate(from: Date): Date;
 
   protected abstract calcPrevBarDate(from: Date): Date;
-
-  protected abstract viewportDateRange(): [Date, Date];
 }

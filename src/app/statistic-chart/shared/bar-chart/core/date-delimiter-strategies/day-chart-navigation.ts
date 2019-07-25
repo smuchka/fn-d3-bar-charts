@@ -1,16 +1,25 @@
 import { DateChartStrategy } from './date-chart-strategy'
-import { addDays, addHours, startOfToday } from 'date-fns'
+import { addDays, addHours, startOfToday, format } from 'date-fns'
 
 export class DayChartNavigation implements DateChartStrategy {
+
+  public formatLabel(date: Date): string {
+    return format(date, 'ddd');
+  }
+
   public calcNowBarDate(): Date {
     return startOfToday();
   }
 
   public calcNextBarDate(from: Date): Date {
-    return addDays(from, 1);
+    return this.calcSomeDateOnDistance(from, 1);
   }
 
   public calcPrevBarDate(from: Date): Date {
-    return addDays(from, -1);
+    return this.calcSomeDateOnDistance(from, -1);
+  }
+
+  public calcSomeDateOnDistance(date: Date, calcDateDelimiter: number): Date {
+    return addDays(date, calcDateDelimiter);
   }
 }
