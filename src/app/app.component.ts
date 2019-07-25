@@ -36,9 +36,7 @@ export class AppComponent implements OnInit {
     // private statistic: StatisticDayDelimiterService,
     private statistic: StatisticHourDelimiterService,
   ) {
-    this.pagginableData$ = new BehaviorSubject<ItemData[]>([]).pipe(
-      tap(data => console.error(data))
-    );
+    this.pagginableData$ = new BehaviorSubject<ItemData[]>([]);
     this.showChartData$ = this.pagginableData$.pipe(
       filter(list => Boolean(list.length)),
     );

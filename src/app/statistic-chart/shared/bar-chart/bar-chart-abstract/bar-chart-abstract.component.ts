@@ -325,8 +325,8 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
     const [d1, d2] = this.viewportDateRange();
     const { left, right } = this.getPadding();
 
-    console.warn(d1);
-    console.warn(d2);
+    // console.warn(d1);
+    // console.warn(d2);
 
     this.x = D3.scaleTime()
       .domain([d1, d2])
@@ -349,7 +349,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   private initYScale(): void {
     const { top, bottom } = this.getPadding();
     this.y = D3.scaleLinear()
-      .domain([1, this.maxValueFromChart])
+      .domain([0, this.maxValueFromChart])
       .range([
         // this.height - bottom,
         this.height - bottom - this.minBarHeight,
@@ -500,8 +500,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
       this.mapItemData.set(el.identity.getTime(), el)
     });
 
-
-    console.warn('list:', items.map(el => el.value))
+    // console.warn('list:', items.map(el => el.value))
   }
 
   protected abstract formatLabel(date: ItemData): string;
