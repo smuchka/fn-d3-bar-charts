@@ -78,7 +78,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
       this.activeDate = date;
       this.canActivatePrevBar = this.canChangeActiveOn(DirectionLeft);
       this.canActivateNextBar = this.canChangeActiveOn(DirectionRight);
-      this.activeItemDataChange.emit(data);
+      setTimeout(() => this.activeItemDataChange.emit(data))
     }
   }
 
@@ -108,9 +108,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   }
 
   public ngOnInit(): void {
-
-    // Init svg in DOM
-    // and init svg dimetions
+    // Init svg in DOM and init svg dimetions
     super.ngOnInit();
 
     // Start work with data, shoul already exist
@@ -132,19 +130,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
     this.groupDataBars = this.svg.append('g').attr('class', 'bar');
 
     this.showActiveBarOnCenterViewport();
-    // this.changeData.emit(this.data);
     this.updateChart()
-
-    // TODO:
-    // + click on bar - make it as active date
-    // + create comunication with wrapper Component (next/prev active)
-    // + navigation on nexx/prev active
-    // - emit event - painning ended left/right! => upload more data ...
-    // - не упускать из виду активный
-    // - show tooltip
-    // - load input size OR container size
-
-    this.svg.on("click", this.onSvgClick.bind(this));
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
@@ -164,7 +150,6 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   }
 
   public ngOnDestroy(): void {
-    console.log('Destroyed chart!');
     this.subs.unsubscribe();
   }
 
@@ -195,10 +180,6 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
 
   private onBarClick(d: ItemData): void {
     this.setActiveDate(d.identity);
-  }
-
-  private onSvgClick(d): void {
-    // console.log('click svg - ', D3.zoomIdentity);
   }
 
   private updateMaxChartValue(): boolean {
@@ -293,7 +274,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   }
 
   private initActiveDate(): void {
-    let activeDate = this.activeDate;
+    let activeDate = null;
     const now = this.calcNowBarDate();
     const arr = this.data.filter(d => d.value > 0)
     const lastNotEmptyDate: Date | null = arr.length
@@ -303,19 +284,18 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
     const todayInDateRange: boolean = differenceInSeconds(now, lastChartDate) <= 0;
 
     if (lastNotEmptyDate) {
-      this.activeDate = todayInDateRange
+      activeDate = todayInDateRange
         ? D3.max([now, lastNotEmptyDate])
         : lastNotEmptyDate
     } else if (todayInDateRange) {
       // if now NOT out of current chart dates range
-      this.activeDate = now;
+      activeDate = now;
     } else {
       // make active item from center chunk
-      this.activeDate = this.data[Math.floor((this.data.length - 1) / 2)].identity;
+      activeDate = this.data[Math.floor((this.data.length - 1) / 2)].identity;
     }
 
-    this.canActivatePrevBar = this.canChangeActiveOn(DirectionLeft);
-    this.canActivateNextBar = this.canChangeActiveOn(DirectionRight);
+    this.setActiveDate(activeDate);
   }
 
   /**
@@ -324,9 +304,6 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   private initXScale(): void {
     const [d1, d2] = this.viewportDateRange();
     const { left, right } = this.getPadding();
-
-    // console.warn(d1);
-    // console.warn(d2);
 
     this.x = D3.scaleTime()
       .domain([d1, d2])
@@ -499,8 +476,6 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
     items.forEach((el: ItemData) => {
       this.mapItemData.set(el.identity.getTime(), el)
     });
-
-    // console.warn('list:', items.map(el => el.value))
   }
 
   protected abstract formatLabel(date: ItemData): string;
