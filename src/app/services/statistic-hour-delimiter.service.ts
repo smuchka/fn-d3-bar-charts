@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { ItemData } from '../../bar-chart/core/interfaces/item-data';
-import { HourDelimiterData, DayDelimiterData } from '../core/delimiter-data';
+import { ItemData } from '../statistic-chart/shared/bar-chart/core';
+import { HourDelimiterData } from '../statistic-chart/core';
 import { ImpressionStatistic } from './impression-statistic';
 import {
   format,

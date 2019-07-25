@@ -5,16 +5,11 @@ import {
 import { Observable, Subscription, BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { StatisticDelimiter } from '../core';
-import { ItemData } from '../shared/bar-chart/core/interfaces/item-data';
+import { ItemData } from '../shared/bar-chart/core';
 import { BarChartAbstract } from '../shared/bar-chart/bar-chart-abstract/bar-chart-abstract.component';
 import { BarChartComponent } from '../shared/bar-chart/bar-chart.component';
 import { ChartActiveDateNavComponent } from '../chart-active-date-nav/chart-active-date-nav.component';
-import {
-  DateChartStrategy,
-  HourChartNavigation,
-  DayChartNavigation,
-  WeekChartNavigation
-} from '../shared/bar-chart/core/date-delimiter-strategies';
+import { DelimiterStrategy } from '../shared/bar-chart/core/date-delimiter-strategies';
 import { DelimiterChartStrategyService } from '../shared/services/delimiter-chart-strategy.service';
 import { differenceInSeconds } from 'date-fns';
 import * as D3 from 'd3';
@@ -29,7 +24,7 @@ export class ImpressionPriceChartComponent implements OnInit, OnDestroy {
   @Input()
   public data: Observable<ItemData[]>;
 
-  private dateStrategy: DateChartStrategy;
+  private dateStrategy: DelimiterStrategy.DateChart;
   private barWidth: number;
   private barCountInViewport: number;
 

@@ -1,7 +1,7 @@
-import { DateChartStrategy } from './date-chart-strategy'
+import { DateChart } from './date-chart-strategy'
 import { addDays, addHours, startOfToday, format } from 'date-fns'
 
-export class DayChartNavigation implements DateChartStrategy {
+export class DayChartNavigation implements DateChart {
 
   public formatLabel(date: Date): string {
     return format(date, 'ddd');

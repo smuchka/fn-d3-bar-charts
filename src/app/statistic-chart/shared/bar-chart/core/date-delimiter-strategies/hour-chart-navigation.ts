@@ -1,7 +1,7 @@
-import { DateChartStrategy } from './date-chart-strategy'
+import { DateChart } from './date-chart-strategy'
 import { addHours, format } from 'date-fns'
 
-export class HourChartNavigation implements DateChartStrategy {
+export class HourChartNavigation implements DateChart {
 
   public formatLabel(date: Date): string {
     return format(date, 'HH:mm');

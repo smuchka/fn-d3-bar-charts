@@ -3,9 +3,9 @@ import { StatisticDelimiter } from '../core';
 import {
   DirectionActiveChange,
   DirectionLeft,
-  DirectionRight
-} from '../shared/bar-chart/core/types/direction-active-change';
-import { DateChartStrategy } from '../shared/bar-chart/core/date-delimiter-strategies';
+  DirectionRight,
+  DelimiterStrategy,
+} from '../shared/bar-chart/core';
 import { DelimiterChartStrategyService } from '../shared/services/delimiter-chart-strategy.service';
 
 @Component({
@@ -37,7 +37,7 @@ export class ChartActiveDateNavComponent implements OnInit {
   @Output()
   public activeDateDirectionChange: EventEmitter<DirectionActiveChange>;
 
-  private dateDelimiterStrategy: DateChartStrategy;
+  private dateDelimiterStrategy: DelimiterStrategy.DateChart;
 
   public constructor(
     private dateDelimiter: DelimiterChartStrategyService,

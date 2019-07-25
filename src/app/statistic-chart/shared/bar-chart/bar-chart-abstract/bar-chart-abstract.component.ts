@@ -2,7 +2,6 @@ import {
   Component, ElementRef, Input, Output, OnChanges, OnInit, Renderer2, SimpleChanges, EventEmitter, OnDestroy
 } from '@angular/core';
 import { D3ChartBaseComponent } from './d3-chart-base.component';
-import { ItemData } from '../core/interfaces/item-data';
 import {
   startOfToday, endOfToday,
   startOfYesterday,
@@ -11,10 +10,11 @@ import {
   format
 } from 'date-fns';
 import {
+  ItemData,
   DirectionActiveChange,
   DirectionLeft,
   DirectionRight
-} from '../core/types/direction-active-change';
+} from '../core';
 import { Observable, Subscription, merge } from 'rxjs';
 import { filter, delay, tap } from 'rxjs/operators';
 import * as D3 from 'd3';

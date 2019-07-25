@@ -5,7 +5,7 @@ import { filter, tap } from 'rxjs/operators'
 import { ImpressionStatistic } from './services/impression-statistic';
 import { StatisticHourDelimiterService } from './services/statistic-hour-delimiter.service';
 import { StatisticDayDelimiterService } from './services/statistic-day-delimiter.service';
-import { ItemData } from './statistic-chart/shared/bar-chart/core/interfaces/item-data';
+import { ItemData } from './statistic-chart/shared/bar-chart/core';
 import { StatisticDelimiter } from './statistic-chart/core';
 import {
   format, parse,

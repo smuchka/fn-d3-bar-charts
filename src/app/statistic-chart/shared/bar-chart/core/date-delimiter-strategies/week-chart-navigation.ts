@@ -1,7 +1,7 @@
-import { DateChartStrategy } from './date-chart-strategy'
+import { DateChart } from './date-chart-strategy'
 import { startOfWeek, addWeeks, getMonth, format } from 'date-fns'
 
-export class WeekChartNavigation implements DateChartStrategy {
+export class WeekChartNavigation implements DateChart {
 
   public formatLabel(date: Date | string): string {
     return idDate(date) ? format(date, 'ddd') : date.toString();

@@ -1,11 +1,6 @@
 import { Injectable } from '@angular/core';
 import { StatisticDelimiter } from '../../core'
-import {
-  DateChartStrategy,
-  HourChartNavigation,
-  DayChartNavigation,
-  WeekChartNavigation
-} from '../bar-chart/core/date-delimiter-strategies';
+import { DelimiterStrategy } from '../bar-chart/core';
 
 // hour
 // barWidth = 16;
@@ -29,14 +24,14 @@ export class DelimiterChartStrategyService {
     this.isMobile = false;
   }
 
-  public resolveDateDelimiterStrategy(delimiter: StatisticDelimiter): DateChartStrategy {
+  public resolveDateDelimiterStrategy(delimiter: StatisticDelimiter): DelimiterStrategy.DateChart {
     switch (delimiter) {
       case StatisticDelimiter.Hour:
-        return new HourChartNavigation();
+        return new DelimiterStrategy.HourChartNavigation();
       case StatisticDelimiter.Day:
-        return new DayChartNavigation();
+        return new DelimiterStrategy.DayChartNavigation();
       case StatisticDelimiter.Week:
-        return new WeekChartNavigation();
+        return new DelimiterStrategy.WeekChartNavigation();
     }
   }
 

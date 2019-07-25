@@ -3,12 +3,11 @@ import {
 } from '@angular/core';
 import { Observable } from 'rxjs';
 import { BarChartAbstract } from './bar-chart-abstract/bar-chart-abstract.component';
-import { DateChartStrategy } from './core/date-delimiter-strategies';
 import {
   getBarChartEmptyDateStrategyError,
   getEmptyCountBarInViewportError
 } from './bar-chart-errors';
-import { ItemData } from './core/interfaces/item-data';
+import { DelimiterStrategy, ItemData } from './core';
 import { addDays, subDays, addHours, startOfToday } from 'date-fns'
 
 const DEFAULT_COUNT_BARS_IN_VIEWPORT: number = 10;
@@ -41,13 +40,13 @@ export class BarChartComponent extends BarChartAbstract implements OnInit {
   public barWidth: number;
 
   @Input()
-  public set dateRangeStrategy(strtategy: DateChartStrategy) {
+  public set dateRangeStrategy(strtategy: DelimiterStrategy.DateChart) {
     this.dateRangeStrategyValue = strtategy;
   }
-  public get dateRangeStrategy(): DateChartStrategy {
+  public get dateRangeStrategy(): DelimiterStrategy.DateChart {
     return this.dateRangeStrategyValue;
   }
-  private dateRangeStrategyValue: DateChartStrategy;
+  private dateRangeStrategyValue: DelimiterStrategy.DateChart;
 
   public constructor(
     protected element: ElementRef,
@@ -77,7 +76,6 @@ export class BarChartComponent extends BarChartAbstract implements OnInit {
   }
 
   protected formatLabel(data: ItemData): string {
-    // console.log((data.identity))
     return this.dateRangeStrategy.formatLabel(data.identity);
   }
 

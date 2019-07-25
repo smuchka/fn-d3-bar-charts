@@ -1,4 +1,4 @@
-export interface DateChartStrategy {
+export interface DateChart {
 
   /**
    * Function for formatting date,
