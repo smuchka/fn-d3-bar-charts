@@ -7,6 +7,10 @@ export class HourChartNavigation implements DateChartStrategy {
     return format(date, 'HH:mm');
   }
 
+  public formatRangeLabel(from: Date, to: Date): string {
+    return format(from, 'MMM DD HH:mm, YYYY');
+  }
+
   public calcNowBarDate(): Date {
     const now = new Date();
     now.setMinutes(0);

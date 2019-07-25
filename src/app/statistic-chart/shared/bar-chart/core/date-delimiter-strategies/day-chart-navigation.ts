@@ -7,6 +7,10 @@ export class DayChartNavigation implements DateChartStrategy {
     return format(date, 'ddd');
   }
 
+  public formatRangeLabel(from: Date, to: Date): string {
+    return format(from, 'MMM DD, YYYY');
+  }
+
   public calcNowBarDate(): Date {
     return startOfToday();
   }

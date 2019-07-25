@@ -1,6 +1,16 @@
 export interface DateChartStrategy {
 
+  /**
+   * Function for formatting date,
+   * used for display bar label
+   */
   formatLabel(date: Date | string): string;
+
+  /**
+   * Function for formatting date range,
+   * used for display title range dates on navigation panel
+   */
+  formatRangeLabel(from: Date, to: Date): string;
 
   /**
    * Get start of step/bar date.

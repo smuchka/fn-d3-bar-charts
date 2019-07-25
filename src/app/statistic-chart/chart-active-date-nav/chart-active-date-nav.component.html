@@ -5,6 +5,8 @@
     class="nav-item"
   >︎←</button>
 
+  <div class="nav-title">{{ dateRangeTitle }}</div>
+
   <button
     (click)="onClickNextActivate()"
     [disabled]="!canNextActivate()"

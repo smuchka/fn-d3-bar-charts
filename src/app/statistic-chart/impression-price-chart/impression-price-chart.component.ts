@@ -77,9 +77,9 @@ export class ImpressionPriceChartComponent implements OnInit, OnDestroy {
     }
 
     /** Subscribe on change active from chart component */
-    this.chartActiveItemChangeSubscription = this.chart
-      .activeItemDataChange.asObservable()
-      .subscribe(this.onActiveItemChange.bind(this))
+    // this.chartActiveItemChangeSubscription = this.chart
+    //   .activeItemDataChange.asObservable()
+    //   .subscribe(this.onActiveItemChange.bind(this))
 
     // Subscribe on input data change
     this.inputDataSubsciption = this.data
@@ -117,6 +117,15 @@ export class ImpressionPriceChartComponent implements OnInit, OnDestroy {
    */
   private switchNavigationComponent(): void {
     if (this.navigation) {
+
+      // set current active date
+      // this.navigation.setActive(this.chart.activeItemDataChange.value.identity);
+
+      // subscribe on local active date change => and update in toolbar
+      this.chart.activeItemDataChange.asObservable()
+        .subscribe((activeDate: ItemData) => this.navigation.setActive(activeDate.identity))
+
+      // subscribe on action chnageActiveDate => and update in chart internal
     }
   }
 

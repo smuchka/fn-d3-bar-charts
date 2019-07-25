@@ -74,7 +74,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
 
   public setActiveDate(date: Date) {
     const data = this.mapItemData.get(date.getTime());
-    if (data) {
+    if (data && this.activeDate !== date) {
       this.activeDate = date;
       this.canActivatePrevBar = this.canChangeActiveOn(DirectionLeft);
       this.canActivateNextBar = this.canChangeActiveOn(DirectionRight);
