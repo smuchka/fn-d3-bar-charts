@@ -64,17 +64,12 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
       // todo !!!!!!!!! - fill empty DelimiterChartStrategyService//
       .pipe(map((data: ItemData[]) => data))
       .subscribe((data: ItemData[]) => this.renderData$.next(data));
-
-    /** Subscribe on change active from chart component */
-    this.chartActiveChangeSubscription =
-      this.chart.activeItemDataChange.asObservable()
-        .subscribe(this.onActiveItemChangeFromChart.bind(this));
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
 
     if (changes.delimiter) {
-      this.resolveDelimiterConfig();
+      this.switchDateDelimiterConfig();
     }
 
     if (changes.navigation) {
@@ -103,7 +98,7 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
   /**
    * Set to chart component new data
    */
-  private resolveDelimiterConfig(): void {
+  private switchDateDelimiterConfig(): void {
     /** Set to chart copmponent strategy */
     this.dateStrategy = this.dateDelimiter.resolveDateDelimiterStrategy(this.delimiter);
 
@@ -112,22 +107,24 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
   }
 
   /**
-   * Handler for updating active item in navigation
-   */
-  private onActiveItemChangeFromChart(data: ItemData): void {
-    this.lastActive = data;
-    this.navigation.setActive(this.lastActive.identity)
-    this.navigation.canActivateNextDate = this.chart.canActivateNextBar;
-    this.navigation.canActivatePrevDate = this.chart.canActivatePrevBar;
-  }
-
-  /**
    * Switch navigation component.
    * Unsubscribe from active navigation component subscriptions
    */
   private switchNavigationComponent(): void {
 
-    // unsubscribe for old mounted navigation
+    /**
+     * Subscribe on change active from chart component,
+     * if not yet subscribed
+     */
+    if (!this.chartActiveChangeSubscription) {
+      this.chartActiveChangeSubscription =
+        this.chart.activeItemDataChange.asObservable()
+          .subscribe(this.onActiveItemChangeFromChart.bind(this));
+    }
+
+    /**
+     * Unsubscribe for old mounted navigation (if exists)
+     */
     if (this.navActiveDateDirectionChangeSubscription) {
       this.navActiveDateDirectionChangeSubscription.unsubscribe();
       this.navActiveDateDirectionChangeSubscription = null;
@@ -137,6 +134,16 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
     this.navActiveDateDirectionChangeSubscription =
       this.navigation.activeDateDirectionChange.asObservable()
         .subscribe(this.onActiveDateDirectionChange.bind(this));
+  }
+
+  /**
+   * Handler for updating active item in navigation component
+   */
+  private onActiveItemChangeFromChart(data: ItemData): void {
+    this.lastActive = data;
+    this.navigation.setActive(this.lastActive.identity)
+    this.navigation.canActivateNextDate = this.chart.canActivateNextBar;
+    this.navigation.canActivatePrevDate = this.chart.canActivatePrevBar;
   }
 
   /**
