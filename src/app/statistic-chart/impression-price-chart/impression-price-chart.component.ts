@@ -2,10 +2,10 @@ import {
   Component, ViewChild, ViewContainerRef, ComponentFactoryResolver, ComponentRef, Type,
   Input, OnInit, AfterViewInit, OnChanges, OnDestroy, SimpleChanges
 } from '@angular/core';
-import { Observable, Subscription, BehaviorSubject } from 'rxjs';
+import { Observable, Subscription, BehaviorSubject, combineLatest } from 'rxjs';
 import { map, filter, tap } from 'rxjs/operators';
 import { StatisticDelimiter } from '../core';
-import { ItemData, DelimiterStrategy } from '../shared/bar-chart/core';
+import { ItemData, DelimiterStrategy, DirectionActiveChange, DirectionLeft, DirectionRight } from '../shared/bar-chart/core';
 import { BarChartAbstract } from '../shared/bar-chart/bar-chart-abstract/bar-chart-abstract.component';
 import { BarChartComponent } from '../shared/bar-chart/bar-chart.component';
 import { ChartActiveDateNavComponent } from '../chart-active-date-nav/chart-active-date-nav.component';
@@ -36,16 +36,17 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
   private barWidth: number;
   private barCountInViewport: number;
   private renderData$: BehaviorSubject<ItemData[]>;
-  private activeItemData$: BehaviorSubject<ItemData | null>;
+  private lastActive: ItemData;
   private inputDataSubsciption: Subscription;
-  private chartActiveItemChangeSubscription: Subscription;
+  private chartActiveChangeSubscription: Subscription;
+  private navActiveDateDirectionChangeSubscription: Subscription;
 
   public constructor(
     private r: ComponentFactoryResolver,
     private dateDelimiter: DelimiterChartStrategyService,
   ) {
     this.renderData$ = new BehaviorSubject<ItemData[]>([]);
-    this.activeItemData$ = new BehaviorSubject<ItemData | null>(null);
+    this.lastActive = null;
   }
 
   public ngOnInit(): void {
@@ -65,13 +66,13 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
       .subscribe((data: ItemData[]) => this.renderData$.next(data));
 
     /** Subscribe on change active from chart component */
-    this.chartActiveItemChangeSubscription = this.chart
-      .activeItemDataChange.asObservable()
-      .subscribe(this.onActiveItemChange.bind(this));
+    this.chartActiveChangeSubscription =
+      this.chart.activeItemDataChange.asObservable()
+        .subscribe(this.onActiveItemChangeFromChart.bind(this));
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
-    console.log(changes)
+
     if (changes.delimiter) {
       this.resolveDelimiterConfig();
     }
@@ -88,9 +89,14 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
       this.inputDataSubsciption = null;
     }
 
-    if (this.chartActiveItemChangeSubscription) {
-      this.chartActiveItemChangeSubscription.unsubscribe()
-      this.chartActiveItemChangeSubscription = null;
+    if (this.chartActiveChangeSubscription) {
+      this.chartActiveChangeSubscription.unsubscribe()
+      this.chartActiveChangeSubscription = null;
+    }
+
+    if (this.navActiveDateDirectionChangeSubscription) {
+      this.navActiveDateDirectionChangeSubscription.unsubscribe()
+      this.navActiveDateDirectionChangeSubscription = null;
     }
   }
 
@@ -99,44 +105,46 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
    */
   private resolveDelimiterConfig(): void {
     /** Set to chart copmponent strategy */
-    const strategy = this.dateDelimiter.resolveDateDelimiterStrategy(this.delimiter);
-    this.dateStrategy = strategy;
+    this.dateStrategy = this.dateDelimiter.resolveDateDelimiterStrategy(this.delimiter);
 
     this.barWidth = this.dateDelimiter.getBarWidth(this.delimiter);
     this.barCountInViewport = this.dateDelimiter.getCountBars(this.delimiter);
   }
 
   /**
+   * Handler for updating active item in navigation
+   */
+  private onActiveItemChangeFromChart(data: ItemData): void {
+    this.lastActive = data;
+    this.navigation.setActive(this.lastActive.identity)
+    this.navigation.canActivateNextDate = this.chart.canActivateNextBar;
+    this.navigation.canActivatePrevDate = this.chart.canActivatePrevBar;
+  }
+
+  /**
    * Switch navigation component.
-   * Unsubscribe from active date change for navigation & navigation subscriptions
+   * Unsubscribe from active navigation component subscriptions
    */
   private switchNavigationComponent(): void {
 
     // unsubscribe for old mounted navigation
-    if (this.chartActiveItemChangeSubscription) {
-      this.chartActiveItemChangeSubscription.unsubscribe();
-      this.chartActiveItemChangeSubscription = null;
+    if (this.navActiveDateDirectionChangeSubscription) {
+      this.navActiveDateDirectionChangeSubscription.unsubscribe();
+      this.navActiveDateDirectionChangeSubscription = null;
     }
 
-    // subscribe on local active date change => and update in toolbar
-    // this.chart.activeItemDataChange.asObservable()
-    this.chartActiveItemChangeSubscription = this.activeItemData$.asObservable()
-      .pipe(filter(Boolean), tap(d => console.log(d)))
-      .subscribe((activeDate: ItemData) => this.navigation.setActive(activeDate.identity))
-
-    // subscribe on action chnageActiveDate => and update in chart internal
-    // todo!
+    /** Subscribe on request change active from navigation component */
+    this.navActiveDateDirectionChangeSubscription =
+      this.navigation.activeDateDirectionChange.asObservable()
+        .subscribe(this.onActiveDateDirectionChange.bind(this));
   }
 
   /**
-   * todo:
+   * Handler for updating active item in chart component
    */
-  public onChartEmitPetBorderEvent(e): void {
-    console.log('Chart near of border!');
-  }
-
-  public onActiveItemChange(data: ItemData): void {
-    console.log('Chart change active item: ', data);
-    this.activeItemData$.next(data);
+  private onActiveDateDirectionChange(dir): void {
+    const date: Date = this.dateStrategy
+      .calcSomeDateOnDistance(this.lastActive.identity, dir)
+    this.chart.setActiveDate(date);
   }
 }

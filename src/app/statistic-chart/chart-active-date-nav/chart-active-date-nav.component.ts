@@ -26,13 +26,13 @@ export class ChartActiveDateNavComponent implements OnInit {
   private delimiterValue: StatisticDelimiter;
 
   @Input()
-  public set activeDate(date: Date) {
-    this.activeDateValue = date;
-  }
-  public get activeDate(): Date {
-    return this.activeDateValue;
-  }
-  private activeDateValue: Date;
+  public activeDate: Date;
+
+  @Input()
+  public canActivateNextDate: boolean;
+
+  @Input()
+  public canActivatePrevDate: boolean;
 
   @Output()
   public activeDateDirectionChange: EventEmitter<DirectionActiveChange>;
@@ -44,6 +44,8 @@ export class ChartActiveDateNavComponent implements OnInit {
   ) {
     this.activeDateDirectionChange = new EventEmitter<DirectionActiveChange>();
     this.dateDelimiterStrategy = null;
+    this.canActivateNextDate = false;
+    this.canActivatePrevDate = false;
   }
 
   public get dateRangeTitle(): string {
@@ -57,33 +59,19 @@ export class ChartActiveDateNavComponent implements OnInit {
   }
 
   public ngOnInit(): void {
-    // this.updateDateDelimiterStrategy();
-    console.log(this.activeDate, this.delimiter)
   }
 
-  // todo: check
-  public canPrevActivate(): boolean {
-    return false;
-  }
-
-  // todo: check
-  public canNextActivate(): boolean {
-    return false;
-  }
-
-  // todo: check
   public onClickPrevActivate(): void {
     this.activeDateDirectionChange.next(DirectionLeft);
   }
 
-  // todo: check
   public onClickNextActivate(): void {
     this.activeDateDirectionChange.next(DirectionRight);
   }
 
   // todo: check
   public setActive(date: Date): void {
-    this.activeDateValue = date;
+    this.activeDate = date;
   }
 
   private format(from: Date, to: Date): string {
@@ -92,5 +80,13 @@ export class ChartActiveDateNavComponent implements OnInit {
 
   private updateDateDelimiterStrategy(): void {
     this.dateDelimiterStrategy = this.dateDelimiter.resolveDateDelimiterStrategy(this.delimiter);
+  }
+
+  private canPrevActivate(): boolean {
+    return this.canActivatePrevDate;
+  }
+
+  private canNextActivate(): boolean {
+    return this.canActivateNextDate;
   }
 }

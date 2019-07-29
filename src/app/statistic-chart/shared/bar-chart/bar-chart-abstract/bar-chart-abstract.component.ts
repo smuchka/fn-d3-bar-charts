@@ -40,8 +40,8 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   private mapItemData: Map<number, ItemData>;
   private activeDate: Date;
   private subs: Subscription;
-  private canActivatePrevBar: boolean;
-  private canActivateNextBar: boolean;
+  private canActivatePrevBarItem: boolean;
+  private canActivateNextBarItem: boolean;
   private changeData: EventEmitter<ItemData[]>;
   private changeBarWidth: EventEmitter<null>;
 
@@ -76,10 +76,18 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
     const data = this.mapItemData.get(date.getTime());
     if (data && this.activeDate !== date) {
       this.activeDate = date;
-      this.canActivatePrevBar = this.canChangeActiveOn(DirectionLeft);
-      this.canActivateNextBar = this.canChangeActiveOn(DirectionRight);
+      this.canActivatePrevBarItem = this.canChangeActiveOn(DirectionLeft);
+      this.canActivateNextBarItem = this.canChangeActiveOn(DirectionRight);
       setTimeout(() => this.activeItemDataChange.emit(data))
     }
+  }
+
+  public get canActivatePrevBar(): boolean {
+    return this.canActivatePrevBarItem;
+  }
+
+  public get canActivateNextBar(): boolean {
+    return this.canActivateNextBarItem;
   }
 
   public constructor(
@@ -90,8 +98,8 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
 
     this.data = [];
     this.activeDate = null;
-    this.canActivatePrevBar = false;
-    this.canActivateNextBar = false;
+    this.canActivatePrevBarItem = false;
+    this.canActivateNextBarItem = false;
     this.radiusRectangle = 4;
     this.minBarHeight = 0;
     this.minBarHeight = 10;
