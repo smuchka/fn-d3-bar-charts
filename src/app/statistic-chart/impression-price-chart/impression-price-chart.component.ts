@@ -71,6 +71,7 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
+    console.log('ngOnChanges', changes)
 
     if (changes.delimiter) {
       this.switchDateDelimiterConfig();
@@ -80,10 +81,18 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
       this.switchNavigationComponent();
     }
 
-    if (changes.data && this.dateRange) {
+    if (this.dateRange && this.data) {
 
       const [from, to] = this.getDateRange();
-      console.table([[from, to]])
+      // console.table([
+      //   [from, to]
+      // ])
+      // console.warn(
+      //   'change',
+      //   this.delimiter,
+      //   this.data,
+      //   this.dateRange,
+      // )
 
       this.renderData$ = this.data.pipe(
         map((data: ItemData[]) => {
@@ -191,11 +200,15 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
    * Map pipe function for fill empty bar
    */
   private fillRangeOfEmptyData(data: Map<number, ItemData>, d1: Date, d2: Date): ItemData[] {
-
-    const countBarItems: number = this.delimiterConfig.getChartConfig(this.delimiter).countChunk;
+    const countBarItems: number = this.delimiterConfig
+      .getChartConfig(this.delimiter).countChunk;
+      console.warn(
+        Array.from(data.values())
+      );
 
     const createDataItem = (el, index): ItemData => {
-      const nextDate: Date = this.dateStrategy.calcSomeDateOnDistance(d1, index);
+      const nextDate: Date = this.dateStrategy.calcSomeDateOnDistance(d2, -1 * index);
+      // console.log(nextDate.getTime())
       if (data.has(nextDate.getTime())) {
         return data.get(nextDate.getTime());
       }

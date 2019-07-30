@@ -4,7 +4,7 @@ import { startOfWeek, addWeeks, getMonth, format } from 'date-fns'
 export class WeekChartNavigation implements DateChart {
 
   public formatLabel(date: Date | string): string {
-    return idDate(date) ? format(date, 'ddd') : date.toString();
+    return idDate(date) ? `W${format(date, 'W')}` : date.toString();
   }
 
   public formatRangeLabel(from: Date, to: Date): string {

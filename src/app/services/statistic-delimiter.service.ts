@@ -17,13 +17,12 @@ export class StatisticDelimiterService {
     private weekStatistic: StatisticWeekDelimiterService,
   ) { }
 
-  public loadStaticticByDates(delimiter, d1: Date, d2: Date): ItemData[] {
-    console.warn('loading from here <StatisticDelimiterService> ...')
-    return this.source(delimiter).loadStaticticByDates(d1, d2);
-  }
-
   public getFirstChunkDateRange(delimiter): [Date, Date] {
     return this.source(delimiter).getFirstChunkDateRange();
+  }
+
+  public loadStaticticByDates(delimiter, d1: Date, d2: Date): ItemData[] {
+    return this.source(delimiter).loadStaticticByDates(d1, d2);
   }
 
   private source(delimiter): ImpressionStatistic {

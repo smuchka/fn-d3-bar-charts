@@ -1,6 +1,6 @@
 <div class="chart-wrapper">
 	<select 
-    [(ngModel)]="showDelimiter" 
+    [(ngModel)]="showForDelimiter" 
     (ngModelChange)="onChangeDelimiter($event)">
     <option *ngFor="let d of delimitersItems; let i = index" 
       [value]="d"
@@ -11,7 +11,7 @@
     <!-- <hello></hello> -->
 		<fn-chart-active-date-nav 
       #navLink
-      [delimiter]="showDelimiter"
+      [delimiter]="showForDelimiter"
     ></fn-chart-active-date-nav>
 	</div>
 
@@ -19,7 +19,7 @@
 		<fn-impression-price-chart
       [dateRange]="dateRange"
       [data]="pagginableData$"
-      [delimiter]="showDelimiter"
+      [delimiter]="showForDelimiter"
       [navigation]="navLink"
     ></fn-impression-price-chart>
 	</div>

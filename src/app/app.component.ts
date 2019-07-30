@@ -24,7 +24,7 @@ export class AppComponent implements OnInit {
   private pagginableData$: BehaviorSubject<ItemData[]>;
   private dateRange: [Date, Date];
   private showChartData$: Observable<ItemData[]>;
-  private showDelimiter: StatisticDelimiter = StatisticDelimiter.Day;
+  private showForDelimiter: StatisticDelimiter = StatisticDelimiter.Week;
 
   public delimitersItems = [
     StatisticDelimiter.Hour,
@@ -50,12 +50,11 @@ export class AppComponent implements OnInit {
   }
 
   private loadFirstPeriod(): void {
-    const [from, to] = this.dateRange = [
-      subHours(startOfToday(), 0),
-      subHours(endOfToday(), 0)
-    ];
+    const [from, to] = this.dateRange =
+      this.statistic.getFirstChunkDateRange(this.showForDelimiter);
 
-    const list: ItemData[] = this.statistic.loadStaticticByDates(this.showDelimiter, from, to);
+    const list: ItemData[] = this.statistic
+      .loadStaticticByDates(this.showForDelimiter, from, to);
     const mergedList: ItemData[] = this.mergeStatiscticWithChunk(list);
     this.pagginableData$.next(mergedList);
   }
@@ -65,8 +64,10 @@ export class AppComponent implements OnInit {
     const [from, to] = [subHours(date, 24), subHours(date, 1)];
     this.dateRange = [from, this.dateRange[1]];
 
-    const list: ItemData[] = this.statistic.loadStaticticByDates(this.showDelimiter, from, to);
-    this.pagginableData$.next(this.mergeStatiscticWithChunk(list))
+    const list: ItemData[] = this.statistic
+      .loadStaticticByDates(this.showForDelimiter, from, to);
+    const mergedList: ItemData[] = this.mergeStatiscticWithChunk(list);
+    this.pagginableData$.next(mergedList)
   }
 
   private mergeStatiscticWithChunk(chunk: ItemData[]): ItemData[] {

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { ItemData } from '../statistic-chart/shared/bar-chart/core';
 import { WeekDelimiterData } from '../statistic-chart/core';
 import { ImpressionStatistic } from './impression-statistic';
-import { startOfToday, endOfToday, subWeeks } from 'date-fns'
+import { startOfWeek, startOfToday, endOfWeek, endOfToday, subWeeks } from 'date-fns'
 // mocks
 import { weeksMock } from '../data/weeksMock';
 import { random, getTimestamInSecond } from './helpers';
@@ -12,12 +12,14 @@ import * as D3 from 'd3';
 @Injectable()
 export class StatisticWeekDelimiterService implements ImpressionStatistic {
 
-  private countRandom = 5;
+  private countRandom = 35;
 
   public getFirstChunkDateRange(): [Date, Date] {
+    const startCurrentWeek = startOfWeek(startOfToday(), { weekStartsOn: 1 });
+    const countItemsInViewport = 11;
     return [
-      subWeeks(startOfToday(), 11),
-      endOfToday()
+      subWeeks(startCurrentWeek, countItemsInViewport),
+      endOfWeek(endOfToday(), { weekStartsOn: 1 }),
     ];
   }
 
