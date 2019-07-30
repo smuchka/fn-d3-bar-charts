@@ -7,7 +7,7 @@ import {
   getBarChartEmptyDateStrategyError,
   getEmptyCountBarInViewportError
 } from './bar-chart-errors';
-import { DelimiterStrategy, ItemData } from './core';
+import { DateChart, ItemData } from './core';
 import { addDays, subDays, addHours, startOfToday } from 'date-fns'
 
 const DEFAULT_COUNT_BARS_IN_VIEWPORT: number = 10;
@@ -40,13 +40,13 @@ export class BarChartComponent extends BarChartAbstract implements OnInit {
   public barWidth: number;
 
   @Input()
-  public set dateRangeStrategy(strtategy: DelimiterStrategy.DateChart) {
+  public set dateRangeStrategy(strtategy: DateChart) {
     this.dateRangeStrategyValue = strtategy;
   }
-  public get dateRangeStrategy(): DelimiterStrategy.DateChart {
+  public get dateRangeStrategy(): DateChart {
     return this.dateRangeStrategyValue;
   }
-  private dateRangeStrategyValue: DelimiterStrategy.DateChart;
+  private dateRangeStrategyValue: DateChart;
 
   public constructor(
     protected element: ElementRef,

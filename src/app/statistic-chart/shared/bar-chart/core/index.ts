@@ -4,12 +4,12 @@ import {
   DirectionRight
 } from './types/direction-active-change';
 import { ItemData } from './interfaces/item-data';
-import * as DelimiterStrategy from './date-delimiter-strategies';
+import { DateChart } from './interfaces/date-chart-strategy';
 
 export {
   DirectionActiveChange,
   DirectionLeft,
   DirectionRight,
   ItemData,
-  DelimiterStrategy
+  DateChart,
 }

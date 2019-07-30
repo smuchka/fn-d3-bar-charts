@@ -1,18 +1,26 @@
 import { Injectable } from '@angular/core';
 import { StatisticDelimiter } from '../../core'
-import { DelimiterStrategy } from '../bar-chart/core';
+import { DateChart } from '../bar-chart/core';
+import {
+  HourChartNavigation,
+  DayChartNavigation,
+  WeekChartNavigation
+} from './date-delimiter-strategies';
 
 @Injectable()
 export class DelimiterChartStrategyService {
 
-  public resolveDateDelimiterStrategy(delimiter: StatisticDelimiter): DelimiterStrategy.DateChart {
+  public resolveDateDelimiterStrategy(delimiter: StatisticDelimiter): DateChart {
+    
     switch (delimiter) {
       case StatisticDelimiter.Hour:
-        return new DelimiterStrategy.HourChartNavigation();
+        return new HourChartNavigation();
+
       case StatisticDelimiter.Day:
-        return new DelimiterStrategy.DayChartNavigation();
+        return new DayChartNavigation();
+
       case StatisticDelimiter.Week:
-        return new DelimiterStrategy.WeekChartNavigation();
+        return new WeekChartNavigation();
     }
   }
 }

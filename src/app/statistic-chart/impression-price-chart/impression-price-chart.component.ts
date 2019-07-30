@@ -4,13 +4,14 @@ import {
 } from '@angular/core';
 import { Observable, Subscription, BehaviorSubject, Subject, combineLatest } from 'rxjs';
 import { map, filter, tap, delay } from 'rxjs/operators';
-import { StatisticDelimiter, ConfigChartSize } from '../core';
-import { ItemData, DelimiterStrategy, DirectionActiveChange, DirectionLeft, DirectionRight } from '../shared/bar-chart/core';
+import { StatisticDelimiter, ChartSizeConfig } from '../core';
+import { ItemData, DirectionActiveChange, DirectionLeft, DirectionRight } from '../shared/bar-chart/core';
 import { BarChartAbstract } from '../shared/bar-chart/bar-chart-abstract/bar-chart-abstract.component';
 import { BarChartComponent } from '../shared/bar-chart/bar-chart.component';
 import { ChartActiveDateNavComponent } from '../chart-active-date-nav/chart-active-date-nav.component';
 import { DelimiterChartStrategyService } from '../shared/services/delimiter-chart-strategy.service';
 import { DelimiterChartConfigService } from '../shared/services/delimiter-chart-config.service';
+import { DateChart } from '../shared/bar-chart/core';
 import { differenceInSeconds } from 'date-fns';
 import * as D3 from 'd3';
 
@@ -33,7 +34,7 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
   @ViewChild('chart', { static: true })
   protected chart: BarChartAbstract;
 
-  private dateStrategy: DelimiterStrategy.DateChart;
+  private dateStrategy: DateChart;
   private barWidth: number;
   private barCountInViewport: number;
   private renderData$: Observable<ItemData[]>;
