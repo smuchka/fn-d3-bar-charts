@@ -2,15 +2,7 @@ import { Injectable } from '@angular/core';
 import { ItemData } from '../statistic-chart/shared/bar-chart/core';
 import { DayDelimiterData } from '../statistic-chart/core';
 import { ImpressionStatistic } from './impression-statistic';
-import {
-  format,
-  parse,
-  startOfToday, endOfToday,
-  differenceInHours,
-  addHours, subHours,
-  differenceInDays,
-  addDays, subDays,
-} from 'date-fns'
+import { startOfToday, endOfToday, subDays } from 'date-fns'
 // mocks
 import { daysMock } from '../data/daysMock';
 import { random, getTimestamInSecond } from './helpers';
@@ -22,12 +14,12 @@ export class StatisticDayDelimiterService implements ImpressionStatistic {
 
   private countRandom = 5;
 
-  // public getFirstChunkDateRange(): [Date, Date] {
-  //   return [
-  //     subDays(startOfToday(), 14),
-  //     endOfToday()
-  //   ];
-  // }
+  public getFirstChunkDateRange(): [Date, Date] {
+    return [
+      subDays(startOfToday(), 14),
+      endOfToday()
+    ];
+  }
 
   public loadMockData(): ItemData[] {
     return daysMock.map((item: DayDelimiterData) => {
