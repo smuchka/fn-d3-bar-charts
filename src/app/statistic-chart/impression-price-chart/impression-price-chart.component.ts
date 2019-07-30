@@ -2,14 +2,15 @@ import {
   Component, ViewChild, ViewContainerRef, ComponentFactoryResolver, ComponentRef, Type,
   Input, OnInit, AfterViewInit, OnChanges, OnDestroy, SimpleChanges
 } from '@angular/core';
-import { Observable, Subscription, BehaviorSubject, combineLatest } from 'rxjs';
-import { map, filter, tap } from 'rxjs/operators';
-import { StatisticDelimiter } from '../core';
+import { Observable, Subscription, BehaviorSubject, Subject, combineLatest } from 'rxjs';
+import { map, filter, tap, delay } from 'rxjs/operators';
+import { StatisticDelimiter, ConfigChartSize } from '../core';
 import { ItemData, DelimiterStrategy, DirectionActiveChange, DirectionLeft, DirectionRight } from '../shared/bar-chart/core';
 import { BarChartAbstract } from '../shared/bar-chart/bar-chart-abstract/bar-chart-abstract.component';
 import { BarChartComponent } from '../shared/bar-chart/bar-chart.component';
 import { ChartActiveDateNavComponent } from '../chart-active-date-nav/chart-active-date-nav.component';
 import { DelimiterChartStrategyService } from '../shared/services/delimiter-chart-strategy.service';
+import { DelimiterChartConfigService } from '../shared/services/delimiter-chart-config.service';
 import { differenceInSeconds } from 'date-fns';
 import * as D3 from 'd3';
 
@@ -35,7 +36,7 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
   private dateStrategy: DelimiterStrategy.DateChart;
   private barWidth: number;
   private barCountInViewport: number;
-  private renderData$: BehaviorSubject<ItemData[]>;
+  private renderData$: Observable<ItemData[]>;
   private lastActive: ItemData;
   private inputDataSubsciption: Subscription;
   private chartActiveChangeSubscription: Subscription;
@@ -44,8 +45,8 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
   public constructor(
     private r: ComponentFactoryResolver,
     private dateDelimiter: DelimiterChartStrategyService,
+    private delimiterConfig: DelimiterChartConfigService,
   ) {
-    this.renderData$ = new BehaviorSubject<ItemData[]>([]);
     this.lastActive = null;
   }
 
@@ -58,12 +59,6 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
     if (!this.data) {
       throw Error('Not specified statistic data')
     }
-
-    // Subscribe on input data change
-    this.inputDataSubsciption = this.data
-      // todo !!!!!!!!! - fill empty DelimiterChartStrategyService//
-      .pipe(map((data: ItemData[]) => data))
-      .subscribe((data: ItemData[]) => this.renderData$.next(data));
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
@@ -74,6 +69,14 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
 
     if (changes.navigation) {
       this.switchNavigationComponent();
+    }
+
+    if (changes.data) {
+      // Subscribe on input data change
+      this.renderData$ = this.data.pipe(
+        map((data: ItemData[]) => data),
+        tap((data) => console.log('>>>', data)),
+      );
     }
   }
 
@@ -102,8 +105,9 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
     /** Set to chart copmponent strategy */
     this.dateStrategy = this.dateDelimiter.resolveDateDelimiterStrategy(this.delimiter);
 
-    this.barWidth = this.dateDelimiter.getBarWidth(this.delimiter);
-    this.barCountInViewport = this.dateDelimiter.getCountBars(this.delimiter);
+    const config: ConfigChartSize = this.delimiterConfig.getChartConfig(this.delimiter);
+    this.barWidth = config.barWidth;
+    this.barCountInViewport = config.countViewport;
   }
 
   /**
@@ -153,5 +157,20 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
     const date: Date = this.dateStrategy
       .calcSomeDateOnDistance(this.lastActive.identity, dir)
     this.chart.setActiveDate(date);
+  }
+
+  /**
+   * Map pipe function for fill empty bar
+   */
+  private generateRangeOfEmptyData(data: ItemData[], d1: Date, d2: Date): ItemData[] {
+    const countBarItems: number = this.delimiterConfig.getChartConfig(this.delimiter).countChunk;
+
+    const createDataItem = (el, index): ItemData => {
+      const date: Date = this.dateStrategy.calcSomeDateOnDistance(d1, index);
+      return <ItemData>{ identity: date, value: 0 };
+    };
+
+
+    return Array.from(Array(countBarItems), createDataItem);
   }
 }

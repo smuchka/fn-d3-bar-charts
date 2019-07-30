@@ -78,7 +78,7 @@ export abstract class D3ChartBaseComponent implements OnInit {
    * Used if unable to get the width / height of the parent node
    */
   private defaultWidth: number = 300;
-  private defaultHeight: number = 400;
+  private defaultHeight: number = 300;
 
   protected useLabel: boolean;
   protected useYAxisValuesRound: boolean;

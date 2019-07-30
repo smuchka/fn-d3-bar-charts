@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ImpressionPriceChartModule } from './impression-price-chart/impression-price-chart.module';
 import { ChartActiveDateNavModule } from './chart-active-date-nav/chart-active-date-nav.module';
 import { DelimiterChartStrategyService } from './shared/services/delimiter-chart-strategy.service';
+import { DelimiterChartConfigService } from './shared/services/delimiter-chart-config.service';
 
 @NgModule({
   imports: [
@@ -15,7 +16,8 @@ import { DelimiterChartStrategyService } from './shared/services/delimiter-chart
     ChartActiveDateNavModule,
   ],
   providers: [
-    DelimiterChartStrategyService
+    DelimiterChartStrategyService,
+    DelimiterChartConfigService
   ],
 })
 export class StatisticChartModule {

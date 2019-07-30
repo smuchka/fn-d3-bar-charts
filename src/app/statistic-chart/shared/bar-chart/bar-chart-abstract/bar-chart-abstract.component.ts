@@ -2,6 +2,7 @@ import {
   Component, ElementRef, Input, Output, OnChanges, OnInit, Renderer2, SimpleChanges, EventEmitter, OnDestroy
 } from '@angular/core';
 import { D3ChartBaseComponent } from './d3-chart-base.component';
+import { getEmptyDataInitError } from './bar-chart-errors';
 import {
   startOfToday, endOfToday,
   startOfYesterday,
@@ -121,7 +122,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
 
     // Start work with data, shoul already exist
     if (!this.data || !this.data.length) {
-      return;
+      throw getEmptyDataInitError();
     }
 
     // Requiered init after chart entities
@@ -138,7 +139,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
     this.groupDataBars = this.svg.append('g').attr('class', 'bar');
 
     this.showActiveBarOnCenterViewport();
-    this.updateChart()
+    this.updateChart();
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
@@ -475,15 +476,18 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   }
 
   private updateMapItemData(items: ItemData[]): void {
+
     if (!this.mapItemData) {
       this.mapItemData = new Map<number, ItemData>();
     } else {
       this.mapItemData.clear();
     }
 
-    items.forEach((el: ItemData) => {
-      this.mapItemData.set(el.identity.getTime(), el)
-    });
+    if (items && items.length) {
+      items.forEach((el: ItemData) => {
+        this.mapItemData.set(el.identity.getTime(), el)
+      });
+    }
   }
 
   protected abstract formatLabel(date: ItemData): string;
