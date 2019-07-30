@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { StatisticDelimiter, PlatformSize, ListChartConfig, ConfigChartSize } from '../../core'
+import { StatisticDelimiter, PlatformSize, ListChartConfig, ChartSizeConfig } from '../../core'
 
 @Injectable()
 export class DelimiterChartConfigService {
@@ -26,9 +26,9 @@ export class DelimiterChartConfigService {
     }
   }
 
-  public getChartConfig(delimiter: StatisticDelimiter): ConfigChartSize {
+  public getChartConfig(delimiter: StatisticDelimiter): ChartSizeConfig {
 
-    let config: ConfigChartSize = this.config[this.getCurrentPlatformSize()][delimiter];
+    let config: ChartSizeConfig = this.config[this.getCurrentPlatformSize()][delimiter];
 
     /**
      * Set default config

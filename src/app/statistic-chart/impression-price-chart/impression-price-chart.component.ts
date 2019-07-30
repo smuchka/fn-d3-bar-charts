@@ -86,7 +86,12 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
       console.table([[from, to]])
 
       this.renderData$ = this.data.pipe(
-        map((data: ItemData[]) => this.fillRangeOfEmptyData(data, from, to)),
+        map((data: ItemData[]) => {
+          const localMap: Map<number, ItemData> = new Map();
+          data.forEach((el: ItemData) => localMap.set(el.identity.getTime(), el));
+          return localMap;
+        }),
+        map((map: Map<number, ItemData>) => this.fillRangeOfEmptyData(map, from, to)),
         tap((data) => console.log('>>>', data)),
       );
     }
@@ -117,7 +122,8 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
     /** Set to chart copmponent strategy */
     this.dateStrategy = this.dateDelimiter.resolveDateDelimiterStrategy(this.delimiter);
 
-    const config: ConfigChartSize = this.delimiterConfig.getChartConfig(this.delimiter);
+    const config: ChartSizeConfig = this.delimiterConfig
+      .getChartConfig(this.delimiter);
     this.barWidth = config.barWidth;
     this.barCountInViewport = config.countViewport;
   }
@@ -184,17 +190,18 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
   /**
    * Map pipe function for fill empty bar
    */
-  private fillRangeOfEmptyData(data: ItemData[], d1: Date, d2: Date): ItemData[] {
-
-    return data;
+  private fillRangeOfEmptyData(data: Map<number, ItemData>, d1: Date, d2: Date): ItemData[] {
 
     const countBarItems: number = this.delimiterConfig.getChartConfig(this.delimiter).countChunk;
 
     const createDataItem = (el, index): ItemData => {
-      const date: Date = this.dateStrategy.calcSomeDateOnDistance(d1, index);
-      return <ItemData>{ identity: date, value: 0 };
-    };
+      const nextDate: Date = this.dateStrategy.calcSomeDateOnDistance(d1, index);
+      if (data.has(nextDate.getTime())) {
+        return data.get(nextDate.getTime());
+      }
 
+      return <ItemData>{ identity: nextDate, value: 0 };
+    };
 
     return Array.from(Array(countBarItems), createDataItem);
   }

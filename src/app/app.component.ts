@@ -24,7 +24,7 @@ export class AppComponent implements OnInit {
   private pagginableData$: BehaviorSubject<ItemData[]>;
   private dateRange: [Date, Date];
   private showChartData$: Observable<ItemData[]>;
-  private showDelimiter: StatisticDelimiter = StatisticDelimiter.Hour;
+  private showDelimiter: StatisticDelimiter = StatisticDelimiter.Day;
 
   public delimitersItems = [
     StatisticDelimiter.Hour,
