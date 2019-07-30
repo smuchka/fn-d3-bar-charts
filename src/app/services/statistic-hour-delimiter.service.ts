@@ -20,23 +20,12 @@ import * as D3 from 'd3';
 export class StatisticHourDelimiterService implements ImpressionStatistic {
   private countRandom = 5;
 
-  constructor() {
-  }
-
-  public getFirstChunkDateRange(): [Date, Date] {
-    return [
-      subHours(startOfToday(), 0),
-      subHours(endOfToday(), 0)
-    ];
-  }
-
   public loadStaticticByDates(d1: Date, d2: Date): ItemData[] {
-    const [firstChunkStart, firstChunkEnd] = this.getFirstChunkDateRange();
-
-    if (differenceInHours(d1, firstChunkStart) <= 0
-      && differenceInHours(d2, firstChunkEnd) <= 0) {
-      return this.extendDateRangeByEmptyData(this.loadMockStaticData(), d1, d2);
-    }
+    // const [firstChunkStart, firstChunkEnd] = this.getFirstChunkDateRange();
+    // if (differenceInHours(d1, firstChunkStart) <= 0
+    //   && differenceInHours(d2, firstChunkEnd) <= 0) {
+    //   return this.extendDateRangeByEmptyData(this.loadMockStaticData(), d1, d2);
+    // }
 
     const map = this.generateRandomHourChunk(d1, d2, this.countRandom);
     return this.extendDateRangeByEmptyData(map, d1, d2);

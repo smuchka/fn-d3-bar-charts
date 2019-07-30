@@ -8,6 +8,7 @@ import { StatisticChartModule } from './statistic-chart/statistic-chart.module';
 
 import { StatisticHourDelimiterService } from './services/statistic-hour-delimiter.service';
 import { StatisticDayDelimiterService } from './services/statistic-day-delimiter.service';
+import { StatisticDelimiterService } from './services/statistic-delimiter.service';
 
 @NgModule({
   imports: [
@@ -18,7 +19,8 @@ import { StatisticDayDelimiterService } from './services/statistic-day-delimiter
   declarations: [AppComponent, HelloComponent],
   providers: [
     StatisticHourDelimiterService,
-    StatisticDayDelimiterService
+    StatisticDayDelimiterService,
+    StatisticDelimiterService
   ],
   bootstrap: [AppComponent],
 })
