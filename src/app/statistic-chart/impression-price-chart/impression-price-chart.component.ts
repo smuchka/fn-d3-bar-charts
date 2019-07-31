@@ -23,6 +23,9 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
   public data: Observable<ItemData[]>;
 
   @Input()
+  public dateRange: [Date, Date];
+
+  @Input()
   public delimiter: StatisticDelimiter;
 
   @Input()
@@ -51,15 +54,20 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
   public ngOnInit(): void {
 
     if (!this.delimiter) {
-      throw Error('Not specified statistic view delimiter')
+      throw getEmptyChartDelimiterError();
+    }
+
+    if (!this.dateRange) {
+      throw getEmptyChartDateRangeError();
     }
 
     if (!this.data) {
-      throw Error('Not specified statistic data')
+      throw getEmptyDataError();
     }
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
+    console.log('ngOnChanges', changes)
 
     if (changes.delimiter) {
       this.switchDateDelimiterConfig();
@@ -69,10 +77,26 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
       this.switchNavigationComponent();
     }
 
-    if (changes.data) {
-      // Subscribe on input data change
+    if (this.dateRange && this.data) {
+
+      const [from, to] = this.getDateRange();
+      // console.table([
+      //   [from, to]
+      // ])
+      // console.warn(
+      //   'change',
+      //   this.delimiter,
+      //   this.data,
+      //   this.dateRange,
+      // )
+
       this.renderData$ = this.data.pipe(
-        map((data: ItemData[]) => data),
+        map((data: ItemData[]) => {
+          const localMap: Map<number, ItemData> = new Map();
+          data.forEach((el: ItemData) => localMap.set(el.identity.getTime(), el));
+          return localMap;
+        }),
+        map((map: Map<number, ItemData>) => this.fillRangeOfEmptyData(map, from, to)),
         tap((data) => console.log('>>>', data)),
       );
     }
@@ -103,7 +127,8 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
     /** Set to chart copmponent strategy */
     this.dateStrategy = this.dateDelimiter.resolveDateDelimiterStrategy(this.delimiter);
 
-    const config: ChartSizeConfig = this.delimiterConfig.getChartConfig(this.delimiter);
+    const config: ChartSizeConfig = this.delimiterConfig
+      .getChartConfig(this.delimiter);
     this.barWidth = config.barWidth;
     this.barCountInViewport = config.countViewport;
   }
@@ -157,17 +182,35 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
     this.chart.setActiveDate(date);
   }
 
+  private getDateRange(): [Date, Date] {
+    const [from, to] = this.dateRange;
+
+    if (to.getTime() < from.getTime()) {
+      return [to, from];
+    }
+
+    return this.dateRange;
+  }
+
   /**
    * Map pipe function for fill empty bar
    */
-  private generateRangeOfEmptyData(data: ItemData[], d1: Date, d2: Date): ItemData[] {
-    const countBarItems: number = this.delimiterConfig.getChartConfig(this.delimiter).countChunk;
+  private fillRangeOfEmptyData(data: Map<number, ItemData>, d1: Date, d2: Date): ItemData[] {
+    const countBarItems: number = this.delimiterConfig
+      .getChartConfig(this.delimiter).countChunk;
+      console.warn(
+        Array.from(data.values())
+      );
 
     const createDataItem = (el, index): ItemData => {
-      const date: Date = this.dateStrategy.calcSomeDateOnDistance(d1, index);
-      return <ItemData>{ identity: date, value: 0 };
-    };
+      const nextDate: Date = this.dateStrategy.calcSomeDateOnDistance(d2, -1 * index);
+      // console.log(nextDate.getTime())
+      if (data.has(nextDate.getTime())) {
+        return data.get(nextDate.getTime());
+      }
 
+      return <ItemData>{ identity: nextDate, value: 0 };
+    };
 
     return Array.from(Array(countBarItems), createDataItem);
   }

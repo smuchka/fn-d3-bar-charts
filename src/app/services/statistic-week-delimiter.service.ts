@@ -1,33 +1,34 @@
 import { Injectable } from '@angular/core';
 import { ItemData } from '../statistic-chart/shared/bar-chart/core';
-import { DayDelimiterData } from '../statistic-chart/core';
+import { WeekDelimiterData } from '../statistic-chart/core';
 import { ImpressionStatistic } from './impression-statistic';
-import { startOfToday, endOfToday, subDays } from 'date-fns'
+import { startOfWeek, startOfToday, endOfWeek, endOfToday, subWeeks } from 'date-fns'
 // mocks
-import { daysMock } from '../data/daysMock';
+import { weeksMock } from '../data/weeksMock';
 import { random, getTimestamInSecond } from './helpers';
 // for generate mock paggination
 import * as D3 from 'd3';
 
 @Injectable()
-export class StatisticDayDelimiterService implements ImpressionStatistic {
+export class StatisticWeekDelimiterService implements ImpressionStatistic {
 
-  private countRandom = 5;
+  private countRandom = 35;
 
   public getFirstChunkDateRange(): [Date, Date] {
+    const startCurrentWeek = startOfWeek(startOfToday(), { weekStartsOn: 1 });
+    const countItemsInViewport = 11;
     return [
-      subDays(startOfToday(), 14),
-      endOfToday()
+      subWeeks(startCurrentWeek, countItemsInViewport),
+      endOfWeek(endOfToday(), { weekStartsOn: 1 }),
     ];
   }
 
   public loadMockData(): ItemData[] {
-    return daysMock.map((item: DayDelimiterData) => {
+    return weeksMock.map((item: WeekDelimiterData) => {
       const date = new Date();
       date.setUTCFullYear(+item.year);
       date.setUTCMonth(+item.month - 1);
       date.setUTCDate(+item.day);
-      // date.setUTCHours(0, 0, 0, 0);
       date.setHours(0, 0, 0, 0);
 
       return {
@@ -43,10 +44,10 @@ export class StatisticDayDelimiterService implements ImpressionStatistic {
 
   private generateRandomChunk(d1: Date, d2: Date, count: number): ItemData[] {
     const map = new Map<number, ItemData>();
-    const countRand: number = random(1, Math.floor(28 / count));
+    const countRand: number = random(1, Math.floor(24 / count));
 
     const x = D3.scaleTime().domain([d1, d2]);
-    const randValues: Date[] = x.ticks(D3.timeDay.every(countRand));
+    const randValues: Date[] = x.ticks(D3.timeWeek.every(countRand));
 
     return randValues.slice(
       randValues.length - count - 1,

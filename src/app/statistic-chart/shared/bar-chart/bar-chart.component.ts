@@ -92,7 +92,7 @@ export class BarChartComponent extends BarChartAbstract implements OnInit {
     const startingDatePoint: Date = this.data[this.data.length - 1].identity;
     const from: Date = this.dateRangeStrategy.calcSomeDateOnDistance(
       startingDatePoint,
-      -1 * (this.countBarsInViewport)
+      -1 * (this.countBarsInViewport - 1)
     );
     return [from, startingDatePoint];
   }
