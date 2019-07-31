@@ -1,5 +1,5 @@
 import { DateChart } from '../../bar-chart/core';
-import { startOfWeek, addWeeks, getMonth, format } from 'date-fns'
+import { startOfWeek, endOfWeek, addWeeks, getMonth, format } from 'date-fns'
 
 export class WeekChartNavigation implements DateChart {
 
@@ -19,7 +19,15 @@ export class WeekChartNavigation implements DateChart {
   }
 
   public calcNowBarDate(): Date {
-    return startOfWeek(new Date(), { weekStartsOn: 1 });
+    return this.calcStartBarOfDate(new Date());
+  }
+
+  public calcStartBarOfDate(date: Date): Date {
+    return startOfWeek(date, { weekStartsOn: 1 });
+  }
+
+  public calcEndBarOfDate(date: Date): Date {
+    return endOfWeek(date, { weekStartsOn: 1 });
   }
 
   public calcNextBarDate(from: Date): Date {

@@ -165,7 +165,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
     this.x = D3.event.transform.rescaleX(this.x2);
 
     // redraw groups of bars 
-    const { x } = D3.event.transform || { x: 0};
+    const { x } = D3.event.transform || { x: 0 };
     this.groupPlaceholderBars.attr("transform", "translate(" + x + ",0)");
     this.groupDataBars.attr("transform", "translate(" + x + ",0)");
   }
@@ -173,15 +173,15 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   private onZoomedEnd(e): void {
     const dataMin = D3.min(this.data, d => d.identity);
     const currentDomainMin = D3.min(this.x.domain());
-    console.log(this.data);
-    console.log(
-      this.x.domain(),
-      currentDomainMin
-    );
+    // console.log(this.data);
+    // console.log(
+    //   this.x.domain(),
+    //   currentDomainMin
+    // );
 
-    if (dataMin > currentDomainMin) {
-      console.log('Direction left');
-    }
+    // if (dataMin > currentDomainMin) {
+    //   console.log('Direction left');
+    // }
   }
 
   private onBarClick(d: ItemData): void {
@@ -240,6 +240,9 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
       D3.max(this.data, d => d.identity),
     );
 
+    // todo: recal active item
+    // on chnage delimiter -> active date not correct
+
     // draw bar placeholders
     const placeholderBars = this.groupPlaceholderBars
       .selectAll('rect')
@@ -287,13 +290,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
       ? D3.max(arr, d => d.identity)
       : null;
     const lastChartDate = this.data[this.data.length - 1].identity;
-    //
-    //
-    // todo: !!!!!!
     const todayInDateRange: boolean = differenceInSeconds(now, lastChartDate) <= 0;
-
-    console.warn(now);
-    console.warn(lastChartDate);
 
     if (lastNotEmptyDate) {
       activeDate = todayInDateRange
@@ -322,8 +319,8 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
       .rangeRound([
         this.margin.left + left,
         this.width - this.margin.right - right,
-      ])
-      .nice();
+      ]);
+
     this.x2 = this.x.copy();
 
     // calc width of one bar
