@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { StatisticDelimiter, PlatformSize, ListChartConfig, ChartSizeConfig } from '../../core'
+import { StatisticDelimiter, PlatformSize, ListChartConfig, ChartSizeConfig } from '../statistic-chart/core'
 
 @Injectable()
 export class DelimiterChartConfigService {

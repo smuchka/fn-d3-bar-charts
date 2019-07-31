@@ -9,8 +9,17 @@ import { ItemData } from '../shared/bar-chart/core';
 import { BarChartAbstract } from '../shared/bar-chart/bar-chart-abstract/bar-chart-abstract.component';
 import { ChartActiveDateNavComponent } from '../chart-active-date-nav/chart-active-date-nav.component';
 import { DelimiterChartStrategyService } from '../shared/services/delimiter-chart-strategy.service';
-import { DelimiterChartConfigService } from '../shared/services/delimiter-chart-config.service';
+import { DelimiterChartConfigService } from '../../services/delimiter-chart-config.service';
 import { DateChart } from '../shared/bar-chart/core';
+import {
+  getEmptyChartDelimiterError,
+  getEmptyChartDateRangeError,
+  getEmptyDataError
+} from './impression-price-chart-errors';
+import {
+  startOfWeek,
+  startOfDay
+} from 'date-fns';
 
 @Component({
   selector: 'fn-impression-price-chart',
@@ -79,16 +88,10 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
 
     if (this.dateRange && this.data) {
 
-      const [from, to] = this.getDateRange();
-      // console.table([
-      //   [from, to]
-      // ])
-      // console.warn(
-      //   'change',
-      //   this.delimiter,
-      //   this.data,
-      //   this.dateRange,
-      // )
+      let [from, to] = this.getDateRange();
+      console.table([
+        [from, to]
+      ]);
 
       this.renderData$ = this.data.pipe(
         map((data: ItemData[]) => {
@@ -97,7 +100,7 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
           return localMap;
         }),
         map((map: Map<number, ItemData>) => this.fillRangeOfEmptyData(map, from, to)),
-        tap((data) => console.log('>>>', data)),
+        tap((data) => console.log('>>>', from, to, data)),
       );
     }
   }
@@ -196,11 +199,17 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
    * Map pipe function for fill empty bar
    */
   private fillRangeOfEmptyData(data: Map<number, ItemData>, d1: Date, d2: Date): ItemData[] {
+
+    d1 = this.dateStrategy.calcStartBarOfDate(d1);
+    d2 = this.dateStrategy.calcStartBarOfDate(d2);
+
     const countBarItems: number = this.delimiterConfig
       .getChartConfig(this.delimiter).countChunk;
-      console.warn(
-        Array.from(data.values())
-      );
+
+    console.warn(
+      d1, d2,
+      Array.from(data.values())
+    );
 
     const createDataItem = (el, index): ItemData => {
       const nextDate: Date = this.dateStrategy.calcSomeDateOnDistance(d2, -1 * index);
@@ -212,6 +221,6 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
       return <ItemData>{ identity: nextDate, value: 0 };
     };
 
-    return Array.from(Array(countBarItems), createDataItem);
+    return Array.from(Array(countBarItems), createDataItem).reverse();
   }
 }

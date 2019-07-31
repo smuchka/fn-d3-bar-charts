@@ -1,4 +1,4 @@
-import { addHours, format } from 'date-fns'
+import { addHours, startOfHour, endOfHour, format } from 'date-fns'
 import { DateChart } from '../../bar-chart/core';
 
 export class HourChartNavigation implements DateChart {
@@ -12,11 +12,20 @@ export class HourChartNavigation implements DateChart {
   }
 
   public calcNowBarDate(): Date {
-    const now = new Date();
-    now.setMinutes(0);
-    now.setSeconds(0);
-    now.setMilliseconds(0);
-    return now;
+    // const now = new Date();
+    // now.setMinutes(0);
+    // now.setSeconds(0);
+    // now.setMilliseconds(0);
+    // return now;
+    return this.calcStartBarOfDate(new Date());
+  }
+
+  public calcStartBarOfDate(date: Date): Date {
+    return startOfHour(date);
+  }
+
+  public calcEndBarOfDate(date: Date): Date {
+    return endOfHour(date);
   }
 
   public calcNextBarDate(from: Date): Date {

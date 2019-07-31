@@ -6,7 +6,8 @@ import { StatisticWeekDelimiterService } from './statistic-week-delimiter.servic
 import { StatisticDayDelimiterService } from './statistic-day-delimiter.service';
 import { StatisticHourDelimiterService } from './statistic-hour-delimiter.service';
 import { ImpressionStatistic } from './impression-statistic';
-import { StatisticDelimiter } from '../statistic-chart/core';
+import { StatisticDelimiter, ChartSizeConfig, DateRange } from '../statistic-chart/core';
+import { DelimiterChartConfigService } from './delimiter-chart-config.service';
 
 @Injectable()
 export class StatisticDelimiterService {
@@ -15,13 +16,30 @@ export class StatisticDelimiterService {
     private hourStatistic: StatisticHourDelimiterService,
     private dayStatistic: StatisticDayDelimiterService,
     private weekStatistic: StatisticWeekDelimiterService,
+    private delimiterConfig: DelimiterChartConfigService,
   ) { }
 
-  public getFirstChunkDateRange(delimiter): [Date, Date] {
-    return this.source(delimiter).getFirstChunkDateRange();
+  public getFirstChunkDateRange(delimiter: StatisticDelimiter, campaignStart: Date, campaignEnd: Date): DateRange {
+
+    // const config: ChartSizeConfig = this.delimiterConfig.getChartConfig(delimiter);
+
+    // // chunk size => delimiter * countInViewPort
+
+    // if (now >= campaignStart && now <= campaignEnd) {
+    //   // inside range => (current date -> start) - chunk size
+    // } else if (now < campaignStart) {    // before start => current date - chunk size
+    // } else if (now > campaignEnd) {    // after end    => campaignEnd - chunk size
+    // }
+
+    const [from, to] = this.source(delimiter).getFirstChunkDateRange();
+    return [from, to];
   }
 
-  public loadStaticticByDates(delimiter, d1: Date, d2: Date): ItemData[] {
+  // public calcPreviousDateRange(delimiter: StatisticDelimiter, before: Date): DateRange {
+
+  // }
+
+  public loadStaticticByDates(delimiter: StatisticDelimiter, d1: Date, d2: Date): ItemData[] {
     return this.source(delimiter).loadStaticticByDates(d1, d2);
   }
 

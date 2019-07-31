@@ -4,9 +4,7 @@ import { filter, tap } from 'rxjs/operators'
 import { StatisticDelimiterService } from './services/statistic-delimiter.service';
 import { ItemData } from './statistic-chart/shared/bar-chart/core';
 import { StatisticDelimiter } from './statistic-chart/core';
-import {
-  subHours,
-} from 'date-fns'
+import { subHours } from 'date-fns'
 
 @Component({
   selector: 'my-app',

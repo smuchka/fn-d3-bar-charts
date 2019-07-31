@@ -173,11 +173,11 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   private onZoomedEnd(e): void {
     const dataMin = D3.min(this.data, d => d.identity);
     const currentDomainMin = D3.min(this.x.domain());
-    console.log(this.data);
-    console.log(
-      this.x.domain(),
-      currentDomainMin
-    );
+    // console.log(this.data);
+    // console.log(
+    //   this.x.domain(),
+    //   currentDomainMin
+    // );
 
     if (dataMin > currentDomainMin) {
       console.log('Direction left');
