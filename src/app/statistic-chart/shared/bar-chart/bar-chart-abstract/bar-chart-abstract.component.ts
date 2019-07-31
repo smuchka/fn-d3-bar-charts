@@ -4,11 +4,7 @@ import {
 import { D3ChartBaseComponent } from './d3-chart-base.component';
 import { getEmptyDataInitError } from './bar-chart-errors';
 import {
-  startOfToday, endOfToday,
-  startOfYesterday,
-  differenceInHours, differenceInSeconds,
-  addHours, addDays,
-  format
+  differenceInSeconds,
 } from 'date-fns';
 import {
   ItemData,
@@ -17,8 +13,8 @@ import {
   DirectionRight
 } from '../core';
 import { Observable, Subscription, merge } from 'rxjs';
-import { filter, delay, tap } from 'rxjs/operators';
 import * as D3 from 'd3';
+import { Selection } from "d3";
 
 @Component({
   selector: 'fn-bar-chart-time-scale',
@@ -91,7 +87,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
     return this.canActivateNextBarItem;
   }
 
-  public constructor(
+  protected constructor(
     protected element: ElementRef,
     protected renderer: Renderer2,
   ) {
@@ -169,22 +165,23 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
     this.x = D3.event.transform.rescaleX(this.x2);
 
     // redraw groups of bars 
-    const { x } = D3.event.transform || {};
+    const { x } = D3.event.transform || { x: 0};
     this.groupPlaceholderBars.attr("transform", "translate(" + x + ",0)");
     this.groupDataBars.attr("transform", "translate(" + x + ",0)");
   }
 
   private onZoomedEnd(e): void {
-    // console.log('zoomEnd', D3.event.transform)
+    const dataMin = D3.min(this.data, d => d.identity);
+    const currentDomainMin = D3.min(this.x.domain());
+    console.log(this.data);
+    console.log(
+      this.x.domain(),
+      currentDomainMin
+    );
 
-    // TODO:
-    // detect here zoom/scroll ending and emit event outside
-    // use it for paggination -> upload prev chunk
-    // if (
-    //   D3.event.transform.x
-    // ) {
-    //   this.petBorder.emit(true);
-    // }
+    if (dataMin > currentDomainMin) {
+      console.log('Direction left');
+    }
   }
 
   private onBarClick(d: ItemData): void {
@@ -233,7 +230,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
    */
   private updateChart(): void {
 
-    const isChanged: boolean = this.updateMaxChartValue()
+    const isChanged: boolean = this.updateMaxChartValue();
     if (isChanged) {
       this.initYScale();
     }
@@ -247,19 +244,19 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
     const placeholderBars = this.groupPlaceholderBars
       .selectAll('rect')
       .data(this.data)
-      .call(this.drawPlaceholderBar.bind(this))
+      .call(this.drawPlaceholderBar.bind(this));
 
     // draw bar label
     this.groupPlaceholderBars
       .selectAll('text')
       .data(this.data)
-      .call(this.drawBarLabel.bind(this))
+      .call(this.drawBarLabel.bind(this));
 
     // draw DATA bars
     this.groupDataBars
       .selectAll('rect')
       .data(this.data.filter(el => el.value))
-      .call(this.drawDataBar.bind(this))
+      .call(this.drawDataBar.bind(this));
 
     // update active item viewport position
     this.showActiveBarOnCenterViewport();
@@ -271,7 +268,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
     this.subs.add(
       merge(...observe)
         .subscribe(this.recalculateAndUpdateChart.bind(this))
-    )
+    );
 
     this.subs.add(
       merge(
@@ -285,7 +282,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   private initActiveDate(): void {
     let activeDate = null;
     const now = this.calcNowBarDate();
-    const arr = this.data.filter(d => d.value > 0)
+    const arr = this.data.filter(d => d.value > 0);
     const lastNotEmptyDate: Date | null = arr.length
       ? D3.max(arr, d => d.identity)
       : null;
@@ -347,7 +344,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
         this.height - bottom - this.minBarHeight,
         // this.height - this.minBarHeight,
         top
-      ])
+      ]);
 
     if (this.useYAxisValuesRound) {
       this.y = this.y.nice();
@@ -381,7 +378,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
 
     const layout = this.svg
       .transition()
-      .duration(duration)
+      .duration(duration);
 
     // - create new transform and apply it
     // const offset = 100
@@ -416,7 +413,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   }
 
   private canChangeActiveOn(dir: DirectionActiveChange): boolean {
-    const endDirectionDate: date = (
+    const endDirectionDate: Date = (
       (dir === DirectionRight) ? this.data[this.data.length - 1] : this.data[0]
     ).identity;
     const diffDates: number = differenceInSeconds(endDirectionDate, this.activeDate);
@@ -424,7 +421,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
     return (dir === DirectionRight) ? diffDates > 0 : diffDates < 0;
   }
 
-  private drawDataBar(selection: any): void {
+  private drawDataBar(selection: Selection<SVGElement, {}, HTMLElement, any>): void {
     this
       .drawBarPrimitive(selection)
       // mark active label
@@ -440,12 +437,12 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
       .on("click", this.onBarClick.bind(this));
   }
 
-  private drawBarPrimitive(selection: Selection): Selection {
+  private drawBarPrimitive(selection: Selection<SVGElement, {}, HTMLElement, any>): Selection<SVGElement, {}, HTMLElement, any> {
     return selection
       .join('rect')
-      .attr('x', d => this.x(d.identity) - Math.round(this.barWidth / 2))
-      .attr('y', d => this.y(d.value))
-      .attr('height', d => this.y(0) - this.y(d.value) + this.minBarHeight)
+      .attr('x', (d: ItemData) => this.x(d.identity) - Math.round(this.barWidth / 2))
+      .attr('y', (d: ItemData) => this.y(d.value))
+      .attr('height', (d: ItemData) => this.y(0) - this.y(d.value) + this.minBarHeight)
       .attr('width', this.barWidth)
       .attr('rx', d => this.radiusRectangle)
       .attr('ry', d => this.radiusRectangle)
@@ -471,12 +468,12 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
       .attr("font-size", `${this.labelConfig.labelFontSize}px`)
       .style('text-anchor', 'middle')
       // mark active label
-      .call(this.drawAsActiveBar.bind(this))
+      .call(this.drawAsActiveBar.bind(this));
 
     return selection;
   }
 
-  private drawAsActiveBar(selection: Selection): any {
+  private drawAsActiveBar(selection: Selection<SVGElement, {}, HTMLElement, any>): any {
     const fnActive = (d) => d.identity.getTime() === this.activeDate.getTime();
     selection.classed('active', fnActive);
   }

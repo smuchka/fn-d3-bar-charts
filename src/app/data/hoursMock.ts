@@ -1,4 +1,4 @@
-import { HourDelimiterData, StatisticData } from '../core/delimiter-data';
+import { HourDelimiterData, StatisticData } from '../statistic-chart/core';
 
 export const hoursMock: HourDelimiterData[] = (<StatisticData[]>[
   // 18

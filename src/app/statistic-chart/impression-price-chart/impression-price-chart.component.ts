@@ -1,20 +1,16 @@
 import {
-  Component, ViewChild, ViewContainerRef, ComponentFactoryResolver, ComponentRef, Type,
-  Input, OnInit, AfterViewInit, OnChanges, OnDestroy, SimpleChanges
+  Component, ViewChild, ComponentFactoryResolver,
+  Input, OnInit, OnChanges, OnDestroy, SimpleChanges
 } from '@angular/core';
-import { Observable, Subscription, BehaviorSubject, Subject, combineLatest } from 'rxjs';
-import { map, filter, tap, delay } from 'rxjs/operators';
-import { StatisticDelimiter, ChartSizeConfig } from '../core';
-import { getEmptyChartDateRangeError, getEmptyChartDelimiterError, getEmptyDataError } from './impression-price-chart-errors';
-import { ItemData, DirectionActiveChange, DirectionLeft, DirectionRight } from '../shared/bar-chart/core';
+import { Observable, Subscription } from 'rxjs';
+import { map, tap } from 'rxjs/operators';
+import { ChartSizeConfig, StatisticDelimiter } from '../core';
+import { ItemData } from '../shared/bar-chart/core';
 import { BarChartAbstract } from '../shared/bar-chart/bar-chart-abstract/bar-chart-abstract.component';
-import { BarChartComponent } from '../shared/bar-chart/bar-chart.component';
 import { ChartActiveDateNavComponent } from '../chart-active-date-nav/chart-active-date-nav.component';
 import { DelimiterChartStrategyService } from '../shared/services/delimiter-chart-strategy.service';
 import { DelimiterChartConfigService } from '../shared/services/delimiter-chart-config.service';
 import { DateChart } from '../shared/bar-chart/core';
-import { differenceInSeconds } from 'date-fns';
-import * as D3 from 'd3';
 
 @Component({
   selector: 'fn-impression-price-chart',
@@ -109,17 +105,17 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
   public ngOnDestroy(): void {
 
     if (this.inputDataSubsciption) {
-      this.inputDataSubsciption.unsubscribe()
+      this.inputDataSubsciption.unsubscribe();
       this.inputDataSubsciption = null;
     }
 
     if (this.chartActiveChangeSubscription) {
-      this.chartActiveChangeSubscription.unsubscribe()
+      this.chartActiveChangeSubscription.unsubscribe();
       this.chartActiveChangeSubscription = null;
     }
 
     if (this.navActiveDateDirectionChangeSubscription) {
-      this.navActiveDateDirectionChangeSubscription.unsubscribe()
+      this.navActiveDateDirectionChangeSubscription.unsubscribe();
       this.navActiveDateDirectionChangeSubscription = null;
     }
   }
@@ -172,7 +168,7 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
    */
   private onActiveItemChangeFromChart(data: ItemData): void {
     this.lastActive = data;
-    this.navigation.setActive(this.lastActive.identity)
+    this.navigation.setActive(this.lastActive.identity);
     this.navigation.canActivateNextDate = this.chart.canActivateNextBar;
     this.navigation.canActivatePrevDate = this.chart.canActivatePrevBar;
   }
@@ -182,7 +178,7 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
    */
   private onActiveDateDirectionChange(dir): void {
     const date: Date = this.dateStrategy
-      .calcSomeDateOnDistance(this.lastActive.identity, dir)
+      .calcSomeDateOnDistance(this.lastActive.identity, dir);
     this.chart.setActiveDate(date);
   }
 

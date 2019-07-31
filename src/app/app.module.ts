@@ -17,14 +17,19 @@ import { StatisticWeekDelimiterService } from './services/statistic-week-delimit
     FormsModule,
     StatisticChartModule,
   ],
-  declarations: [AppComponent, HelloComponent],
+  declarations: [
+    AppComponent,
+    HelloComponent
+  ],
   providers: [
     StatisticHourDelimiterService,
     StatisticDayDelimiterService,
     StatisticDelimiterService,
     StatisticWeekDelimiterService
   ],
-  bootstrap: [AppComponent],
+  bootstrap: [
+    AppComponent
+  ],
 })
 export class AppModule {
 }
