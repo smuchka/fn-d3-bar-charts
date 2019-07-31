@@ -179,9 +179,9 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
     //   currentDomainMin
     // );
 
-    if (dataMin > currentDomainMin) {
-      console.log('Direction left');
-    }
+    // if (dataMin > currentDomainMin) {
+    //   console.log('Direction left');
+    // }
   }
 
   private onBarClick(d: ItemData): void {
@@ -287,13 +287,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
       ? D3.max(arr, d => d.identity)
       : null;
     const lastChartDate = this.data[this.data.length - 1].identity;
-    //
-    //
-    // todo: !!!!!!
     const todayInDateRange: boolean = differenceInSeconds(now, lastChartDate) <= 0;
-
-    console.warn(now);
-    console.warn(lastChartDate);
 
     if (lastNotEmptyDate) {
       activeDate = todayInDateRange

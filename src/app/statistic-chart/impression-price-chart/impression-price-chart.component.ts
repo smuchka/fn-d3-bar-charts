@@ -76,7 +76,6 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
-    console.log('ngOnChanges', changes)
 
     if (changes.delimiter) {
       this.switchDateDelimiterConfig();
@@ -89,9 +88,6 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
     if (this.chunkDateRange && this.data) {
 
       let rangeLoadedChunks = this.getDateRange();
-      // console.table([
-      //   [from, to]
-      // ]);
 
       this.renderData$ = this.data.pipe(
         map((data: ItemData[]) => {
@@ -100,7 +96,7 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
           return localMap;
         }),
         map((map: Map<number, ItemData>) => this.fillRangeOfEmptyData(map, rangeLoadedChunks)),
-        tap((data) => console.log('>>>', rangeLoadedChunks, data)),
+        // tap((data) => console.table(data)),
       );
     }
   }
@@ -200,15 +196,12 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
    */
   private fillRangeOfEmptyData(data: Map<number, ItemData>, range: DateRange): ItemData[] {
 
-    // d1 = this.dateStrategy.calcStartBarOfDate(d1);
-    const d2 = this.dateStrategy.calcStartBarOfDate(range.to);
-
     const countBarItems: number = this.delimiterConfig
       .getChartConfig(this.delimiter).countChunk;
 
     const createDataItem = (el, index): ItemData => {
-      const nextDate: Date = this.dateStrategy.calcSomeDateOnDistance(d2, -1 * index);
-      // console.log(nextDate.getTime())
+      const nextDate: Date = this.dateStrategy.calcSomeDateOnDistance(range.to, -1 * index);
+
       if (data.has(nextDate.getTime())) {
         return data.get(nextDate.getTime());
       }
