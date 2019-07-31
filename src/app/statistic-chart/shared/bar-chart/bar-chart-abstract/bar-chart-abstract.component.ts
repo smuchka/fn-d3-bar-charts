@@ -240,6 +240,9 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
       D3.max(this.data, d => d.identity),
     );
 
+    // todo: recal active item
+    // on chnage delimiter -> active date not correct
+
     // draw bar placeholders
     const placeholderBars = this.groupPlaceholderBars
       .selectAll('rect')
