@@ -1,19 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormControl } from '@angular/forms';
 import { Observable, of, BehaviorSubject } from 'rxjs';
 import { filter, tap } from 'rxjs/operators'
-import { ImpressionStatistic } from './services/impression-statistic';
 import { StatisticHourDelimiterService } from './services/statistic-hour-delimiter.service';
-import { StatisticDayDelimiterService } from './services/statistic-day-delimiter.service';
 import { ItemData } from './statistic-chart/shared/bar-chart/core';
 import { StatisticDelimiter } from './statistic-chart/core';
 import {
-  format, parse,
-  startOfToday, endOfToday,
-  differenceInHours,
-  addHours, subHours,
-  subDays, addDays,
-  endOfDay, startOfDay
+  subHours,
 } from 'date-fns'
 
 @Component({
@@ -22,15 +14,15 @@ import {
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
-  private pagginableData$: BehaviorSubject<ItemData[]>
-  private showChartData$: Observable<ItemData[]>
+  private pagginableData$: BehaviorSubject<ItemData[]>;
+  private showChartData$: Observable<ItemData[]>;
 
   private showDelimiter: StatisticDelimiter = StatisticDelimiter.Hour;
   public delimitersItems = [
     StatisticDelimiter.Hour,
     StatisticDelimiter.Day,
     StatisticDelimiter.Week
-  ]
+  ];
 
   public constructor(
     // private statistic: StatisticDayDelimiterService,

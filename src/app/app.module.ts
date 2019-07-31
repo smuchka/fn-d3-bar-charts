@@ -15,12 +15,17 @@ import { StatisticDayDelimiterService } from './services/statistic-day-delimiter
     FormsModule,
     StatisticChartModule,
   ],
-  declarations: [AppComponent, HelloComponent],
+  declarations: [
+    AppComponent,
+    HelloComponent
+  ],
   providers: [
     StatisticHourDelimiterService,
     StatisticDayDelimiterService
   ],
-  bootstrap: [AppComponent],
+  bootstrap: [
+    AppComponent
+  ],
 })
 export class AppModule {
 }

@@ -4,7 +4,6 @@ import { HourDelimiterData } from '../statistic-chart/core';
 import { ImpressionStatistic } from './impression-statistic';
 import {
   format,
-  parse,
   startOfToday, endOfToday,
   differenceInHours,
   addHours,

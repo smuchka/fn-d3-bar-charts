@@ -1,4 +1,4 @@
-import { DateChart } from '../../core';
+import { DateChart } from '../../bar-chart/core';
 import { startOfWeek, addWeeks, getMonth, format } from 'date-fns'
 
 export class WeekChartNavigation implements DateChart {
