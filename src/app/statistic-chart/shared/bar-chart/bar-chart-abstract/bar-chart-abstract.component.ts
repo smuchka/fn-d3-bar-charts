@@ -165,7 +165,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
     this.x = D3.event.transform.rescaleX(this.x2);
 
     // redraw groups of bars 
-    const { x } = D3.event.transform || { x: 0};
+    const { x } = D3.event.transform || { x: 0 };
     this.groupPlaceholderBars.attr("transform", "translate(" + x + ",0)");
     this.groupDataBars.attr("transform", "translate(" + x + ",0)");
   }
@@ -322,8 +322,8 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
       .rangeRound([
         this.margin.left + left,
         this.width - this.margin.right - right,
-      ])
-      .nice();
+      ]);
+
     this.x2 = this.x.copy();
 
     // calc width of one bar

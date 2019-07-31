@@ -1,24 +1,71 @@
 import { Injectable } from '@angular/core';
 import { ItemData } from '../statistic-chart/shared/bar-chart/core';
-import { HourDelimiterData } from '../statistic-chart/core';
+import { DelimiterChartConfigService } from './delimiter-chart-config.service';
+import { StatisticDelimiter, HourDelimiterData, DateRange, ChartSizeConfig } from '../statistic-chart/core';
 import { ImpressionStatistic } from './impression-statistic';
-import { startOfToday, endOfToday, subHours } from 'date-fns'
+import { startOfHour, endOfHour, subHours } from 'date-fns'
 // mocks
 import { hoursMock } from '../data/hoursMock';
 import { random, getTimestamInSecond } from './helpers';
-// for generate mock paggination
+// todo: for generate mock paggination
 import * as D3 from 'd3';
 
 @Injectable()
 export class StatisticHourDelimiterService implements ImpressionStatistic {
 
   private countRandom = 5;
+  private countPointsInChunk: number;
 
-  public getFirstChunkDateRange(): [Date, Date] {
-    return [
-      subHours(startOfToday(), 24),
-      endOfToday()
-    ];
+  public constructor(
+    private delimiterConfig: DelimiterChartConfigService,
+  ) {
+    const config: ChartSizeConfig = this.delimiterConfig.getChartConfig(
+      StatisticDelimiter.Day
+    );
+    this.countPointsInChunk = config.countChunk;
+  }
+
+  public getPrevDateByDiffOneBar(date: Date): Date {
+    return subHours(date, 1);
+  }
+
+  public getRangeRelatedDate(relateDate: Date): DateRange {
+    return {
+      from: subHours(startOfHour(relateDate), this.countPointsInChunk),
+      to: startOfHour(relateDate),
+    }
+  }
+
+  public getRangeRelatedDateWithBorder(relateDate: Date): DateRange {
+    return {
+      from: subHours(startOfHour(relateDate), this.countPointsInChunk),
+      to: endOfHour(relateDate),
+    }
+  }
+
+  //
+  // todo: only for debug
+  // Emulate loading data from server by range dates
+  //
+
+  public loadStaticticByDates(range: DateRange): ItemData[] {
+    return this.generateRandomChunk(range.from, range.to, this.countRandom);
+  }
+  
+  private generateRandomChunk(d1: Date, d2: Date, count: number): ItemData[] {
+    const map = new Map<number, ItemData>();
+    const countRand: number = random(1, Math.floor(24 / count));
+
+    const x = D3.scaleTime().domain([d1, d2]);
+    const randValues: Date[] = x.ticks(D3.timeHour.every(countRand));
+
+    return randValues.slice(
+      randValues.length - count - 1,
+      randValues.length - 1,
+    ).map((date: Date) => ({
+      identity: date,
+      value: random(0, 999),
+    }));
   }
 
   public loadMockData(): ItemData[] {
@@ -34,25 +81,5 @@ export class StatisticHourDelimiterService implements ImpressionStatistic {
         value: item.views,
       };
     })
-  }
-
-  public loadStaticticByDates(d1: Date, d2: Date): ItemData[] {
-    return this.generateRandomChunk(d1, d2, this.countRandom);
-  }
-
-  private generateRandomChunk(d1: Date, d2: Date, count: number): ItemData[] {
-    const map = new Map<number, ItemData>();
-    const countRand: number = random(1, Math.floor(24 / count));
-
-    const x = D3.scaleTime().domain([d1, d2]);
-    const randValues: Date[] = x.ticks(D3.timeHour.every(countRand));
-
-    return randValues.slice(
-      randValues.length - count - 1,
-      randValues.length - 1,
-    ).map((date: Date) => ({
-      identity: date,
-      value: random(0, 999),
-    }));
   }
 }

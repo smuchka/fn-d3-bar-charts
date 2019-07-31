@@ -1,46 +1,55 @@
 import { Injectable } from '@angular/core';
 import { ItemData } from '../statistic-chart/shared/bar-chart/core';
-import { WeekDelimiterData, DateRange } from '../statistic-chart/core';
+import { DelimiterChartConfigService } from './delimiter-chart-config.service';
+import { StatisticDelimiter, WeekDelimiterData, DateRange, ChartSizeConfig } from '../statistic-chart/core';
 import { ImpressionStatistic } from './impression-statistic';
 import { startOfWeek, startOfDay, startOfToday, endOfWeek, endOfToday, subWeeks, addWeeks } from 'date-fns'
 // mocks
 import { weeksMock } from '../data/weeksMock';
 import { random, getTimestamInSecond } from './helpers';
-// for generate mock paggination
+// todo: for generate mock paggination
 import * as D3 from 'd3';
 
 @Injectable()
 export class StatisticWeekDelimiterService implements ImpressionStatistic {
 
   private countRandom = 35;
+  private countPointsInChunk: number;
 
-  public getFirstChunkDateRange(): DateRange {
-    const startCurrentWeek = startOfWeek(startOfToday(), { weekStartsOn: 1 })
-    const countItemsInViewport = 11;
-    return [
-      subWeeks(startCurrentWeek, countItemsInViewport),
-      // startOfDay(endOfWeek(startCurrentWeek, { weekStartsOn: 1 })),
-      startCurrentWeek
-    ];
+  public constructor(
+    private delimiterConfig: DelimiterChartConfigService,
+  ) {
+    const config: ChartSizeConfig = this.delimiterConfig.getChartConfig(
+      StatisticDelimiter.Week
+    );
+    this.countPointsInChunk = config.countChunk;
   }
 
-  public loadMockData(): ItemData[] {
-    return weeksMock.map((item: WeekDelimiterData) => {
-      const date = new Date();
-      date.setUTCFullYear(+item.year);
-      date.setUTCMonth(+item.month - 1);
-      date.setUTCDate(+item.day);
-      date.setHours(0, 0, 0, 0);
-
-      return {
-        identity: date,
-        value: item.views,
-      };
-    })
+  public getPrevDateByDiffOneBar(date: Date): Date {
+    return subWeeks(date, 1);
   }
 
-  public loadStaticticByDates(d1: Date, d2: Date): ItemData[] {
-    return this.generateRandomChunk(d1, d2, this.countRandom);
+  public getRangeRelatedDate(relateDate: Date): DateRange {
+    return {
+      from: subWeeks(startOfWeek(relateDate, { weekStartsOn: 1 }), this.countPointsInChunk),
+      to: startOfWeek(relateDate),
+    }
+  }
+
+  public getRangeRelatedDateWithBorder(relateDate: Date): DateRange {
+    return {
+      from: subWeeks(startOfWeek(relateDate, { weekStartsOn: 1 }), this.countPointsInChunk),
+      to: endOfWeek(relateDate),
+    }
+  }
+
+  //
+  // todo: only for debug
+  // Emulate loading data from server by range dates
+  //
+
+  public loadStaticticByDates(range: DateRange): ItemData[] {
+    return this.generateRandomChunk(range.from, range.to, this.countRandom);
   }
 
   private generateRandomChunk(d1: Date, d2: Date, count: number): ItemData[] {
@@ -58,5 +67,20 @@ export class StatisticWeekDelimiterService implements ImpressionStatistic {
       identity: startOfWeek(date, { weekStartsOn: 1 }),
       value: random(0, 999),
     }));
+  }
+
+  public loadMockData(): ItemData[] {
+    return weeksMock.map((item: WeekDelimiterData) => {
+      const date = new Date();
+      date.setUTCFullYear(+item.year);
+      date.setUTCMonth(+item.month - 1);
+      date.setUTCDate(+item.day);
+      date.setHours(0, 0, 0, 0);
+
+      return {
+        identity: date,
+        value: item.views,
+      };
+    })
   }
 }

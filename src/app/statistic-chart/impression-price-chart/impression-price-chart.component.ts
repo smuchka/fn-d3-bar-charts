@@ -4,7 +4,7 @@ import {
 } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
-import { ChartSizeConfig, StatisticDelimiter } from '../core';
+import { ChartSizeConfig, StatisticDelimiter, DateRange } from '../core';
 import { ItemData } from '../shared/bar-chart/core';
 import { BarChartAbstract } from '../shared/bar-chart/bar-chart-abstract/bar-chart-abstract.component';
 import { ChartActiveDateNavComponent } from '../chart-active-date-nav/chart-active-date-nav.component';
@@ -32,7 +32,7 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
   public data: Observable<ItemData[]>;
 
   @Input()
-  public dateRange: [Date, Date];
+  public chunkDateRange: DateRange;
 
   @Input()
   public delimiter: StatisticDelimiter;
@@ -66,7 +66,7 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
       throw getEmptyChartDelimiterError();
     }
 
-    if (!this.dateRange) {
+    if (!this.chunkDateRange) {
       throw getEmptyChartDateRangeError();
     }
 
@@ -86,12 +86,12 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
       this.switchNavigationComponent();
     }
 
-    if (this.dateRange && this.data) {
+    if (this.chunkDateRange && this.data) {
 
-      let [from, to] = this.getDateRange();
-      console.table([
-        [from, to]
-      ]);
+      let rangeLoadedChunks = this.getDateRange();
+      // console.table([
+      //   [from, to]
+      // ]);
 
       this.renderData$ = this.data.pipe(
         map((data: ItemData[]) => {
@@ -99,8 +99,8 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
           data.forEach((el: ItemData) => localMap.set(el.identity.getTime(), el));
           return localMap;
         }),
-        map((map: Map<number, ItemData>) => this.fillRangeOfEmptyData(map, from, to)),
-        tap((data) => console.log('>>>', from, to, data)),
+        map((map: Map<number, ItemData>) => this.fillRangeOfEmptyData(map, rangeLoadedChunks)),
+        tap((data) => console.log('>>>', rangeLoadedChunks, data)),
       );
     }
   }
@@ -185,31 +185,26 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
     this.chart.setActiveDate(date);
   }
 
-  private getDateRange(): [Date, Date] {
-    const [from, to] = this.dateRange;
+  private getDateRange(): DateRange {
+    const { from, to } = this.chunkDateRange;
 
     if (to.getTime() < from.getTime()) {
-      return [to, from];
+      return { to, from };
     }
 
-    return this.dateRange;
+    return this.chunkDateRange;
   }
 
   /**
    * Map pipe function for fill empty bar
    */
-  private fillRangeOfEmptyData(data: Map<number, ItemData>, d1: Date, d2: Date): ItemData[] {
+  private fillRangeOfEmptyData(data: Map<number, ItemData>, range: DateRange): ItemData[] {
 
-    d1 = this.dateStrategy.calcStartBarOfDate(d1);
-    d2 = this.dateStrategy.calcStartBarOfDate(d2);
+    // d1 = this.dateStrategy.calcStartBarOfDate(d1);
+    const d2 = this.dateStrategy.calcStartBarOfDate(range.to);
 
     const countBarItems: number = this.delimiterConfig
       .getChartConfig(this.delimiter).countChunk;
-
-    console.warn(
-      d1, d2,
-      Array.from(data.values())
-    );
 
     const createDataItem = (el, index): ItemData => {
       const nextDate: Date = this.dateStrategy.calcSomeDateOnDistance(d2, -1 * index);

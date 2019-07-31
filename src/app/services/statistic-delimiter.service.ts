@@ -7,7 +7,8 @@ import { StatisticDayDelimiterService } from './statistic-day-delimiter.service'
 import { StatisticHourDelimiterService } from './statistic-hour-delimiter.service';
 import { ImpressionStatistic } from './impression-statistic';
 import { StatisticDelimiter, ChartSizeConfig, DateRange } from '../statistic-chart/core';
-import { DelimiterChartConfigService } from './delimiter-chart-config.service';
+
+import { subSeconds } from 'date-fns'
 
 @Injectable()
 export class StatisticDelimiterService {
@@ -16,33 +17,61 @@ export class StatisticDelimiterService {
     private hourStatistic: StatisticHourDelimiterService,
     private dayStatistic: StatisticDayDelimiterService,
     private weekStatistic: StatisticWeekDelimiterService,
-    private delimiterConfig: DelimiterChartConfigService,
   ) { }
 
-  public getFirstChunkDateRange(delimiter: StatisticDelimiter, campaignStart: Date, campaignEnd: Date): DateRange {
+  /**
+   * Get first chunk of date range for chart.
+   * Use it for retrieving dates for firtst paggination page.
+   * includeBorderValues - used for receiving full range from first second to last second of range.
+   */
+  public calcFirstChunkRange(
+    delimiter: StatisticDelimiter,
+    boundRange: DateRange,
+    includeBorderValues: boolean = false,
+  ): DateRange {
 
-    // const config: ChartSizeConfig = this.delimiterConfig.getChartConfig(delimiter);
+    let now: Date = new Date();
+    let relatedDate: Date = null;
 
-    // // chunk size => delimiter * countInViewPort
+    if (now <= boundRange.to) {
+      // before start OR inside range (include end)
+      relatedDate = now;
+    } else if (now > boundRange.to) {
+      // after end
+      relatedDate = boundRange.to;
+    }
 
-    // if (now >= campaignStart && now <= campaignEnd) {
-    //   // inside range => (current date -> start) - chunk size
-    // } else if (now < campaignStart) {    // before start => current date - chunk size
-    // } else if (now > campaignEnd) {    // after end    => campaignEnd - chunk size
-    // }
+    if (includeBorderValues) {
+      return this.source(delimiter).getRangeRelatedDate(relatedDate);
+    }
 
-    const [from, to] = this.source(delimiter).getFirstChunkDateRange();
-    return [from, to];
+    return this.source(delimiter).getRangeRelatedDateWithBorder(relatedDate);
   }
 
-  // public calcPreviousDateRange(delimiter: StatisticDelimiter, before: Date): DateRange {
+  /**
+   * Get following chunk of date range for chart after 'before' date.
+   * Use it for retrieving dates for 2th, 3th .... paggination pages.
+   * includeBorderValues - used for receiving full range from first second to last second of range.
+   */
+  public calcPreviousDateRange(
+    delimiter: StatisticDelimiter,
+    before: Date,
+    includeBorderValues: boolean = false,
+  ): DateRange {
 
-  // }
+    // get date in previous bar
+    const relatedDate: Date = this.source(delimiter).getPrevDateByDiffOneBar(before);
 
-  public loadStaticticByDates(delimiter: StatisticDelimiter, d1: Date, d2: Date): ItemData[] {
-    return this.source(delimiter).loadStaticticByDates(d1, d2);
+    if (includeBorderValues) {
+      return this.source(delimiter).getRangeRelatedDate(relatedDate);
+    }
+
+    return this.source(delimiter).getRangeRelatedDateWithBorder(relatedDate);
   }
 
+  /**
+   * Switch source for calulation dates
+   */
   private source(delimiter): ImpressionStatistic {
     switch (delimiter) {
       case StatisticDelimiter.Hour:
@@ -56,5 +85,22 @@ export class StatisticDelimiterService {
     }
 
     return null;
+  }
+
+  /**
+   * Loading data from server
+   */
+  public loadStaticticByDates(
+    delimiter: StatisticDelimiter,
+    range: DateRange
+  ): ItemData[] {
+
+    // for real requerst use
+    // - delimiter
+    // - range.from
+    // - range.to
+
+    // todo: use for debug
+    return this.source(delimiter).loadStaticticByDates(range);
   }
 }
