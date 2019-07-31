@@ -1,4 +1,4 @@
-import { Component, ElementRef, Renderer2, Input } from '@angular/core';
+import { Component, ElementRef, Renderer2, OnInit } from '@angular/core';
 import * as D3 from 'd3';
 
 type Position = {
@@ -84,7 +84,7 @@ export abstract class D3ChartBaseComponent implements OnInit {
   protected useYAxisValuesRound: boolean;
   private host;
 
-  public constructor(
+  protected constructor(
     protected elementRef: ElementRef,
     protected renderer: Renderer2,
   ) {

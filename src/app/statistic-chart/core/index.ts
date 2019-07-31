@@ -2,7 +2,8 @@ import { StatisticDelimiter } from './enums/statistic-delimiter';
 import {
   WeekDelimiterData,
   DayDelimiterData,
-  HourDelimiterData
+  HourDelimiterData,
+  StatisticData,
 } from './types/statistic-delimiter-data';
 import {
   ChartSizeConfig,
@@ -15,6 +16,7 @@ export {
   WeekDelimiterData,
   DayDelimiterData,
   HourDelimiterData,
+  StatisticData,
   ChartSizeConfig,
   ListChartConfig,
   PlatformSize,

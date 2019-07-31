@@ -2,19 +2,14 @@ import { Injectable } from '@angular/core';
 import { ItemData } from '../statistic-chart/shared/bar-chart/core';
 import { DayDelimiterData } from '../statistic-chart/core';
 import { ImpressionStatistic } from './impression-statistic';
-import { StatisticHourDelimiterService } from './statistic-hour-delimiter.service';
 import {
   format,
-  parse,
   startOfToday, endOfToday,
-  differenceInHours,
-  addHours, subHours,
   differenceInDays,
   addDays, subDays,
 } from 'date-fns'
 // mocks
 import { daysMock } from '../data/daysMock';
-// import { weeksMock } from '../data/weeksMock';
 import { random, getTimestamInSecond } from './helpers';
 // for generate mock paggination
 import * as D3 from 'd3';
@@ -81,7 +76,7 @@ export class StatisticDayDelimiterService implements ImpressionStatistic {
           value: item.views,
         }
       );
-    })
+    });
 
     return mockStaticData;
   }

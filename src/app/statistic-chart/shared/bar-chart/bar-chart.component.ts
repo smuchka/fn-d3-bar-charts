@@ -8,9 +8,6 @@ import {
   getEmptyCountBarInViewportError
 } from './bar-chart-errors';
 import { DateChart, ItemData } from './core';
-import { addDays, subDays, addHours, startOfToday } from 'date-fns'
-
-const DEFAULT_COUNT_BARS_IN_VIEWPORT: number = 10;
 
 @Component({
   selector: 'fn-bar-chart',

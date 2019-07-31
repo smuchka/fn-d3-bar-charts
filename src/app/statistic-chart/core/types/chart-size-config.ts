@@ -1,4 +1,4 @@
-import { StatisticDelimiter } from './statistic-delimiter-data';
+import { StatisticDelimiter } from '../enums/statistic-delimiter';
 
 export type ChartSizeConfig = {
   countViewport: number;

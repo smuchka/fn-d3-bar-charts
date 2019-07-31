@@ -1,4 +1,4 @@
-import { DayDelimiterData, StatisticData } from './../core/delimiter-data';
+import { DayDelimiterData, StatisticData } from '../statistic-chart/core';
 
 export const daysMock: DayDelimiterData[] = <StatisticData[]>[
   {

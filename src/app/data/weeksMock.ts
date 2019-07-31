@@ -1,4 +1,4 @@
-import { WeekDelimiterData, StatisticData } from './../core/delimiter-data';
+import { WeekDelimiterData, StatisticData } from '../statistic-chart/core';
 
 export const weeksMock: WeekDelimiterData[] = <StatisticData[]>[
   {

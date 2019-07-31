@@ -1,5 +1,5 @@
-import { DateChart } from '../../bar-chart/core';
 import { addHours, format } from 'date-fns'
+import { DateChart } from '../../bar-chart/core';
 
 export class HourChartNavigation implements DateChart {
 
