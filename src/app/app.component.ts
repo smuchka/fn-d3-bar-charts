@@ -4,7 +4,7 @@ import { filter, tap } from 'rxjs/operators'
 import { StatisticDelimiterService } from './services/statistic-delimiter.service';
 import { ItemData } from './statistic-chart/shared/bar-chart/core';
 import { StatisticDelimiter, DateRange } from './statistic-chart/core';
-import { subHours, subDays, subWeeks } from 'date-fns'
+import { subDays, subWeeks } from 'date-fns'
 
 @Component({
   selector: 'my-app',
@@ -25,6 +25,9 @@ export class AppComponent implements OnInit {
     StatisticDelimiter.Day,
     StatisticDelimiter.Week
   ];
+
+  // TODO: Detect it by DeviceDetectorService in FNSocial
+  public isMobile = false;
 
   public constructor(
     private statistic: StatisticDelimiterService,

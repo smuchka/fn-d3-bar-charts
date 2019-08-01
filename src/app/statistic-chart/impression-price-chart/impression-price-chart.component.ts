@@ -16,10 +16,6 @@ import {
   getEmptyChartDateRangeError,
   getEmptyDataError
 } from './impression-price-chart-errors';
-import {
-  startOfWeek,
-  startOfDay
-} from 'date-fns';
 
 @Component({
   selector: 'fn-impression-price-chart',
@@ -39,6 +35,9 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
 
   @Input()
   public navigation: ChartActiveDateNavComponent;
+
+  @Input()
+  public isMobile: boolean = false;
 
   @ViewChild('chart', { static: true })
   protected chart: BarChartAbstract;
@@ -166,6 +165,7 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
    * Handler for updating active item in navigation component
    */
   private onActiveItemChangeFromChart(data: ItemData): void {
+    console.log('Date changed:', data);
     this.lastActive = data;
     this.navigation.setActive(this.lastActive.identity);
     this.navigation.canActivateNextDate = this.chart.canActivateNextBar;

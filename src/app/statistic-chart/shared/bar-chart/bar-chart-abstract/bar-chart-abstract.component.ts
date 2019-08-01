@@ -24,6 +24,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
 
   private groupPlaceholderBars;
   private groupDataBars;
+  private tooltip;
   private x;
   private x2;
   private y;
@@ -133,6 +134,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
     this.svg.selectAll().remove();
     this.groupPlaceholderBars = this.svg.append('g').attr('class', 'placeholder');
     this.groupDataBars = this.svg.append('g').attr('class', 'bar');
+    this.tooltip = D3.select('body').append('div').attr('class', 'tooltip');
 
     this.showActiveBarOnCenterViewport();
     this.updateChart();
@@ -259,7 +261,20 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
     this.groupDataBars
       .selectAll('rect')
       .data(this.data.filter(el => el.value))
-      .call(this.drawDataBar.bind(this));
+      .call(this.drawDataBar.bind(this))
+      // TODO: Move this to layer up
+      .on("mousemove", (d) => {
+        this.tooltip
+          .style("left", this.x(d.identity) - 35 + "px")
+          .style("top", this.y(0) - this.heightCorrection + "px")
+          .style("display", "initial")
+          .style("z-index", "1")
+          .style("opacity", "1")
+          .html((d.value));
+      })
+      .on("mouseout", (d) => {
+        this.tooltip.style("display", "none");
+      });
 
     // update active item viewport position
     this.showActiveBarOnCenterViewport();
@@ -364,6 +379,10 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
       .on("end", this.onZoomedEnd.bind(this));
 
     this.svg.call(this.zoom)
+  }
+
+  private initTooltip(): void {
+
   }
 
   private showActiveBarOnCenterViewport(duration: number = 0): void {

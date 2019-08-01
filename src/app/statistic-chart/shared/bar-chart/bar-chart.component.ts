@@ -37,9 +37,13 @@ export class BarChartComponent extends BarChartAbstract implements OnInit {
   public barWidth: number;
 
   @Input()
-  public set dateRangeStrategy(strtategy: DateChart) {
-    this.dateRangeStrategyValue = strtategy;
+  public set dateRangeStrategy(strategy: DateChart) {
+    this.dateRangeStrategyValue = strategy;
   }
+
+  @Input()
+  private isMobile: boolean = false;
+
   public get dateRangeStrategy(): DateChart {
     return this.dateRangeStrategyValue;
   }
@@ -60,6 +64,12 @@ export class BarChartComponent extends BarChartAbstract implements OnInit {
 
     if (!this.countBarsInViewport) {
       throw getEmptyCountBarInViewportError();
+    }
+
+    // If not mob add margin inside SVG and height correction for chart bars
+    if (!this.isMobile) {
+      this.margin.top = 130;
+      this.heightCorrection = 120;
     }
 
     super.ngOnInit()
