@@ -1,45 +1,45 @@
 import { Injectable } from '@angular/core';
 import { ItemData } from '../statistic-chart/shared/bar-chart/core';
 import { DelimiterChartConfigService } from './delimiter-chart-config.service';
-import { StatisticDelimiter, HourDelimiterData, DateRange, ChartSizeConfig } from '../statistic-chart/core';
+import { StatisticDelimiter, WeekDelimiterData, DateRange, ChartSizeConfig } from '../statistic-chart/core';
 import { ImpressionStatistic } from './impression-statistic';
-import { startOfHour, endOfHour, subHours } from 'date-fns'
+import { startOfWeek, endOfWeek, subWeeks, addWeeks } from 'date-fns'
 // mocks
-import { hoursMock } from '../data/hoursMock';
+import { weeksMock } from '../data/weeksMock';
 import { random, getTimestamInSecond } from './helpers';
 // todo: for generate mock paggination
 import * as D3 from 'd3';
 
 @Injectable()
-export class StatisticHourDelimiterService implements ImpressionStatistic {
+export class StatisticWeekDelimiterService implements ImpressionStatistic {
 
-  private countRandom = 5;
+  private countRandom = 35;
   private countPointsInChunk: number;
 
   public constructor(
     private delimiterConfig: DelimiterChartConfigService,
   ) {
     const config: ChartSizeConfig = this.delimiterConfig.getChartConfig(
-      StatisticDelimiter.Day
+      StatisticDelimiter.Week
     );
     this.countPointsInChunk = config.countChunk;
   }
 
   public getPrevDateByDiffOneBar(date: Date): Date {
-    return subHours(date, 1);
+    return subWeeks(date, 1);
   }
 
   public getRangeRelatedDate(relateDate: Date): DateRange {
     return {
-      from: subHours(startOfHour(relateDate), this.countPointsInChunk),
-      to: startOfHour(relateDate),
+      from: subWeeks(startOfWeek(relateDate, { weekStartsOn: 1 }), this.countPointsInChunk),
+      to: startOfWeek(relateDate),
     }
   }
 
   public getRangeRelatedDateWithBorder(relateDate: Date): DateRange {
     return {
-      from: subHours(startOfHour(relateDate), this.countPointsInChunk),
-      to: endOfHour(relateDate),
+      from: subWeeks(startOfWeek(relateDate, { weekStartsOn: 1 }), this.countPointsInChunk),
+      to: endOfWeek(relateDate),
     }
   }
 
@@ -51,30 +51,31 @@ export class StatisticHourDelimiterService implements ImpressionStatistic {
   public loadStaticticByDates(range: DateRange): ItemData[] {
     return this.generateRandomChunk(range.from, range.to, this.countRandom);
   }
-  
+
   private generateRandomChunk(d1: Date, d2: Date, count: number): ItemData[] {
     const map = new Map<number, ItemData>();
     const countRand: number = random(1, Math.floor(24 / count));
 
-    const x = D3.scaleTime().domain([d1, d2]);
-    const randValues: Date[] = x.ticks(D3.timeHour.every(countRand));
+    const endGenerateRange: Date = addWeeks(endOfWeek(d2, { weekStartsOn: 1 }), 1);
+    const x = D3.scaleTime().domain([d1, endGenerateRange]);
+    const randValues: Date[] = x.ticks(D3.timeWeek.every(countRand));
 
     return randValues.slice(
       randValues.length - count - 1,
       randValues.length - 1,
     ).map((date: Date) => ({
-      identity: date,
+      identity: startOfWeek(date, { weekStartsOn: 1 }),
       value: random(0, 999),
     }));
   }
 
   public loadMockData(): ItemData[] {
-    return hoursMock.map((item: HourDelimiterData) => {
+    return weeksMock.map((item: WeekDelimiterData) => {
       const date = new Date();
       date.setUTCFullYear(+item.year);
       date.setUTCMonth(+item.month - 1);
       date.setUTCDate(+item.day);
-      date.setUTCHours(+item.hour, 0, 0, 0);
+      date.setHours(0, 0, 0, 0);
 
       return {
         identity: date,

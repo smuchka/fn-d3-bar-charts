@@ -3,14 +3,19 @@ import {
   Input, OnInit, OnChanges, OnDestroy, SimpleChanges
 } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
-import { ChartSizeConfig, StatisticDelimiter } from '../core';
+import { map } from 'rxjs/operators';
+import { ChartSizeConfig, DateRange, StatisticDelimiter } from '../core';
 import { ItemData } from '../shared/bar-chart/core';
 import { BarChartAbstract } from '../shared/bar-chart/bar-chart-abstract/bar-chart-abstract.component';
 import { ChartActiveDateNavComponent } from '../chart-active-date-nav/chart-active-date-nav.component';
 import { DelimiterChartStrategyService } from '../shared/services/delimiter-chart-strategy.service';
-import { DelimiterChartConfigService } from '../shared/services/delimiter-chart-config.service';
+import { DelimiterChartConfigService } from '../../services/delimiter-chart-config.service';
 import { DateChart } from '../shared/bar-chart/core';
+import {
+  getEmptyChartDelimiterError,
+  getEmptyChartDateRangeError,
+  getEmptyDataError
+} from './impression-price-chart-errors';
 
 @Component({
   selector: 'fn-impression-price-chart',
@@ -21,6 +26,9 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
 
   @Input()
   public data: Observable<ItemData[]>;
+
+  @Input()
+  public chunkDateRange: DateRange;
 
   @Input()
   public delimiter: StatisticDelimiter;
@@ -51,11 +59,15 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
   public ngOnInit(): void {
 
     if (!this.delimiter) {
-      throw Error('Not specified statistic view delimiter')
+      throw getEmptyChartDelimiterError();
+    }
+
+    if (!this.chunkDateRange) {
+      throw getEmptyChartDateRangeError();
     }
 
     if (!this.data) {
-      throw Error('Not specified statistic data')
+      throw getEmptyDataError();
     }
   }
 
@@ -69,10 +81,17 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
       this.switchNavigationComponent();
     }
 
-    if (changes.data) {
-      // Subscribe on input data change
+    if (this.chunkDateRange && this.data) {
+
+      let rangeLoadedChunks = this.getDateRange();
+
       this.renderData$ = this.data.pipe(
-        map((data: ItemData[]) => data),
+        map((data: ItemData[]) => {
+          const localMap: Map<number, ItemData> = new Map();
+          data.forEach((el: ItemData) => localMap.set(el.identity.getTime(), el));
+          return localMap;
+        }),
+        map((map: Map<number, ItemData>) => this.fillRangeOfEmptyData(map, rangeLoadedChunks)),
       );
     }
   }
@@ -102,7 +121,8 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
     /** Set to chart copmponent strategy */
     this.dateStrategy = this.dateDelimiter.resolveDateDelimiterStrategy(this.delimiter);
 
-    const config: ChartSizeConfig = this.delimiterConfig.getChartConfig(this.delimiter);
+    const config: ChartSizeConfig = this.delimiterConfig
+      .getChartConfig(this.delimiter);
     this.barWidth = config.barWidth;
     this.barCountInViewport = config.countViewport;
   }
@@ -156,18 +176,34 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
     this.chart.setActiveDate(date);
   }
 
+  private getDateRange(): DateRange {
+    const { from, to } = this.chunkDateRange;
+
+    if (to.getTime() < from.getTime()) {
+      return { to, from };
+    }
+
+    return this.chunkDateRange;
+  }
+
   /**
    * Map pipe function for fill empty bar
    */
-  private generateRangeOfEmptyData(data: ItemData[], d1: Date, d2: Date): ItemData[] {
-    const countBarItems: number = this.delimiterConfig.getChartConfig(this.delimiter).countChunk;
+  private fillRangeOfEmptyData(data: Map<number, ItemData>, range: DateRange): ItemData[] {
+
+    const countBarItems: number = this.delimiterConfig
+      .getChartConfig(this.delimiter).countChunk;
 
     const createDataItem = (el, index): ItemData => {
-      const date: Date = this.dateStrategy.calcSomeDateOnDistance(d1, index);
-      return <ItemData>{ identity: date, value: 0 };
+      const nextDate: Date = this.dateStrategy.calcSomeDateOnDistance(range.to, -1 * index);
+
+      if (data.has(nextDate.getTime())) {
+        return data.get(nextDate.getTime());
+      }
+
+      return <ItemData>{ identity: nextDate, value: 0 };
     };
 
-
-    return Array.from(Array(countBarItems), createDataItem);
+    return Array.from(Array(countBarItems), createDataItem).reverse();
   }
 }

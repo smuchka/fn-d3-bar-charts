@@ -1,5 +1,5 @@
 import { DateChart } from '../../bar-chart/core';
-import { addDays, startOfToday, format } from 'date-fns';
+import { addDays, startOfToday, startOfDay, endOfDay, format } from 'date-fns';
 
 export class DayChartNavigation implements DateChart {
 
@@ -12,7 +12,15 @@ export class DayChartNavigation implements DateChart {
   }
 
   public calcNowBarDate(): Date {
-    return startOfToday();
+    return this.calcStartBarOfDate(new Date());
+  }
+
+  public calcStartBarOfDate(date: Date): Date {
+    return startOfDay(date);
+  }
+
+  public calcEndBarOfDate(date: Date): Date {
+    return endOfDay(date);
   }
 
   public calcNextBarDate(from: Date): Date {

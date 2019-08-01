@@ -1,12 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { Observable, of, BehaviorSubject } from 'rxjs';
 import { filter, tap } from 'rxjs/operators'
-import { StatisticHourDelimiterService } from './services/statistic-hour-delimiter.service';
+import { StatisticDelimiterService } from './services/statistic-delimiter.service';
 import { ItemData } from './statistic-chart/shared/bar-chart/core';
-import { StatisticDelimiter } from './statistic-chart/core';
-import {
-  subHours,
-} from 'date-fns'
+import { StatisticDelimiter, DateRange } from './statistic-chart/core';
+import { subHours, subDays, subWeeks } from 'date-fns'
 
 @Component({
   selector: 'my-app',
@@ -15,9 +13,13 @@ import {
 })
 export class AppComponent implements OnInit {
   private pagginableData$: BehaviorSubject<ItemData[]>;
+  private dateRange: DateRange;
   private showChartData$: Observable<ItemData[]>;
+  private showForDelimiter: StatisticDelimiter = StatisticDelimiter.Hour;
 
-  private showDelimiter: StatisticDelimiter = StatisticDelimiter.Hour;
+  private campaignStart: Date;
+  private campaignEnd: Date;
+
   public delimitersItems = [
     StatisticDelimiter.Hour,
     StatisticDelimiter.Day,
@@ -25,13 +27,14 @@ export class AppComponent implements OnInit {
   ];
 
   public constructor(
-    // private statistic: StatisticDayDelimiterService,
-    private statistic: StatisticHourDelimiterService,
+    private statistic: StatisticDelimiterService,
   ) {
     this.pagginableData$ = new BehaviorSubject<ItemData[]>([]);
     this.showChartData$ = this.pagginableData$.pipe(
       filter(list => Boolean(list.length)),
     );
+    this.campaignEnd = subDays(new Date(), 3);
+    this.campaignStart = subWeeks(this.campaignEnd, 4);
   }
 
   public ngOnInit(): void {
@@ -39,46 +42,46 @@ export class AppComponent implements OnInit {
   }
 
   public onChangeDelimiter(delimiter: StatisticDelimiter): void {
-    // this.pagginableData$.next([])
-    // this.loadFirstPeriod();
-    // console.warn(this.)
-  }
-
-  public loadMore(): void {
-    if (!this.canLoadMore()) {
-      return;
-    }
-
-    this.loadPrevPeriod();
-  }
-
-  private canLoadMore(): boolean {
-    return true;
+    this.loadFirstPeriod();
   }
 
   private loadFirstPeriod(): void {
-    const [from, to] = this.getLastCampaignDateRange();
-    const list: ItemData[] = this.statistic.loadStaticticByDates(from, to);
+    const onlyStartBarDateRange: boolean = true;
+
+    this.dateRange = this.statistic.calcFirstChunkRange(
+      this.showForDelimiter,
+      { from: this.campaignStart, to: this.campaignEnd },
+      onlyStartBarDateRange
+    );
+    const range: DateRange = this.statistic.calcFirstChunkRange(
+      this.showForDelimiter,
+      { from: this.campaignStart, to: this.campaignEnd, },
+      !onlyStartBarDateRange
+    );
+
+    const list: ItemData[] = this.statistic.loadStaticticByDates(this.showForDelimiter, range);
     const mergedList: ItemData[] = this.mergeStatiscticWithChunk(list);
     this.pagginableData$.next(mergedList);
   }
 
   private loadPrevPeriod(): void {
-    const date: Date = this.pagginableData$.value[0].identity;
-    const [from, to] = [subHours(date, 24), subHours(date, 1)];
-    const list: ItemData[] = this.statistic.loadStaticticByDates(from, to);
-    this.pagginableData$.next(this.mergeStatiscticWithChunk(list))
-  }
+    const onlyStartBarDateRange: boolean = true;
 
-  /**
-   * Must fetch dates from campaign and 
-   * - get or current range of camapign (if it's in progress)
-   * - or get last DelimiterRangeData
-   * 
-   * !!!! depend of current time Delimiter and WEB/MOBILE platform
-   */
-  private getLastCampaignDateRange(): [Date, Date] {
-    return this.statistic.getFirstChunkDateRange();
+    this.dateRange = this.statistic.calcPreviousDateRange(
+      this.showForDelimiter,
+      this.dateRange.from,
+      onlyStartBarDateRange,
+    );
+
+    const range: DateRange = this.statistic.calcPreviousDateRange(
+      this.showForDelimiter,
+      this.dateRange.from,
+      !onlyStartBarDateRange
+    );
+
+    const list: ItemData[] = this.statistic.loadStaticticByDates(this.showForDelimiter, range);
+    const mergedList: ItemData[] = this.mergeStatiscticWithChunk(list);
+    this.pagginableData$.next(mergedList)
   }
 
   private mergeStatiscticWithChunk(chunk: ItemData[]): ItemData[] {
@@ -86,24 +89,5 @@ export class AppComponent implements OnInit {
       ...chunk,
       ...this.pagginableData$.value || [],
     ]
-  }
-
-  ///
-  public onClickPrevActivate(): void {
-    // this.chart.goToPrevBar();
-  }
-
-  public canPrevActivate(): boolean {
-    return false;
-    // return this.chart && this.chart.canActivatePrevBar;
-  }
-
-  public onClickNextActivate(): void {
-    // this.chart.goToNextBar();
-  }
-
-  public canNextActivate(): boolean {
-    return false;
-    // return this.chart && this.chart.canActivateNextBar;
   }
 }

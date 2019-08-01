@@ -18,6 +18,10 @@ export interface DateChart {
    */
   calcNowBarDate(): Date;
 
+  calcStartBarOfDate(date: Date): Date;
+
+  calcEndBarOfDate(date: Date): Date;
+
   calcNextBarDate(from: Date): Date;
 
   calcPrevBarDate(from: Date): Date;

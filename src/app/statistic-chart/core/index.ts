@@ -10,6 +10,7 @@ import {
   ListChartConfig,
 } from './types/chart-size-config';
 import { PlatformSize } from './types/platform-size';
+import { DateRange } from './types/date-range';
 
 export {
   StatisticDelimiter,
@@ -20,4 +21,5 @@ export {
   ChartSizeConfig,
   ListChartConfig,
   PlatformSize,
+  DateRange,
 };

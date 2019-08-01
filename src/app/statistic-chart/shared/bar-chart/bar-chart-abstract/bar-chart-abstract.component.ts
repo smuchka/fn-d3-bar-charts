@@ -163,12 +163,13 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
     this.x = D3.event.transform.rescaleX(this.x2);
 
     // redraw groups of bars 
-    const { x } = D3.event.transform || { x: 0};
+    const { x } = D3.event.transform || { x: 0 };
     this.groupPlaceholderBars.attr("transform", "translate(" + x + ",0)");
     this.groupDataBars.attr("transform", "translate(" + x + ",0)");
   }
 
   private onZoomedEnd(): void {
+    // TODO: Detect scroll to start of the chart
     const dataMin = D3.min(this.data, d => d.identity);
     const currentDomainMin = D3.min(this.x.domain());
 
@@ -232,6 +233,9 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
       D3.min(this.data, d => d.identity),
       D3.max(this.data, d => d.identity),
     );
+
+    // todo: recal active item
+    // on chnage delimiter -> active date not correct
 
     // draw bar placeholders
     const placeholderBars = this.groupPlaceholderBars
@@ -309,8 +313,8 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
       .rangeRound([
         this.margin.left + left,
         this.width - this.margin.right - right,
-      ])
-      .nice();
+      ]);
+
     this.x2 = this.x.copy();
 
     // calc width of one bar
