@@ -73,7 +73,6 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
       // Subscribe on input data change
       this.renderData$ = this.data.pipe(
         map((data: ItemData[]) => data),
-        tap((data) => console.log('>>>', data)),
       );
     }
   }

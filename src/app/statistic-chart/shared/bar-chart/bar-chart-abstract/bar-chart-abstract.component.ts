@@ -159,8 +159,6 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   }
 
   private onZoomed(): void {
-    // console.log('onZoomed');
-
     // recalc X Scale
     this.x = D3.event.transform.rescaleX(this.x2);
 
@@ -170,14 +168,9 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
     this.groupDataBars.attr("transform", "translate(" + x + ",0)");
   }
 
-  private onZoomedEnd(e): void {
+  private onZoomedEnd(): void {
     const dataMin = D3.min(this.data, d => d.identity);
     const currentDomainMin = D3.min(this.x.domain());
-    console.log(this.data);
-    console.log(
-      this.x.domain(),
-      currentDomainMin
-    );
 
     if (dataMin > currentDomainMin) {
       console.log('Direction left');
