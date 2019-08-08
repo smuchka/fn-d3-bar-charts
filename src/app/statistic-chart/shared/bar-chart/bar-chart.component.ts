@@ -1,27 +1,33 @@
 import {
-  Component, ElementRef, OnInit, Renderer2, Input, EventEmitter,
-  AfterContentInit, ContentChild,
+  AfterContentInit,
+  Component,
+  ContentChild,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnInit,
+  Renderer2,
 } from '@angular/core';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { BarChartAbstract } from './bar-chart-abstract/bar-chart-abstract.component';
 // import { ChartStaticTooltipComponent } from './chart-static-tooltip/chart-static-tooltip.component';
-import {
-  getBarChartEmptyDateStrategyError,
-  getEmptyCountBarInViewportError
-} from './bar-chart-errors';
-import { DateChart, ItemData, ChartTooltip, BarChartActiveSelectedEvent } from './core';
+import { getBarChartEmptyDateStrategyError, getEmptyCountBarInViewportError } from './bar-chart-errors';
+import { BarChartActiveSelectedEvent, DateChart, ItemData } from './core';
+import { ChartStaticTooltipComponent } from './chart-static-tooltip/chart-static-tooltip.component';
 
 @Component({
   selector: 'fn-bar-chart',
   template: `<!--d3 create template itself-->`,
-  styles: [`
-    :host {
-      width: 100%;
-      height: 100%;
-      display: flex;
-    }
-  `]
+  styles: [
+      `
+          :host {
+              width: 100%;
+              height: 100%;
+              display: flex;
+          }
+    `,
+  ],
 })
 export class BarChartComponent extends BarChartAbstract implements OnInit, AfterContentInit {
 
@@ -29,10 +35,12 @@ export class BarChartComponent extends BarChartAbstract implements OnInit, After
   public get countBarsInViewport(): number {
     return this.countBarsInViewportValue;
   }
+
   public set countBarsInViewport(count: number) {
     this.countBarsInViewportValue = count;
     this.countBarsInViewportChange.emit();
   }
+
   private countBarsInViewportValue: number;
   private countBarsInViewportChange: EventEmitter<undefined>;
 
@@ -47,10 +55,11 @@ export class BarChartComponent extends BarChartAbstract implements OnInit, After
   public get dateRangeStrategy(): DateChart {
     return this.dateRangeStrategyValue;
   }
+
   private dateRangeStrategyValue: DateChart;
 
-  @ContentChild(ChartTooltip, { static: true })
-  protected tooltip: ChartTooltip;
+  @ContentChild(ChartStaticTooltipComponent, { static: true })
+  protected tooltip: ChartStaticTooltipComponent;
 
   public constructor(
     protected element: ElementRef,
@@ -69,7 +78,7 @@ export class BarChartComponent extends BarChartAbstract implements OnInit, After
       throw getEmptyCountBarInViewportError();
     }
 
-    super.ngOnInit()
+    super.ngOnInit();
   }
 
   public ngAfterContentInit(): void {
@@ -104,7 +113,7 @@ export class BarChartComponent extends BarChartAbstract implements OnInit, After
     const startingDatePoint: Date = this.data[this.data.length - 1].identity;
     const from: Date = this.dateRangeStrategy.calcSomeDateOnDistance(
       startingDatePoint,
-      -1 * (this.countBarsInViewport - 1)
+      -1 * (this.countBarsInViewport - 1),
     );
     return [from, startingDatePoint];
   }
@@ -114,7 +123,7 @@ export class BarChartComponent extends BarChartAbstract implements OnInit, After
    */
   private initTooltip(): void {
 
-    console.warn(this.tooltip)
+    console.warn(this.tooltip);
 
     if (!this.tooltip) {
       return;
@@ -125,7 +134,7 @@ export class BarChartComponent extends BarChartAbstract implements OnInit, After
       ...{
         top: this.margin.top + this.tooltip.correctionHeight,
         // left: this.margin.left + this.tooltip.correctionWidth
-      }
+      },
     };
     this.heightCorrection = this.heightCorrection + this.tooltip.correctionHeight;
     // this.widthCorrection = this.widthCorrection + this.tooltip.correctionWidth;
@@ -134,6 +143,6 @@ export class BarChartComponent extends BarChartAbstract implements OnInit, After
 
     this.activeItemDataChange.asObservable()
       .pipe(tap(console.error))
-      .subscribe((event: BarChartActiveSelectedEvent) => this.tooltip.draw(event))
+      .subscribe((event: BarChartActiveSelectedEvent) => this.tooltip.draw(event));
   }
 }

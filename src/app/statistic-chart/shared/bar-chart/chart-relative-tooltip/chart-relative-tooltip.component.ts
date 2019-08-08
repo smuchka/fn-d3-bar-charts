@@ -1,25 +1,20 @@
-import { Component } from '@angular/core';
-import { BarChartComponent } from '../bar-chart.component';
-import { ChartTooltip, BarChartBase, BarChartActiveSelectedEvent } from '../core';
+import { Component, forwardRef } from '@angular/core';
+import { BarChartActiveSelectedEvent } from '../core';
 
-import { ChartStaticTooltipComponent } from '../chart-static-tooltip/chart-static-tooltip.component'
+import { ChartStaticTooltipComponent } from '../chart-static-tooltip/chart-static-tooltip.component';
 
 @Component({
   selector: 'fn-relative-tooltip',
   template: `<!--d3 create template itself-->`,
   styles: [],
-  providers: []
+  providers: [
+    {
+      provide: ChartStaticTooltipComponent,
+      useExisting: forwardRef(() => ChartRelativeTooltipComponent),
+    },
+  ],
 })
-export class ChartRelativeTooltipComponent implements ChartTooltip {
-
-  private chart: BarChartComponent;
-
-  public constructor() {
-  }
-
-  public setChart(chart: BarChartBase): void {
-    this.chart = chart;
-  }
+export class ChartRelativeTooltipComponent extends ChartStaticTooltipComponent {
 
   public get correctionWidth(): number {
     return 0;
@@ -60,7 +55,7 @@ export class ChartRelativeTooltipComponent implements ChartTooltip {
     // tooltip group container
     const tooltipGroup = layout.append('g')
       .attr('class', 'tooltipGroup')
-      .attr('fill', '#fff')
+      .attr('fill', '#fff');
     // .attr('width', `calc(100% - ${padding.left} - ${padding.right})`)
     // .attr('x', left + padding.left)
     // .attr('y', top)
@@ -68,11 +63,11 @@ export class ChartRelativeTooltipComponent implements ChartTooltip {
 
     // tooltip background
     tooltipGroup.append('rect')
-      .attr('width', `calc(100% - ${padding.left} - ${padding.right})`)
+      .attr('width', `calc(100% - ${ padding.left } - ${ padding.right })`)
       .attr('height', tooltipHeight + padding.top + padding.bottom)
       .attr('x', left + padding.left)
       .attr('y', top)
-      .attr('class', 'tooltip-bg')
+      .attr('class', 'tooltip-bg');
     // .style('opacity', 0.2)
 
     // divide line
@@ -81,47 +76,47 @@ export class ChartRelativeTooltipComponent implements ChartTooltip {
       .attr('x1', centerXAxis)
       .attr('y1', padding.top)
       .attr('x2', centerXAxis)
-      .attr('y2', tooltipHeight + padding.top)
+      .attr('y2', tooltipHeight + padding.top);
 
     //
     // Left side
     const leftGroup = tooltipGroup.append('g')
       .attr('x', centerXAxis)
       .attr('y', 0)
-      .attr('text-anchor', 'end')
+      .attr('text-anchor', 'end');
 
     leftGroup.append('text')
       .attr('x', centerXAxis - offsetToDivideLine)
       .attr('y', padding.top + 5)
       .attr('alignment-baseline', 'hanging')
-      .text(`${event.item.value}`)
-      .attr('class', 'value')
+      .text(`${ event.item.value }`)
+      .attr('class', 'value');
 
     leftGroup.append('text')
       .attr('x', centerXAxis - offsetToDivideLine)
       .attr('y', tooltipHeight + padding.top - 5)
       .attr('alignment-baseline', 'baseline')
       .text('Impression')
-      .attr('class', 'description')
+      .attr('class', 'description');
 
     //
     // Roght side
     const rightGroup = tooltipGroup
       .append('g')
-      .attr('text-anchor', 'start')
+      .attr('text-anchor', 'start');
 
     rightGroup.append('text')
       .attr('x', centerXAxis + offsetToDivideLine)
       .attr('y', padding.top + 5)
       .attr('alignment-baseline', 'hanging')
-      .text(`${event.item.external.amount || 0}`)
-      .attr('class', 'value')
+      .text(`${ event.item.external.amount || 0 }`)
+      .attr('class', 'value');
 
     rightGroup.append('text')
       .attr('x', centerXAxis + offsetToDivideLine)
       .attr('y', tooltipHeight + padding.top - 5)
       .attr('alignment-baseline', 'baseline')
       .text('Amount spent')
-      .attr('class', 'description')
+      .attr('class', 'description');
   }
 }
