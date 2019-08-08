@@ -77,7 +77,7 @@ export class ChartActiveDateTooltipComponent implements OnInit, OnChanges, After
 
     // tooltip background
     tooltipGroup.append('rect')
-      .attr('width', `calc(100% - ${padding.left}px - ${padding.right}px)`)
+      .attr('width', `calc(100% - ${padding.left} - ${padding.right})`)
       .attr('height', tooltipHeight + padding.top + padding.bottom)
       .attr('x', left + padding.left)
       .attr('y', top)
