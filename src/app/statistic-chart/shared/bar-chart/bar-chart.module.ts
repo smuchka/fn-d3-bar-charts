@@ -1,8 +1,8 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BarChartComponent } from './bar-chart.component';
-import { ChartStaticTooltipComponent } from './chart-static-tooltip/chart-static-tooltip.component';
-import { ChartRelativeTooltipComponent } from './chart-relative-tooltip/chart-relative-tooltip.component';
+import { ChartStaticTooltipComponent } from './bar-chart-tooltip/chart-static-tooltip.component';
+import { ChartRelativeTooltipComponent } from './bar-chart-tooltip/chart-relative-tooltip.component';
 
 @NgModule({
   imports: [
@@ -17,10 +17,6 @@ import { ChartRelativeTooltipComponent } from './chart-relative-tooltip/chart-re
     BarChartComponent,
     ChartStaticTooltipComponent,
     ChartRelativeTooltipComponent,
-  ],
-  providers: [
-    // { provide: ChartTooltip, useClass: ChartStaticTooltipComponent },
-    // { provide: ChartTooltip, useClass: ChartRelativeTooltipComponent },
   ],
 })
 export class BarChartModule {

@@ -4,7 +4,10 @@ import { filter, tap } from 'rxjs/operators'
 import { StatisticDelimiterService } from './services/statistic-delimiter.service';
 import { ItemData } from './statistic-chart/shared/bar-chart/core';
 import { StatisticDelimiter, DateRange } from './statistic-chart/core';
-import { subDays, subWeeks } from 'date-fns'
+import { subDays, subWeeks } from 'date-fns';
+
+// TODO: only for debug - in FN use other device detection flow
+import { DeviceDetectorService } from 'ngx-device-detector';
 
 @Component({
   selector: 'my-app',
@@ -27,9 +30,10 @@ export class AppComponent implements OnInit {
   ];
 
   // TODO: Detect it by DeviceDetectorService in FNSocial
-  public isMobile = true;
+  public isMobile = null;
 
   public constructor(
+    private deviceService: DeviceDetectorService,
     private statistic: StatisticDelimiterService,
   ) {
     this.pagginableData$ = new BehaviorSubject<ItemData[]>([]);
@@ -38,6 +42,7 @@ export class AppComponent implements OnInit {
     );
     this.campaignEnd = subDays(new Date(), 3);
     this.campaignStart = subWeeks(this.campaignEnd, 4);
+    this.isMobile = this.deviceService.isMobile();
   }
 
   public ngOnInit(): void {

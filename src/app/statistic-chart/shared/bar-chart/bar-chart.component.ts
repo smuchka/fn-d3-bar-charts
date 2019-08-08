@@ -1,5 +1,6 @@
 import {
   AfterContentInit,
+  AfterContentChecked,
   Component,
   ContentChild,
   ElementRef,
@@ -14,22 +15,22 @@ import { BarChartAbstract } from './bar-chart-abstract/bar-chart-abstract.compon
 // import { ChartStaticTooltipComponent } from './chart-static-tooltip/chart-static-tooltip.component';
 import { getBarChartEmptyDateStrategyError, getEmptyCountBarInViewportError } from './bar-chart-errors';
 import { BarChartActiveSelectedEvent, DateChart, ItemData } from './core';
-import { ChartStaticTooltipComponent } from './chart-static-tooltip/chart-static-tooltip.component';
+import { BaseChartInstance } from './bar-chart-tooltip/base-chart-tooltip';
 
 @Component({
   selector: 'fn-bar-chart',
   template: `<!--d3 create template itself-->`,
   styles: [
-      `
-          :host {
-              width: 100%;
-              height: 100%;
-              display: flex;
-          }
+    `
+      :host {
+          width: 100%;
+          height: 100%;
+          display: flex;
+      }
     `,
   ],
 })
-export class BarChartComponent extends BarChartAbstract implements OnInit, AfterContentInit {
+export class BarChartComponent extends BarChartAbstract implements OnInit, AfterContentInit, AfterContentChecked {
 
   @Input()
   public get countBarsInViewport(): number {
@@ -58,8 +59,8 @@ export class BarChartComponent extends BarChartAbstract implements OnInit, After
 
   private dateRangeStrategyValue: DateChart;
 
-  @ContentChild(ChartStaticTooltipComponent, { static: true })
-  protected tooltip: ChartStaticTooltipComponent;
+  @ContentChild(BaseChartInstance, { static: false, })
+  protected tooltip: BaseChartInstance;
 
   public constructor(
     protected element: ElementRef,
@@ -84,6 +85,12 @@ export class BarChartComponent extends BarChartAbstract implements OnInit, After
   public ngAfterContentInit(): void {
     this.initTooltip();
     super.ngAfterContentInit();
+  }
+
+  ngAfterContentChecked(): void {
+    // console.error(
+    //   this.tooltip
+    // )
   }
 
   protected getObserveSource(): Observable<any>[] {

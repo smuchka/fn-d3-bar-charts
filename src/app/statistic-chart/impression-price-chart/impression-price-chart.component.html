@@ -1,17 +1,11 @@
 <div class="chart-container">
-  <fn-bar-chart
-    #chart
-    [data]="renderData$ | async"
-    [dateRangeStrategy]="dateStrategy"
-    [barWidth]="barWidth"
-    [countBarsInViewport]="barCountInViewport"
-  >
-  <fn-static-tooltip></fn-static-tooltip>
-  <fn-relative-tooltip></fn-relative-tooltip>
-    <!-- <fn-static-tooltip *ngIf="isMobile; else relativeTooltip"></fn-static-tooltip> -->
-    <!-- <ng-template #relativeTooltip>
-      <fn-relative-tooltip></fn-relative-tooltip>
-    </ng-template> -->
+	<fn-bar-chart #chart [data]="renderData$ | async" [dateRangeStrategy]="dateStrategy" [barWidth]="barWidth" [countBarsInViewport]="barCountInViewport">
+		
+    <fn-static-tooltip *ngIf="isMobile; else relativeTooltip"></fn-static-tooltip>
+		
+    <ng-template #relativeTooltip>
+			<fn-relative-tooltip></fn-relative-tooltip>
+		</ng-template>
 
-  </fn-bar-chart>
+	</fn-bar-chart>
 </div>

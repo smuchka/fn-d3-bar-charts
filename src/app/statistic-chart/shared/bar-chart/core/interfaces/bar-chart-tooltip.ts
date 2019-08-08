@@ -6,4 +6,5 @@ export interface ChartTooltip {
   correctionHeight: number;
   setChart(chart: BarChartBase): void;
   draw(event: BarChartActiveSelectedEvent): void;
+  getLayout(): any;
 }

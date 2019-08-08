@@ -38,7 +38,7 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
   public navigation: ChartActiveDateNavComponent;
 
   @Input()
-  public isMobile: boolean = false;
+  public isMobile: boolean = null;
 
   @ViewChild('chart', { static: true })
   protected chart: BarChartAbstract;

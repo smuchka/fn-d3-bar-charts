@@ -1,19 +1,20 @@
-import { Component } from '@angular/core';
+import { Component, forwardRef } from '@angular/core';
 import { BarChartComponent } from '../bar-chart.component';
 import { BarChartActiveSelectedEvent, ChartTooltip } from '../core';
+import { BaseChartInstance } from './base-chart-tooltip';
 
 @Component({
   selector: 'fn-static-tooltip',
   template: `<!--d3 create template itself-->`,
   styles: [],
+  providers: [
+    {
+      provide: BaseChartInstance,
+      useExisting: forwardRef(() => ChartStaticTooltipComponent),
+    },
+  ]
 })
-export class ChartStaticTooltipComponent implements ChartTooltip {
-
-  protected chart: BarChartComponent;
-
-  public setChart(chart: BarChartComponent): void {
-    this.chart = chart;
-  }
+export class ChartStaticTooltipComponent extends BaseChartInstance implements ChartTooltip {
 
   public get correctionWidth(): number {
     return 0;
@@ -21,6 +22,10 @@ export class ChartStaticTooltipComponent implements ChartTooltip {
 
   public get correctionHeight(): number {
     return 100;
+  }
+
+  public getLayout(): any {
+    return this.chart.getLayout()
   }
 
   public draw(event: BarChartActiveSelectedEvent): void {
@@ -38,9 +43,7 @@ export class ChartStaticTooltipComponent implements ChartTooltip {
       left: 10,
     };
 
-    const layout = false ? this.chart.getLayoutPanning() : this.chart.getLayout();
-
-    console.log(layout);
+    const layout = this.getLayout();
 
     layout
       .selectAll('.tooltipGroup')
@@ -62,7 +65,7 @@ export class ChartStaticTooltipComponent implements ChartTooltip {
 
     // tooltip background
     tooltipGroup.append('rect')
-      .attr('width', `calc(100% - ${ padding.left } - ${ padding.right })`)
+      .attr('width', `calc(100% - ${padding.left} - ${padding.right})`)
       .attr('height', tooltipHeight + padding.top + padding.bottom)
       .attr('x', left + padding.left)
       .attr('y', top)
@@ -88,7 +91,7 @@ export class ChartStaticTooltipComponent implements ChartTooltip {
       .attr('x', centerXAxis - offsetToDivideLine)
       .attr('y', padding.top + 5)
       .attr('alignment-baseline', 'hanging')
-      .text(`${ event.item.value }`)
+      .text(`${event.item.value}`)
       .attr('class', 'value');
 
     leftGroup.append('text')
@@ -108,7 +111,7 @@ export class ChartStaticTooltipComponent implements ChartTooltip {
       .attr('x', centerXAxis + offsetToDivideLine)
       .attr('y', padding.top + 5)
       .attr('alignment-baseline', 'hanging')
-      .text(`${ event.item.external.amount || 0 }`)
+      .text(`${event.item.external.amount || 0}`)
       .attr('class', 'value');
 
     rightGroup.append('text')
