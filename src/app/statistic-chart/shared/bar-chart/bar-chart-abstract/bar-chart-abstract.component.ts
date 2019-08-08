@@ -26,7 +26,6 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   private groupPanning;
   private groupPlaceholderBars;
   private groupDataBars;
-  private tooltip;
   private x;
   private x2;
   private y;

@@ -49,7 +49,7 @@ export class BarChartComponent extends BarChartAbstract implements OnInit, After
   }
   private dateRangeStrategyValue: DateChart;
 
-  @ContentChild(ChartActiveDateTooltipComponent, { descendants: true })
+  @ContentChild(ChartActiveDateTooltipComponent, { descendants: false })
   protected tooltip: ChartActiveDateTooltipComponent;
 
   public constructor(

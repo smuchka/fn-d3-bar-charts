@@ -11,6 +11,7 @@ import { BarChartAbstract } from '../shared/bar-chart/bar-chart-abstract/bar-cha
 import { DelimiterChartStrategyService } from '../shared/services/delimiter-chart-strategy.service';
 import { DelimiterChartConfigService } from '../../services/delimiter-chart-config.service';
 import { DateChart } from '../shared/bar-chart/core';
+import { ChartActiveDateNavComponent } from '../chart-active-date-nav/chart-active-date-nav.component';
 import {
   getEmptyChartDelimiterError,
   getEmptyChartDateRangeError,
