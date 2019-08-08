@@ -5,7 +5,7 @@ import {
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { BarChartAbstract } from './bar-chart-abstract/bar-chart-abstract.component';
-import { ChartActiveDateTooltipComponent } from './chart-active-date-tooltip/chart-active-date-tooltip.component';
+import { ChartStaticTooltipComponent } from './chart-static-tooltip/chart-static-tooltip.component';
 import {
   getBarChartEmptyDateStrategyError,
   getEmptyCountBarInViewportError
@@ -49,8 +49,8 @@ export class BarChartComponent extends BarChartAbstract implements OnInit, After
   }
   private dateRangeStrategyValue: DateChart;
 
-  @ContentChild(ChartActiveDateTooltipComponent, { descendants: false })
-  protected tooltip: ChartActiveDateTooltipComponent;
+  @ContentChild(ChartStaticTooltipComponent, { static: true })
+  protected tooltip: ChartStaticTooltipComponent;
 
   public constructor(
     protected element: ElementRef,

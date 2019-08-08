@@ -1,7 +1,9 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BarChartComponent } from './bar-chart.component';
-import { ChartActiveDateTooltipComponent } from './chart-active-date-tooltip/chart-active-date-tooltip.component';
+import {
+  ChartStaticTooltipComponent
+} from './chart-static-tooltip/chart-static-tooltip.component';
 
 @NgModule({
   imports: [
@@ -9,11 +11,11 @@ import { ChartActiveDateTooltipComponent } from './chart-active-date-tooltip/cha
   ],
   declarations: [
     BarChartComponent,
-    ChartActiveDateTooltipComponent
+    ChartStaticTooltipComponent
   ],
   exports: [
     BarChartComponent,
-    ChartActiveDateTooltipComponent
+    ChartStaticTooltipComponent
   ],
   providers: []
 })

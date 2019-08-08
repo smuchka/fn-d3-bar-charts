@@ -3,11 +3,11 @@ import { BarChartComponent } from '../bar-chart.component';
 import { BarChartActiveSelectedEvent } from '../core';
 
 @Component({
-  selector: 'fn-chart-active-date-tooltip',
-  templateUrl: './chart-active-date-tooltip.component.html',
-  styleUrls: ['./chart-active-date-tooltip.component.css']
+  selector: 'fn-static-date-tooltip',
+  templateUrl: './static-date-tooltip.component.html',
+  styleUrls: ['./static-date-tooltip.component.css']
 })
-export class ChartActiveDateTooltipComponent implements OnInit, OnChanges, AfterContentInit {
+export class ChartStaticTooltipComponent implements OnInit, OnChanges, AfterContentInit {
 
   private chart: BarChartComponent;
 
