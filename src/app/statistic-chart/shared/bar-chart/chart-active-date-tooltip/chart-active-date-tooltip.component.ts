@@ -48,9 +48,9 @@ export class ChartActiveDateTooltipComponent implements OnInit, OnChanges, After
     const top = 0;
     const padding = {
       top: 24,
-      right: 0,
+      right: 10,
       bottom: 24,
-      left: 0,
+      left: 10,
     };
 
     const layout = false ? this.chart.getLayoutPanning() : this.chart.getLayout();
