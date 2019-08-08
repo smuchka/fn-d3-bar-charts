@@ -99,11 +99,11 @@ export abstract class D3ChartBaseComponent implements AfterContentInit {
     this.initialiseSizeAndScale();
     this.buildSVG();
   }
-  
+
   public getWidth(): number {
     return this.width || 0;
   }
-  
+
   public getHeight(): number {
     return this.height || 0;
   }

@@ -5,12 +5,12 @@ import {
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { BarChartAbstract } from './bar-chart-abstract/bar-chart-abstract.component';
-import { ChartStaticTooltipComponent } from './chart-static-tooltip/chart-static-tooltip.component';
+// import { ChartStaticTooltipComponent } from './chart-static-tooltip/chart-static-tooltip.component';
 import {
   getBarChartEmptyDateStrategyError,
   getEmptyCountBarInViewportError
 } from './bar-chart-errors';
-import { DateChart, ItemData, BarChartActiveSelectedEvent } from './core';
+import { DateChart, ItemData, ChartTooltip, BarChartActiveSelectedEvent } from './core';
 
 @Component({
   selector: 'fn-bar-chart',
@@ -49,8 +49,8 @@ export class BarChartComponent extends BarChartAbstract implements OnInit, After
   }
   private dateRangeStrategyValue: DateChart;
 
-  @ContentChild(ChartStaticTooltipComponent, { static: true })
-  protected tooltip: ChartStaticTooltipComponent;
+  @ContentChild(ChartTooltip, { static: true })
+  protected tooltip: ChartTooltip;
 
   public constructor(
     protected element: ElementRef,
@@ -114,12 +114,21 @@ export class BarChartComponent extends BarChartAbstract implements OnInit, After
    */
   private initTooltip(): void {
 
+    console.warn(this.tooltip)
+
     if (!this.tooltip) {
       return;
     }
 
-    this.padding = { ...this.margin, ...{ top: this.margin.top + this.tooltip.correctionHeight } };
+    this.padding = {
+      ...this.margin,
+      ...{
+        top: this.margin.top + this.tooltip.correctionHeight,
+        // left: this.margin.left + this.tooltip.correctionWidth
+      }
+    };
     this.heightCorrection = this.heightCorrection + this.tooltip.correctionHeight;
+    // this.widthCorrection = this.widthCorrection + this.tooltip.correctionWidth;
 
     this.tooltip.setChart(this);
 

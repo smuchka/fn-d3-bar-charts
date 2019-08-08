@@ -12,6 +12,7 @@ import {
   DirectionLeft,
   DirectionRight,
   BarChartActiveSelectedEvent,
+  BarChartBase,
 } from '../core';
 import { Observable, Subscription, merge } from 'rxjs';
 import * as D3 from 'd3';
@@ -21,7 +22,7 @@ import { Selection } from "d3";
   selector: 'fn-bar-chart-time-scale',
   template: `<!--d3 create template itself-->`,
 })
-export abstract class BarChartAbstract extends D3ChartBaseComponent implements OnInit, AfterContentInit, OnChanges, OnDestroy {
+export abstract class BarChartAbstract extends D3ChartBaseComponent implements BarChartBase, OnInit, AfterContentInit, OnChanges, OnDestroy {
 
   private groupPanning;
   private groupPlaceholderBars;

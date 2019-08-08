@@ -2,19 +2,22 @@ import { Component } from '@angular/core';
 import { BarChartComponent } from '../bar-chart.component';
 import { ChartTooltip, BarChartBase, BarChartActiveSelectedEvent } from '../core';
 
+import { ChartStaticTooltipComponent } from '../chart-static-tooltip/chart-static-tooltip.component'
+
 @Component({
-  selector: 'fn-static-tooltip',
+  selector: 'fn-relative-tooltip',
   template: `<!--d3 create template itself-->`,
-  styles: []
+  styles: [],
+  providers: []
 })
-export class ChartStaticTooltipComponent implements ChartTooltip {
+export class ChartRelativeTooltipComponent implements ChartTooltip {
 
   private chart: BarChartComponent;
 
   public constructor() {
   }
 
-  public setChart(chart: BarChartComponent): void {
+  public setChart(chart: BarChartBase): void {
     this.chart = chart;
   }
 
