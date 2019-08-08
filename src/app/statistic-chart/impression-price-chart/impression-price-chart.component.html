@@ -5,6 +5,7 @@
     [dateRangeStrategy]="dateStrategy"
     [barWidth]="barWidth"
     [countBarsInViewport]="barCountInViewport"
-    [isMobile]="isMobile"
-  ></fn-bar-chart>
+  >
+    <fn-chart-active-date-tooltip *ngIf="isMobile"></fn-chart-active-date-tooltip>
+  </fn-bar-chart>
 </div>

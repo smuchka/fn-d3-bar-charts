@@ -28,15 +28,20 @@
   fill:#0768EF;
 }
 
-/deep/ .tooltip {
-  position: absolute;
-  display: none;
-  min-width: 80px;
-  height: auto;
-  background: none repeat scroll 0 0 #755f5f;
-  border: 1px solid #6F257F;
-  padding: 14px;
-  text-align: center;
-  transition: opacity 0.3s ease-out;
-  opacity: 0;
+//
+// Tooltip
+//
+/deep/ .value {
+  fill: #292A31;
+  font-family: "Fira Sans";	
+  font-size: 24px;	
+  font-weight: 500;	
+  line-height: 32px;
+}
+
+/deep/  .description {
+  fill: #969DAD;
+  font-family: Lato;
+  font-size: 14px;
+  line-height: 20px;
 }

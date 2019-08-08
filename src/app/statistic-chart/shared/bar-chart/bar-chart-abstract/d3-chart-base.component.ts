@@ -1,4 +1,4 @@
-import { Component, ElementRef, Renderer2, OnInit } from '@angular/core';
+import { Component, ElementRef, Renderer2, AfterContentInit } from '@angular/core';
 import * as D3 from 'd3';
 
 type Position = {
@@ -20,7 +20,7 @@ type LabelConfig = {
   selector: 'fn-base-d3-chart',
   template: '<!--d3 create template itself-->',
 })
-export abstract class D3ChartBaseComponent implements OnInit {
+export abstract class D3ChartBaseComponent implements AfterContentInit {
 
   protected svg;
 
@@ -55,7 +55,6 @@ export abstract class D3ChartBaseComponent implements OnInit {
    * Important: left & right padding say where X axis start
    */
   protected padding: Position = {
-    // top: 130,
     top: 0,
     right: 10,
     bottom: 0,
@@ -96,9 +95,17 @@ export abstract class D3ChartBaseComponent implements OnInit {
     this.useYAxisValuesRound = false;
   }
 
-  public ngOnInit(): void {
+  public ngAfterContentInit(): void {
     this.initialiseSizeAndScale();
     this.buildSVG();
+  }
+  
+  public getWidth(): number {
+    return this.width || 0;
+  }
+  
+  public getHeight(): number {
+    return this.height || 0;
   }
 
   protected initialiseSizeAndScale() {

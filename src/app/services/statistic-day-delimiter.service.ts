@@ -65,6 +65,7 @@ export class StatisticDayDelimiterService implements ImpressionStatistic {
     ).map((date: Date) => ({
       identity: date,
       value: random(0, 999),
+      external: {},
     }));
   }
 
@@ -80,6 +81,7 @@ export class StatisticDayDelimiterService implements ImpressionStatistic {
       return {
         identity: date,
         value: item.views,
+        external: {},
       };
     })
   }

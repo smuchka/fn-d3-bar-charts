@@ -1,13 +1,13 @@
 import {
   Component, ViewChild, ComponentFactoryResolver,
-  Input, OnInit, OnChanges, OnDestroy, SimpleChanges
+  Input, OnInit, OnChanges, OnDestroy,
+  SimpleChanges
 } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 import { ChartSizeConfig, StatisticDelimiter, DateRange } from '../core';
-import { ItemData } from '../shared/bar-chart/core';
+import { ItemData, BarChartActiveSelectedEvent } from '../shared/bar-chart/core';
 import { BarChartAbstract } from '../shared/bar-chart/bar-chart-abstract/bar-chart-abstract.component';
-import { ChartActiveDateNavComponent } from '../chart-active-date-nav/chart-active-date-nav.component';
 import { DelimiterChartStrategyService } from '../shared/services/delimiter-chart-strategy.service';
 import { DelimiterChartConfigService } from '../../services/delimiter-chart-config.service';
 import { DateChart } from '../shared/bar-chart/core';
@@ -60,7 +60,6 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
   }
 
   public ngOnInit(): void {
-
     if (!this.delimiter) {
       throw getEmptyChartDelimiterError();
     }
@@ -144,6 +143,7 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
     if (!this.chartActiveChangeSubscription) {
       this.chartActiveChangeSubscription =
         this.chart.activeItemDataChange.asObservable()
+          .pipe(map((event: BarChartActiveSelectedEvent) => event.item))
           .subscribe(this.onActiveItemChangeFromChart.bind(this));
     }
 
@@ -206,7 +206,12 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
         return data.get(nextDate.getTime());
       }
 
-      return <ItemData>{ identity: nextDate, value: 0 };
+      // todo: factory create
+      return <ItemData>{
+        identity: nextDate,
+        value: 0,
+        external: {},
+      };
     };
 
     return Array.from(Array(countBarItems), createDataItem).reverse();

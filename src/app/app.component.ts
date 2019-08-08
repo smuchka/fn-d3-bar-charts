@@ -27,7 +27,7 @@ export class AppComponent implements OnInit {
   ];
 
   // TODO: Detect it by DeviceDetectorService in FNSocial
-  public isMobile = false;
+  public isMobile = true;
 
   public constructor(
     private statistic: StatisticDelimiterService,
