@@ -17,16 +17,8 @@ import { BaseChartInstance } from './base-chart-tooltip';
 })
 export class ChartRelativeTooltipComponent extends BaseChartInstance {
 
-  public get correctionWidth(): number {
-    return 0;
-  }
-
   public get correctionHeight(): number {
-    return 100;
-  }
-
-  public getLayout(): any {
-    return this.chart.getLayoutPanning()
+    return 130;
   }
 
   public draw(event: BarChartActiveSelectedEvent): void {
@@ -82,7 +74,7 @@ export class ChartRelativeTooltipComponent extends BaseChartInstance {
       .attr('y2', tooltipHeight + padding.top);
 
     //
-    // Left side
+    // Top area
     const leftGroup = tooltipGroup.append('g')
       .attr('x', centerXAxis)
       .attr('y', 0)
@@ -103,7 +95,7 @@ export class ChartRelativeTooltipComponent extends BaseChartInstance {
       .attr('class', 'description');
 
     //
-    // Roght side
+    // Bottom area
     const rightGroup = tooltipGroup
       .append('g')
       .attr('text-anchor', 'start');

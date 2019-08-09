@@ -1,6 +1,6 @@
 import { Component, forwardRef } from '@angular/core';
 import { BarChartComponent } from '../bar-chart.component';
-import { BarChartActiveSelectedEvent, ChartTooltip } from '../core';
+import { BarChartActiveSelectedEvent } from '../core';
 import { BaseChartInstance } from './base-chart-tooltip';
 
 @Component({
@@ -14,18 +14,10 @@ import { BaseChartInstance } from './base-chart-tooltip';
     },
   ]
 })
-export class ChartStaticTooltipComponent extends BaseChartInstance implements ChartTooltip {
-
-  public get correctionWidth(): number {
-    return 0;
-  }
+export class ChartStaticTooltipComponent extends BaseChartInstance {
 
   public get correctionHeight(): number {
     return 100;
-  }
-
-  public getLayout(): any {
-    return this.chart.getLayout()
   }
 
   public draw(event: BarChartActiveSelectedEvent): void {
