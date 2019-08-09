@@ -147,6 +147,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
     // this.tooltip = D3.select('body').append('div').attr('class', 'tooltip');
     // this.tooltip = this.svg.append('div').attr('class', 'tooltip');
 
+    this.drawStaticContent();
     this.showActiveBarOnCenterViewport();
     this.updateChart();
   }
@@ -297,8 +298,26 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
     //   // this.tooltip.style("display", "none");
     // });
 
+    // const widthBorderShadow = 40;
+    // this.svg.append('rect')
+    //   .attr('x', this.width - widthBorderShadow)
+    //   .attr('y', this.y(this.maxValueFromChart))
+    //   .attr('width', widthBorderShadow )
+    //   .attr('height', d => this.y(0) - this.y(this.maxValueFromChart) + this.minBarHeight)
+    //   .attr('class', 'right-border shadow-on')
+    //   // .attr('fill', 'red')
+    //   .style('opacity', 0.2)
+    // // right-border.shadow-on
+
+    // .attr('y', d => this.y(this.maxValueFromChart))
+    //   .attr('height', d => this.y(0) - this.y(this.maxValueFromChart) + this.minBarHeight)
+
     // update active item viewport position
     this.showActiveBarOnCenterViewport();
+  }
+
+  private drawStaticContent(): void {
+    //this.svg.append()
   }
 
   private initSubscribes(): void {

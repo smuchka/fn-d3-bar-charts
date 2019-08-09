@@ -47,71 +47,139 @@ export class ChartRelativeTooltipComponent extends BaseChartInstance {
     const tooltipHeight = 52;
     const offsetToDivideLine = 24;
 
+    // 
+    // const colorTooltip = '#ffffff';
+    const colorTooltip = '#eee';
+
+
     // tooltip group container
     const tooltipGroup = layout.append('g')
       .attr('class', 'tooltipGroup')
-      .attr('fill', '#eee');
-    // .attr('width', `calc(100% - ${padding.left} - ${padding.right})`)
-    // .attr('x', left + padding.left)
-    // .attr('y', top)
 
+    var tooltipDef = tooltipGroup.append('defs')
 
-    // tooltip background
-    tooltipGroup.append('rect')
-      .attr('width', `calc(100% - ${padding.left} - ${padding.right})`)
-      .attr('height', tooltipHeight + padding.top + padding.bottom)
-      .attr('x', left + padding.left)
-      .attr('y', top)
-      .attr('class', 'tooltip-bg')
-      .style('opacity', 0.2)
+    tooltipDef.append('path').attr('id', 'tooltip_path')
+      .attr('d', 'M4,-2.72848411e-12 L124,-2.72848411e-12 C126.209139,-2.72848411e-12 128,1.94582363 128,4.15693243 L128,101.153366 C128,103.364475 126.209139,105.156932 124,105.156932 L4,105.156932 C1.790861,105.156932 0,103.364475 0,101.153366 L0,4.00356665 C0,1.79245784 1.790861,-2.72848411e-12 4,-2.72848411e-12 Z');
+
+    tooltipDef.append('path').attr('id', 'tooltip_mark_path')
+      .attr('d', 'M28,112.843068 L35.2810568,105.305204 C35.6649327,104.907789 36.2980074,104.89709 36.6950688,105.281308 C36.7031607,105.289138 36.71112,105.297105 36.7189432,105.305204 L44,112.843068 L28,112.843068 Z');
+
+    const filterShadowBg = tooltipDef.append('filter').attr('id', 'filter-shadow-bg');
+    filterShadowBg.append('feOffset')
+      .attr('in', 'SourceAlpha').attr('result', 'shadowOffsetOuter1')
+      .attr('dx', 0).attr('dy', 4);
+    filterShadowBg.append('feGaussianBlur')
+      .attr('in', 'shadowOffsetOuter1').attr('result', 'shadowBlurOuter1')
+      .attr('stdDeviation', '8');
+    filterShadowBg.append('feColorMatrix')
+      .attr('in', 'shadowBlurOuter1')
+      .attr('values', '0 0 0 0 0.0117647059   0 0 0 0 0.0117647059   0 0 0 0 0.0117647059  0 0 0 0.1 0')
+      .attr('type', 'matrix');
+
+    // cloudDef.selectAll("circle").data(circle_data).enter()
+    //   .append("circle")
+    //   .attr("cx", function (d) { return d[0] })
+    //   .attr("cy", function (d) { return d[1] })
+    //   .attr("r", function (d) { return d[2] })
+    //   .style("fill", "steelblue")
+
+    const tooltipG = tooltipGroup.append('g')
+      .attr('id', 'tooltip')
+      .attr('transform', 'translate(16.000000, 16.000000)');
+
+    // background
+    const tooltipBackgroundG = tooltipG.append('g')
+      .attr('id', 'bg-tooltip-witout_mark')
+      .attr('fill-rule', 'nonzero')
+      .attr('transform', 'translate(64.000000, 52.578466) scale(1, -1) translate(-64.000000, -52.578466) ');
+    // bg shadow
+    tooltipBackgroundG.append('use')
+      .attr('fill', 'black')
+      .attr('fill-opacity', '1')
+      .attr('filter', 'url(#filter-shadow-bg)')
+      .attr('xlink:href', '#tooltip_path');
+    // bg white
+    tooltipBackgroundG.append('use')
+      .attr('fill', colorTooltip)
+      .attr('xlink:href', '#tooltip_path');
 
     // divide line
-    tooltipGroup.append('line')
-      .attr('stroke', '#DFE3EC')
-      .attr('x1', centerXAxis)
-      .attr('y1', padding.top)
-      .attr('x2', centerXAxis)
-      .attr('y2', tooltipHeight + padding.top);
+    tooltipG.append('rect')
+      .attr('fill', '#DFE3EC')
+      .attr('x', '8')
+      .attr('y', '52')
+      .attr('width', '112')
+      .attr('height', '1')
 
-    //
-    // Top area
-    const leftGroup = tooltipGroup.append('g')
-      .attr('x', centerXAxis)
-      .attr('y', 0)
-      .attr('text-anchor', 'end');
+    // top text area
+    tooltipG.append('text')
+      .attr('fill', '#292A31')
+      .attr('font-family', 'Lato-Regular, Lato')
+      .attr('font-size', '16')
+      .attr('font-weight', 'normal')
+      .attr('line-spacing', '24')
 
-    leftGroup.append('text')
-      .attr('x', centerXAxis - offsetToDivideLine)
-      .attr('y', padding.top + 5)
-      .attr('alignment-baseline', 'hanging')
-      .text(`${event.item.value}`)
-      .attr('class', 'value');
+      .append('tspan')
+      .attr('x', '44.244')
+      .attr('y', '40')
+      .text('9,678')
 
-    leftGroup.append('text')
-      .attr('x', centerXAxis - offsetToDivideLine)
-      .attr('y', tooltipHeight + padding.top - 5)
-      .attr('alignment-baseline', 'baseline')
+    tooltipG.append('text')
+      .attr('fill', '#969DAD')
+      .attr('font-family', 'Lato-Regular, Lato')
+      .attr('font-size', '12')
+      .attr('font-weight', 'normal')
+      .attr('line-spacing', '16')
+
+      .append('tspan')
+      .attr('x', '35.442')
+      .attr('y', '20')
       .text('Impression')
-      .attr('class', 'description');
 
-    //
-    // Bottom area
-    const rightGroup = tooltipGroup
-      .append('g')
-      .attr('text-anchor', 'start');
+    // bottom text area
+    tooltipG.append('text')
+      .attr('fill', '#292A31')
+      .attr('font-family', 'Lato-Regular, Lato')
+      .attr('font-size', '16')
+      .attr('font-weight', 'normal')
+      .attr('line-spacing', '24')
 
-    rightGroup.append('text')
-      .attr('x', centerXAxis + offsetToDivideLine)
-      .attr('y', padding.top + 5)
-      .attr('alignment-baseline', 'hanging')
-      .text(`${event.item.external.amount || 0}`)
-      .attr('class', 'value');
+      .append('tspan')
+      .attr('x', '39.104')
+      .attr('y', '89')
+      .text('$16.86')
 
-    rightGroup.append('text')
-      .attr('x', centerXAxis + offsetToDivideLine)
-      .attr('y', tooltipHeight + padding.top - 5)
-      .attr('alignment-baseline', 'baseline')
-      .text('Amount spent')
-      .attr('class', 'description');
+    tooltipG.append('text')
+      .attr('fill', '#969DAD')
+      .attr('font-family', 'Lato-Regular, Lato')
+      .attr('font-size', '12')
+      .attr('font-weight', 'normal')
+      .attr('line-spacing', '16')
+
+      .append('tspan')
+      .attr('x', '27.456')
+      .attr('y', '69')
+      .text('Amount spent');
+
+    // tooltip mark
+    const tooltipMarkG =
+      tooltipG.append('g')
+        .attr('id', 'bg-tooltip-mark')
+        .attr('transform', 'translate(36.000000, 108.921534) scale(1, -1) translate(-36.000000, -108.921534)')
+        .append('g')
+    // .attr('id', 'tooltip')
+    // .attr('transform', 'rotate(0, 100, 120)');
+
+    // tooltip mark bg shadow
+    tooltipMarkG.append('use')
+      .attr('fill', 'black')
+      .attr('fill-opacity', '1')
+      .attr('filter', 'url(#filter-shadow-bg)')
+      .attr('xlink:href', '#tooltip_mark_path');
+    // tooltip mark bg white
+    tooltipMarkG.append('use')
+      .attr('fill', colorTooltip)
+      .attr('xlink:href', '#tooltip_mark_path');
+
   }
 }
