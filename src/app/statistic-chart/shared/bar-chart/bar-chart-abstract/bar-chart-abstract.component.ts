@@ -41,6 +41,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   private canActivateNextBarItem: boolean;
   private changeData: EventEmitter<ItemData[]>;
   private changeBarWidth: EventEmitter<null>;
+  private loadData: EventEmitter<Date>;
 
   @Input()
   public set data(items: ItemData[]) {
@@ -108,6 +109,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
     this.changeData = new EventEmitter();
     this.changeBarWidth = new EventEmitter();
     this.activeItemDataChange = new EventEmitter();
+    this.loadData = new EventEmitter();
     this.petBorder = new EventEmitter();
     this.subs = new Subscription();
   }
@@ -169,12 +171,12 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   }
 
   private onZoomedEnd(): void {
-    // TODO: Detect scroll to start of the chart
-    const dataMin = D3.min(this.data, d => d.identity);
-    const currentDomainMin = D3.min(this.x.domain());
-
-    if (dataMin > currentDomainMin) {
-      console.log('Direction left');
+    // TODO: Need to test it
+    const dataMin: Date = D3.min(this.data, d => d.identity);
+    const currentDomainMin: Date = new Date(D3.min(this.x.domain()));
+    console.log(dataMin.getTime() >= currentDomainMin.getTime());
+    if (dataMin.getTime() >= currentDomainMin.getTime()) {
+      this.loadData.emit(dataMin);
     }
   }
 
