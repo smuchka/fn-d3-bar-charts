@@ -81,7 +81,20 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
       this.canActivateNextBarItem = this.canChangeActiveOn(DirectionRight);
 
       setTimeout(() => {
-        const event = new BarChartActiveSelectedEvent(item, this.x(item.identity));
+
+        const medianDate =
+          this.dataList[0].identity.getTime() + (
+            this.dataList[this.dataList.length - 1].identity.getTime() - this.dataList[0].identity.getTime()
+          ) / 2;
+
+        const isBeforeCenterData: boolean = differenceInSeconds(medianDate, item.identity) > 0;
+        const date = new Date(medianDate);
+
+        const event = new BarChartActiveSelectedEvent(
+          item,
+          this.x(item.identity),
+          isBeforeCenterData,
+        );
         this.activeItemDataChange.emit(event);
       });
     }
@@ -339,25 +352,27 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
 
   private initActiveDate(): void {
     let activeDate = null;
-    const now = this.calcNowBarDate();
-    const arr = this.data.filter(d => d.value > 0);
-    const lastNotEmptyDate: Date | null = arr.length
-      ? D3.max(arr, d => d.identity)
-      : null;
-    const lastChartDate = this.data[this.data.length - 1].identity;
-    const todayInDateRange: boolean = differenceInSeconds(now, lastChartDate) <= 0;
+    // const now = this.calcNowBarDate();
+    // const arr = this.data.filter(d => d.value > 0);
+    // const lastNotEmptyDate: Date | null = arr.length
+    //   ? D3.max(arr, d => d.identity)
+    //   : null;
+    // const lastChartDate = this.data[this.data.length - 1].identity;
+    // const todayInDateRange: boolean = differenceInSeconds(now, lastChartDate) <= 0;
 
-    if (lastNotEmptyDate) {
-      activeDate = todayInDateRange
-        ? D3.max([now, lastNotEmptyDate])
-        : lastNotEmptyDate
-    } else if (todayInDateRange) {
-      // if now NOT out of current chart dates range
-      activeDate = now;
-    } else {
-      // make active item from center chunk
-      activeDate = this.data[Math.floor((this.data.length - 1) / 2)].identity;
-    }
+    // if (lastNotEmptyDate) {
+    //   activeDate = todayInDateRange
+    //     ? D3.max([now, lastNotEmptyDate])
+    //     : lastNotEmptyDate
+    // } else if (todayInDateRange) {
+    //   // if now NOT out of current chart dates range
+    //   activeDate = now;
+    // } else {
+    //   // make active item from center chunk
+    //   activeDate = this.data[Math.floor((this.data.length - 1) / 2)].identity;
+    // }
+
+    activeDate = this.data[0].identity;
 
     this.setActiveDate(activeDate);
   }

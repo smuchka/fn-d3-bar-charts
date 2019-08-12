@@ -21,6 +21,15 @@ export class ChartRelativeTooltipComponent extends BaseChartInstance {
     return 130;
   }
 
+  public getLayout(): any {
+
+    if (!this.chart) {
+      return null;
+    }
+
+    return this.chart.getLayoutPanning();
+  }
+
   public draw(event: BarChartActiveSelectedEvent): void {
 
     if (!this.chart) {
@@ -83,15 +92,24 @@ export class ChartRelativeTooltipComponent extends BaseChartInstance {
     //   .attr("r", function (d) { return d[2] })
     //   .style("fill", "steelblue")
 
+    const tooltipPosX = event.positionX;
+    if (!event.beforeCenterData) {
+      tooltipPosX -= 113;
+    }
+    // tooltipPosX -= 50;
+    console.warn(tooltipPosX, event.beforeCenterData);
+
+
+
     const tooltipG = tooltipGroup.append('g')
       .attr('id', 'tooltip')
-      .attr('transform', 'translate(16.000000, 16.000000)');
+      .attr('transform', `translate(${tooltipPosX + 0.0}, 16.000000)`);
 
     // background
     const tooltipBackgroundG = tooltipG.append('g')
-      .attr('id', 'bg-tooltip-witout_mark')
+      .attr('id', 'bg-layout')
       .attr('fill-rule', 'nonzero')
-      .attr('transform', 'translate(64.000000, 52.578466) scale(1, -1) translate(-64.000000, -52.578466) ');
+      .call(this.magicTransform.bind(this), tooltipPosX + 64.0, 52.578466)
     // bg shadow
     tooltipBackgroundG.append('use')
       .attr('fill', 'black')
@@ -162,13 +180,11 @@ export class ChartRelativeTooltipComponent extends BaseChartInstance {
       .text('Amount spent');
 
     // tooltip mark
-    const tooltipMarkG =
-      tooltipG.append('g')
-        .attr('id', 'bg-tooltip-mark')
-        .attr('transform', 'translate(36.000000, 108.921534) scale(1, -1) translate(-36.000000, -108.921534)')
-        .append('g')
-    // .attr('id', 'tooltip')
-    // .attr('transform', 'rotate(0, 100, 120)');
+
+    const tooltipMarkG = tooltipG.append('g')
+      .attr('id', 'bg-mark')
+      .call(this.magicTransform.bind(this), tooltipPosX + 28.0, 108.921534)
+      .append('g')
 
     // tooltip mark bg shadow
     tooltipMarkG.append('use')
@@ -181,5 +197,9 @@ export class ChartRelativeTooltipComponent extends BaseChartInstance {
       .attr('fill', colorTooltip)
       .attr('xlink:href', '#tooltip_mark_path');
 
+  }
+
+  magicTransform(selection, sizeX, sizeY) {
+    return selection.attr('transform', `translate(${sizeX}, ${sizeY}) scale(1, -1) translate(${-1 * (sizeX)}, ${-1 * sizeY})`)
   }
 }

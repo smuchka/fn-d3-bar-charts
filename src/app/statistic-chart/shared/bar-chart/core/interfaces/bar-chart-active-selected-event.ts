@@ -6,5 +6,7 @@ export class BarChartActiveSelectedEvent {
     public item: ItemData,
     /** Position on X axis */
     public positionX: number,
+    /** Help for draw tooltip position (relative left or right tooltip corner)*/
+    public beforeCenterData: boolean = true, 
   ) { }
 }
