@@ -4,6 +4,9 @@ import { BarChartActiveSelectedEvent } from '../core';
 import { ChartStaticTooltipComponent } from './chart-static-tooltip.component';
 import { BaseChartInstance } from './base-chart-tooltip';
 
+const colorTooltip = '#ffffff';
+// const colorTooltip = '#eee';
+
 @Component({
   selector: 'fn-relative-tooltip',
   template: `<!--d3 create template itself-->`,
@@ -57,8 +60,6 @@ export class ChartRelativeTooltipComponent extends BaseChartInstance {
     const offsetToDivideLine = 24;
 
     // 
-    // const colorTooltip = '#ffffff';
-    const colorTooltip = '#eee';
 
 
     // tooltip group container
@@ -76,7 +77,8 @@ export class ChartRelativeTooltipComponent extends BaseChartInstance {
     const filterShadowBg = tooltipDef.append('filter').attr('id', 'filter-shadow-bg');
     filterShadowBg.append('feOffset')
       .attr('in', 'SourceAlpha').attr('result', 'shadowOffsetOuter1')
-      .attr('dx', 0).attr('dy', 4);
+      .attr('dx', 0)
+      .attr('dy', 0);
     filterShadowBg.append('feGaussianBlur')
       .attr('in', 'shadowOffsetOuter1').attr('result', 'shadowBlurOuter1')
       .attr('stdDeviation', '8');
@@ -85,41 +87,46 @@ export class ChartRelativeTooltipComponent extends BaseChartInstance {
       .attr('values', '0 0 0 0 0.0117647059   0 0 0 0 0.0117647059   0 0 0 0 0.0117647059  0 0 0 0.1 0')
       .attr('type', 'matrix');
 
-    // cloudDef.selectAll("circle").data(circle_data).enter()
-    //   .append("circle")
-    //   .attr("cx", function (d) { return d[0] })
-    //   .attr("cy", function (d) { return d[1] })
-    //   .attr("r", function (d) { return d[2] })
-    //   .style("fill", "steelblue")
+    // // // // // // // // // // // // // // // // // // // // // 
+    // // //  DEBUG .... 
+    // // // // // // // // // // // // // // // // // // // // // 
 
-    const tooltipPosX = event.positionX;
-    if (!event.beforeCenterData) {
-      tooltipPosX -= 113;
+    tooltipGroup.selectAll("circle")
+      .data([[event.positionX, 140, 1]]).enter()
+      .append("circle")
+      .attr("cx", function (d) { return d[0] })
+      .attr("cy", function (d) { return d[1] })
+      .attr("r", function (d) { return d[2] })
+      .style("fill", "steelblue")
+
+    // // // // // // // // // // // // // // // // // // // // // 
+    // // // // // // // // // // // // // // // // // // // // // 
+
+    let tooltipPosX = 0;
+    let directionScaled = 0;
+    const centerOffset = 28;
+    let offsetMountPointX = 0;
+
+    if (event.beforeCenterData) {
+      // min -50
+      directionScaled = -50;
+      offsetMountPointX = -50;
+      tooltipPosX = event.positionX + directionScaled - offsetMountPointX;
+      tooltipPosX -= 13;
+    } else {
+      // max +50
+      directionScaled = 0;
+      offsetMountPointX = 50;
+      tooltipPosX = event.positionX + directionScaled - offsetMountPointX;
+      tooltipPosX -= 65;
     }
-    // tooltipPosX -= 50;
     console.warn(tooltipPosX, event.beforeCenterData);
-
-
 
     const tooltipG = tooltipGroup.append('g')
       .attr('id', 'tooltip')
-      .attr('transform', `translate(${tooltipPosX + 0.0}, 16.000000)`);
+      .attr('transform', `translate(${tooltipPosX}, 16.000000)`);
 
-    // background
-    const tooltipBackgroundG = tooltipG.append('g')
-      .attr('id', 'bg-layout')
-      .attr('fill-rule', 'nonzero')
-      .call(this.magicTransform.bind(this), tooltipPosX + 64.0, 52.578466)
-    // bg shadow
-    tooltipBackgroundG.append('use')
-      .attr('fill', 'black')
-      .attr('fill-opacity', '1')
-      .attr('filter', 'url(#filter-shadow-bg)')
-      .attr('xlink:href', '#tooltip_path');
-    // bg white
-    tooltipBackgroundG.append('use')
-      .attr('fill', colorTooltip)
-      .attr('xlink:href', '#tooltip_path');
+    this.drawTooltipBackgroudWithShadow(tooltipG, tooltipPosX);
 
     // divide line
     tooltipG.append('rect')
@@ -130,7 +137,57 @@ export class ChartRelativeTooltipComponent extends BaseChartInstance {
       .attr('height', '1')
 
     // top text area
-    tooltipG.append('text')
+    this.drawTooltipContentTop(tooltipG);
+
+    // bottom text area
+    this.drawTooltipContentBottom(tooltipG);
+
+    // tooltip mark
+    // const tDefaultMarkPosX = tooltipPosX;
+    const tDefaultMarkPosY = 108.921534;
+    const tooltipMarkG = tooltipG.append('g')
+      .attr('id', 'bg-mark')
+      .call(this.magicTransform.bind(this), 0, tDefaultMarkPosY, centerOffset + offsetMountPointX)
+      // .call(this.magicTransform.bind(this), tDefaultMarkPosX, tDefaultMarkPosY, -24)
+      .append('g')
+
+    // tooltip mark bg shadow
+    tooltipMarkG.append('use')
+      .attr('fill', 'black')
+      .attr('fill-opacity', '1')
+      .attr('filter', 'url(#filter-shadow-bg)')
+      .attr('xlink:href', '#tooltip_mark_path');
+
+    // tooltip mark bg white
+    tooltipMarkG.append('use')
+      .attr('fill', colorTooltip)
+      .attr('xlink:href', '#tooltip_mark_path');
+
+  }
+
+  private drawTooltipBackgroudWithShadow(layout, positionXAxis: number): void {
+
+    // background
+    const tooltipBackgroundG = layout.append('g')
+      .attr('id', 'bg-layout')
+      .attr('fill-rule', 'nonzero')
+      .call(this.magicTransform.bind(this), positionXAxis + 64.0, 52.578466)
+
+    // bg shadow
+    tooltipBackgroundG.append('use')
+      .attr('fill', 'black')
+      .attr('fill-opacity', '1')
+      .attr('filter', 'url(#filter-shadow-bg)')
+      .attr('xlink:href', '#tooltip_path');
+
+    // bg white
+    tooltipBackgroundG.append('use')
+      .attr('fill', colorTooltip)
+      .attr('xlink:href', '#tooltip_path');
+  }
+
+  private drawTooltipContentTop(layout): void {
+    layout.append('text')
       .attr('fill', '#292A31')
       .attr('font-family', 'Lato-Regular, Lato')
       .attr('font-size', '16')
@@ -142,7 +199,7 @@ export class ChartRelativeTooltipComponent extends BaseChartInstance {
       .attr('y', '40')
       .text('9,678')
 
-    tooltipG.append('text')
+    layout.append('text')
       .attr('fill', '#969DAD')
       .attr('font-family', 'Lato-Regular, Lato')
       .attr('font-size', '12')
@@ -153,9 +210,10 @@ export class ChartRelativeTooltipComponent extends BaseChartInstance {
       .attr('x', '35.442')
       .attr('y', '20')
       .text('Impression')
+  }
 
-    // bottom text area
-    tooltipG.append('text')
+  private drawTooltipContentBottom(layout): void {
+    layout.append('text')
       .attr('fill', '#292A31')
       .attr('font-family', 'Lato-Regular, Lato')
       .attr('font-size', '16')
@@ -167,7 +225,7 @@ export class ChartRelativeTooltipComponent extends BaseChartInstance {
       .attr('y', '89')
       .text('$16.86')
 
-    tooltipG.append('text')
+    layout.append('text')
       .attr('fill', '#969DAD')
       .attr('font-family', 'Lato-Regular, Lato')
       .attr('font-size', '12')
@@ -178,28 +236,9 @@ export class ChartRelativeTooltipComponent extends BaseChartInstance {
       .attr('x', '27.456')
       .attr('y', '69')
       .text('Amount spent');
-
-    // tooltip mark
-
-    const tooltipMarkG = tooltipG.append('g')
-      .attr('id', 'bg-mark')
-      .call(this.magicTransform.bind(this), tooltipPosX + 28.0, 108.921534)
-      .append('g')
-
-    // tooltip mark bg shadow
-    tooltipMarkG.append('use')
-      .attr('fill', 'black')
-      .attr('fill-opacity', '1')
-      .attr('filter', 'url(#filter-shadow-bg)')
-      .attr('xlink:href', '#tooltip_mark_path');
-    // tooltip mark bg white
-    tooltipMarkG.append('use')
-      .attr('fill', colorTooltip)
-      .attr('xlink:href', '#tooltip_mark_path');
-
   }
 
-  magicTransform(selection, sizeX, sizeY) {
-    return selection.attr('transform', `translate(${sizeX}, ${sizeY}) scale(1, -1) translate(${-1 * (sizeX)}, ${-1 * sizeY})`)
+  private magicTransform(selection, sizeX, sizeY, offsetX = 0, offsetY = 0) {
+    return selection.attr('transform', `translate(${sizeX + offsetX}, ${sizeY + offsetY}) scale(1, -1) translate(${-1 * (sizeX)}, ${-1 * sizeY})`)
   }
 }

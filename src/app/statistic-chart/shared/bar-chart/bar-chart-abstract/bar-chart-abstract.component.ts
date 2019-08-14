@@ -28,7 +28,6 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
   private groupPlaceholderBars;
   private groupDataBars;
   private x;
-  private x2;
   private y;
   private zoom;
   private radiusRectangle: number;
@@ -95,6 +94,11 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
           this.x(item.identity),
           isBeforeCenterData,
         );
+
+        console.log(
+          this.x,
+          this.x.domain()
+        )
         this.activeItemDataChange.emit(event);
       });
     }
@@ -157,11 +161,8 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
     this.groupPanning = this.svg.append('g').attr('class', 'wrapper-panning');
     this.groupPlaceholderBars = this.groupPanning.append('g').attr('class', 'placeholder');
     this.groupDataBars = this.groupPanning.append('g').attr('class', 'bar');
-    // this.tooltip = D3.select('body').append('div').attr('class', 'tooltip');
-    // this.tooltip = this.svg.append('div').attr('class', 'tooltip');
 
-    this.drawStaticContent();
-    this.showActiveBarOnCenterViewport();
+    // this.showActiveBarOnCenterViewport();
     this.updateChart();
   }
 
@@ -197,13 +198,11 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
     // console.log('onZoomed');
 
     // recalc X Scale
-    this.x = D3.event.transform.rescaleX(this.x2);
+    D3.event.transform.rescaleX(this.x);
 
     // redraw groups of bars 
     const { x } = D3.event.transform || { x: 0 };
     this.groupPanning.attr("transform", "translate(" + x + ",0)");
-    // this.groupPlaceholderBars.attr("transform", "translate(" + x + ",0)");
-    // this.groupDataBars.attr("transform", "translate(" + x + ",0)");
   }
 
   private onZoomedEnd(e): void {
@@ -297,40 +296,8 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
       .data(this.data.filter(el => el.value))
       .call(this.drawDataBar.bind(this))
 
-    // // TODO: Move this to layer up
-    // .on("mousemove", (d) => {
-    //   this.tooltip
-    //     .style("left", this.x(d.identity) - 35 + "px")
-    //     .style("top", this.y(0) - this.heightCorrection + "px")
-    //     .style("display", "initial")
-    //     .style("z-index", "1")
-    //     .style("opacity", "1")
-    //     .html((d.value));
-    // })
-    // .on("mouseout", (d) => {
-    //   // this.tooltip.style("display", "none");
-    // });
-
-    // const widthBorderShadow = 40;
-    // this.svg.append('rect')
-    //   .attr('x', this.width - widthBorderShadow)
-    //   .attr('y', this.y(this.maxValueFromChart))
-    //   .attr('width', widthBorderShadow )
-    //   .attr('height', d => this.y(0) - this.y(this.maxValueFromChart) + this.minBarHeight)
-    //   .attr('class', 'right-border shadow-on')
-    //   // .attr('fill', 'red')
-    //   .style('opacity', 0.2)
-    // // right-border.shadow-on
-
-    // .attr('y', d => this.y(this.maxValueFromChart))
-    //   .attr('height', d => this.y(0) - this.y(this.maxValueFromChart) + this.minBarHeight)
-
     // update active item viewport position
     this.showActiveBarOnCenterViewport();
-  }
-
-  private drawStaticContent(): void {
-    //this.svg.append()
   }
 
   private initSubscribes(): void {
@@ -352,27 +319,30 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
 
   private initActiveDate(): void {
     let activeDate = null;
-    // const now = this.calcNowBarDate();
-    // const arr = this.data.filter(d => d.value > 0);
-    // const lastNotEmptyDate: Date | null = arr.length
-    //   ? D3.max(arr, d => d.identity)
-    //   : null;
-    // const lastChartDate = this.data[this.data.length - 1].identity;
-    // const todayInDateRange: boolean = differenceInSeconds(now, lastChartDate) <= 0;
+    const now = this.calcNowBarDate();
+    const arr = this.data.filter(d => d.value > 0);
+    const lastNotEmptyDate: Date | null = arr.length
+      ? D3.max(arr, d => d.identity)
+      : null;
+    const lastChartDate = this.data[this.data.length - 1].identity;
+    const todayInDateRange: boolean = differenceInSeconds(now, lastChartDate) <= 0;
 
-    // if (lastNotEmptyDate) {
-    //   activeDate = todayInDateRange
-    //     ? D3.max([now, lastNotEmptyDate])
-    //     : lastNotEmptyDate
-    // } else if (todayInDateRange) {
-    //   // if now NOT out of current chart dates range
-    //   activeDate = now;
-    // } else {
-    //   // make active item from center chunk
-    //   activeDate = this.data[Math.floor((this.data.length - 1) / 2)].identity;
-    // }
+    if (lastNotEmptyDate) {
+      activeDate = todayInDateRange
+        ? D3.max([now, lastNotEmptyDate])
+        : lastNotEmptyDate
+    } else if (todayInDateRange) {
+      // if now NOT out of current chart dates range
+      activeDate = now;
+    } else {
+      // make active item from center chunk
+      activeDate = this.data[Math.floor((this.data.length - 1) / 2)].identity;
+    }
 
-    activeDate = this.data[0].identity;
+    // TODO: debug
+    activeDate = this.data[this.data.length-1].identity;
+    // activeDate = this.data[0].identity;
+    // activeDate = this.data[5].identity;
 
     this.setActiveDate(activeDate);
   }
@@ -390,8 +360,6 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
         this.margin.left + left,
         this.width - this.margin.right - right,
       ]);
-
-    this.x2 = this.x.copy();
 
     // calc width of one bar
     this.translateWidthOneBar = Math.abs(
