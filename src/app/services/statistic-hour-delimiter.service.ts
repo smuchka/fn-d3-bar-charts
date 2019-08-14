@@ -13,7 +13,7 @@ import * as D3 from 'd3';
 @Injectable()
 export class StatisticHourDelimiterService implements ImpressionStatistic {
 
-  private countRandom = 5;
+  private countRandom = 10;
   private countPointsInChunk: number;
 
   public constructor(

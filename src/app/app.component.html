@@ -21,6 +21,7 @@
       [data]="pagginableData$"
       [delimiter]="showForDelimiter"
       [navigation]="navLink"
+	  (paginationEvent)="loadPrevPeriod($event)"
     ></fn-impression-price-chart>
 	</div>
 </div>

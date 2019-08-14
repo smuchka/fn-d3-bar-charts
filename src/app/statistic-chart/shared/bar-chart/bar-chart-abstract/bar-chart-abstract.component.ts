@@ -25,11 +25,14 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   private groupPlaceholderBars;
   private groupDataBars;
   private x;
+  private xAxis;
   private x2;
   private y;
   private zoom;
   private radiusRectangle: number;
   private minBarHeight: number;
+
+  private minTransateX = 0;
 
   private maxValueFromChart: number;
   private translateWidthOneBar: number;
@@ -41,7 +44,9 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   private canActivateNextBarItem: boolean;
   private changeData: EventEmitter<ItemData[]>;
   private changeBarWidth: EventEmitter<null>;
-  private loadData: EventEmitter<Date>;
+
+  @Output()
+  public paginationEvent: EventEmitter<Date>;
 
   @Input()
   public set data(items: ItemData[]) {
@@ -109,21 +114,21 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
     this.changeData = new EventEmitter();
     this.changeBarWidth = new EventEmitter();
     this.activeItemDataChange = new EventEmitter();
-    this.loadData = new EventEmitter();
+    this.paginationEvent = new EventEmitter();
     this.petBorder = new EventEmitter();
     this.subs = new Subscription();
   }
 
   public ngOnInit(): void {
-    // Init svg in DOM and init svg dimetions
+    // Init svg in DOM and init svg dimentions
     super.ngOnInit();
 
-    // Start work with data, shoul already exist
+    // Start work with data, should already exist
     if (!this.data || !this.data.length) {
       throw getEmptyDataInitError();
     }
 
-    // Requiered init after chart entities
+    // Required init after chart entities
     this.initSubscribes();
 
     this.initActiveDate();
@@ -131,7 +136,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
     this.initYScale();
     this.initZoom();
 
-    // process drowing
+    // process drawing
     this.svg.selectAll().remove();
     this.groupPlaceholderBars = this.svg.append('g').attr('class', 'placeholder');
     this.groupDataBars = this.svg.append('g').attr('class', 'bar');
@@ -161,9 +166,6 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   }
 
   private onZoomed(): void {
-    // recalc X Scale
-    this.x = D3.event.transform.rescaleX(this.x2);
-
     // redraw groups of bars 
     const { x } = D3.event.transform || { x: 0 };
     this.groupPlaceholderBars.attr("transform", "translate(" + x + ",0)");
@@ -171,12 +173,11 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   }
 
   private onZoomedEnd(): void {
-    // TODO: Need to test it
-    const dataMin: Date = D3.min(this.data, d => d.identity);
-    const currentDomainMin: Date = new Date(D3.min(this.x.domain()));
-    console.log(dataMin.getTime() >= currentDomainMin.getTime());
-    if (dataMin.getTime() >= currentDomainMin.getTime()) {
-      this.loadData.emit(dataMin);
+    const dataMin: string = D3.min(this.data, d => d.identity);
+    const { x } = D3.event.transform || { x: 0 };
+    if (x > Math.abs(this.x(dataMin))) {
+      console.log('Fire event', new Date(dataMin));
+      this.paginationEvent.emit(new Date(dataMin));
     }
   }
 
@@ -304,20 +305,22 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   }
 
   /**
-   * Intit scaling for X axis and calc width one step (from bar start to next bar start)
+   * Init scaling for X axis and calc width one step (from bar start to next bar start)
    */
   private initXScale(): void {
     const [d1, d2] = this.viewportDateRange();
     const { left, right } = this.getPadding();
-
+    console.warn('[X scale]: ', d1, d2);
+    console.warn('[X Scale Size Range: ]', [
+      this.margin.left + left,
+      this.width - this.margin.right - right,
+    ]);
     this.x = D3.scaleTime()
       .domain([d1, d2])
       .rangeRound([
         this.margin.left + left,
         this.width - this.margin.right - right,
       ]);
-
-    this.x2 = this.x.copy();
 
     // calc width of one bar
     this.translateWidthOneBar = Math.abs(
@@ -346,7 +349,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
 
   protected getObserveSource(): Observable<any>[] {
     return [
-      this.changeData
+      this.changeData,
     ];
   }
 

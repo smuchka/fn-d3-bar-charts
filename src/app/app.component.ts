@@ -4,7 +4,7 @@ import { filter, tap } from 'rxjs/operators'
 import { StatisticDelimiterService } from './services/statistic-delimiter.service';
 import { ItemData } from './statistic-chart/shared/bar-chart/core';
 import { StatisticDelimiter, DateRange } from './statistic-chart/core';
-import { subHours, subDays, subWeeks } from 'date-fns'
+import { subHours, subDays, subWeeks, startOfHour } from 'date-fns'
 
 @Component({
   selector: 'my-app',
@@ -60,31 +60,29 @@ export class AppComponent implements OnInit {
     );
 
     const list: ItemData[] = this.statistic.loadStaticticByDates(this.showForDelimiter, range);
-    const mergedList: ItemData[] = this.mergeStatiscticWithChunk(list);
+    const mergedList: ItemData[] = this.mergeStatisticWithChunk(list);
     this.pagginableData$.next(mergedList);
   }
 
-  private loadPrevPeriod(): void {
+  private loadPrevPeriod(date: Date): void {
     const onlyStartBarDateRange: boolean = true;
-
     this.dateRange = this.statistic.calcPreviousDateRange(
       this.showForDelimiter,
-      this.dateRange.from,
+      date,
       onlyStartBarDateRange,
     );
-
     const range: DateRange = this.statistic.calcPreviousDateRange(
       this.showForDelimiter,
-      this.dateRange.from,
-      !onlyStartBarDateRange
+      date,
+      onlyStartBarDateRange
     );
-
+    console.warn('[Previous interval]', this.dateRange);
     const list: ItemData[] = this.statistic.loadStaticticByDates(this.showForDelimiter, range);
-    const mergedList: ItemData[] = this.mergeStatiscticWithChunk(list);
+    const mergedList: ItemData[] = this.mergeStatisticWithChunk(list);
     this.pagginableData$.next(mergedList)
   }
 
-  private mergeStatiscticWithChunk(chunk: ItemData[]): ItemData[] {
+  private mergeStatisticWithChunk(chunk: ItemData[]): ItemData[] {
     return [
       ...chunk,
       ...this.pagginableData$.value || [],

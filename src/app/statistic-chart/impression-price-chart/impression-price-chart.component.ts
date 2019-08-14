@@ -1,6 +1,6 @@
 import {
   Component, ViewChild, ComponentFactoryResolver,
-  Input, OnInit, OnChanges, OnDestroy, SimpleChanges
+  Input, OnInit, OnChanges, OnDestroy, SimpleChanges, Output, EventEmitter
 } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -36,6 +36,9 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
   @Input()
   public navigation: ChartActiveDateNavComponent;
 
+  @Output()
+  public paginationEvent: EventEmitter<Date>;
+
   @ViewChild('chart', { static: true })
   protected chart: BarChartAbstract;
 
@@ -54,6 +57,7 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
     private delimiterConfig: DelimiterChartConfigService,
   ) {
     this.lastActive = null;
+    this.paginationEvent = new EventEmitter<Date>();
   }
 
   public ngOnInit(): void {
@@ -72,7 +76,6 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
-
     if (changes.delimiter) {
       this.switchDateDelimiterConfig();
     }
@@ -84,7 +87,6 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
     if (this.chunkDateRange && this.data) {
 
       let rangeLoadedChunks = this.getDateRange();
-
       this.renderData$ = this.data.pipe(
         map((data: ItemData[]) => {
           const localMap: Map<number, ItemData> = new Map();
