@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Observable, of, BehaviorSubject } from 'rxjs';
 import { filter, tap } from 'rxjs/operators'
 import { StatisticDelimiterService } from './services/statistic-delimiter.service';
-import { ItemData } from './statistic-chart/shared/bar-chart/core';
+import { DirectionActiveChange, ItemData } from './statistic-chart/shared/bar-chart/core';
 import { StatisticDelimiter, DateRange } from './statistic-chart/core';
 import { subHours, subDays, subWeeks, startOfHour } from 'date-fns'
 
@@ -43,6 +43,10 @@ export class AppComponent implements OnInit {
 
   public onChangeDelimiter(delimiter: StatisticDelimiter): void {
     this.loadFirstPeriod();
+  }
+
+  public activeDateChanged(direction: DirectionActiveChange) {
+
   }
 
   private loadFirstPeriod(): void {

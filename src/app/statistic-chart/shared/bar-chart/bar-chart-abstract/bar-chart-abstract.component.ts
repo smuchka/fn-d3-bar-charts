@@ -174,9 +174,9 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
 
   private onZoomedEnd(): void {
     const dataMin: string = D3.min(this.data, d => d.identity);
+    const dataMax: string = D3.max(this.data, d => d.identity);
     const { x } = D3.event.transform || { x: 0 };
     if (x > Math.abs(this.x(dataMin))) {
-      console.log('Fire event', new Date(dataMin));
       this.paginationEvent.emit(new Date(dataMin));
     }
   }

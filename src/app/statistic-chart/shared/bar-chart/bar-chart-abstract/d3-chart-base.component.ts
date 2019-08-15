@@ -102,7 +102,7 @@ export abstract class D3ChartBaseComponent implements OnInit {
   }
 
   protected initialiseSizeAndScale() {
-    const [width, height] = this.getChartDimetions();
+    const [width, height] = this.getChartDimentions();
     this.width = width - this.margin.left - this.margin.right + this.widthCorrection;
 
     // height
@@ -131,9 +131,9 @@ export abstract class D3ChartBaseComponent implements OnInit {
   }
 
   /**
-   * Get dimetion for chart.
+   * Get dimention for chart.
    */
-  protected getChartDimetions(): [number, number] {
+  protected getChartDimentions(): [number, number] {
     const container = this.getElementContainer();
     const clientWidth = container.clientWidth || this.defaultWidth;
     const clientHeight = container.clientHeight || this.defaultHeight;
@@ -151,7 +151,7 @@ export abstract class D3ChartBaseComponent implements OnInit {
   }
 
   /**
-   * Get padding caclulated with required offsets 
+   * Get padding calculated with required offsets
    * (e.g. reservation height for lables)
    */
   protected getPadding(): Position {
