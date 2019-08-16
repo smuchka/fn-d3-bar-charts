@@ -17,7 +17,6 @@ import { DelimiterChartStrategyService } from './shared/services/delimiter-chart
   providers: [
     DelimiterChartStrategyService,
   ],
-  ],
 })
 export class StatisticChartModule {
 }
