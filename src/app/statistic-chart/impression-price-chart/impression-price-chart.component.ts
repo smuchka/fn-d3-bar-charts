@@ -95,7 +95,6 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
           return localMap;
         }),
         map((map: Map<number, ItemData>) => this.fillRangeOfEmptyData(map, rangeLoadedChunks)),
-        // tap((data) => console.table(data)),
       );
     }
   }

@@ -1,6 +1,6 @@
 import { Component, forwardRef } from '@angular/core';
 import { BarChartComponent } from '../bar-chart.component';
-import { BarChartActiveSelectedEvent } from '../core';
+import { BarChartActiveSelectedEvent, numberWithCommas } from '../core';
 import { BaseChartInstance } from './base-chart-tooltip';
 
 @Component({
@@ -76,11 +76,11 @@ export class ChartStaticTooltipComponent extends BaseChartInstance {
       .attr('y2', this.tooltipHeight + this.padding.top);
 
     // Left side
-    const impressionValue = event.item.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    const impressionValue = numberWithCommas(event.item.value.toString());
     this.drawTooltipContentLeft(tooltipGroup, impressionValue);
 
     // Roght side
-    const amountValue = Math.floor((event.item.external.amount || 0) * 100) / 100;
+    const amountValue = numberWithCommas(Math.floor((event.item.external.amount || 0) * 100) / 100);
     this.drawTooltipContentRight(tooltipGroup, amountValue.toString());
   }
 

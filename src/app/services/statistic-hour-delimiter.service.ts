@@ -64,9 +64,9 @@ export class StatisticHourDelimiterService implements ImpressionStatistic {
       randValues.length - 1,
     ).map((date: Date) => ({
       identity: date,
-      value: random(0, 9999),
+      value: random(0, 9999999),
       external: {
-        amount: 1000
+        amount: random(0, 9999999) / 100
       },
     }));
   }

@@ -8,6 +8,7 @@ import { BarChartActiveSelectedEvent } from './interfaces/bar-chart-active-selec
 import { DateChart } from './interfaces/date-chart-strategy';
 import { ChartTooltip } from './interfaces/bar-chart-tooltip';
 import { BarChartBase } from './interfaces/bar-chart-base';
+import { numberWithCommas } from './helpers';
 
 export {
   DirectionActiveChange,
@@ -18,4 +19,5 @@ export {
   DateChart,
   ChartTooltip,
   BarChartBase,
+  numberWithCommas
 }
