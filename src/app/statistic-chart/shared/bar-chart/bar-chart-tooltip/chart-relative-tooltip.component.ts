@@ -21,7 +21,7 @@ const colorTooltip = '#ffffff';
 export class ChartRelativeTooltipComponent extends BaseChartInstance {
 
   public get correctionHeight(): number {
-    return 130;
+    return 120;
   }
 
   public getLayout(): any {
@@ -39,28 +39,11 @@ export class ChartRelativeTooltipComponent extends BaseChartInstance {
       return;
     }
 
-    const left = 0;
-    const top = 0;
-    const padding = {
-      top: 24,
-      right: 10,
-      bottom: 24,
-      left: 10,
-    };
-
     const layout = this.getLayout();
 
     layout
       .selectAll('.tooltipGroup')
       .remove();
-
-    const fullWidth = this.chart.getWidth();
-    const centerXAxis = fullWidth / 2;
-    const tooltipHeight = 52;
-    const offsetToDivideLine = 24;
-
-    // 
-
 
     // tooltip group container
     const tooltipGroup = layout.append('g')
@@ -68,63 +51,42 @@ export class ChartRelativeTooltipComponent extends BaseChartInstance {
 
     var tooltipDef = tooltipGroup.append('defs')
 
-    tooltipDef.append('path').attr('id', 'tooltip_path')
-      .attr('d', 'M4,-2.72848411e-12 L124,-2.72848411e-12 C126.209139,-2.72848411e-12 128,1.94582363 128,4.15693243 L128,101.153366 C128,103.364475 126.209139,105.156932 124,105.156932 L4,105.156932 C1.790861,105.156932 0,103.364475 0,101.153366 L0,4.00356665 C0,1.79245784 1.790861,-2.72848411e-12 4,-2.72848411e-12 Z');
-
-    tooltipDef.append('path').attr('id', 'tooltip_mark_path')
-      .attr('d', 'M28,112.843068 L35.2810568,105.305204 C35.6649327,104.907789 36.2980074,104.89709 36.6950688,105.281308 C36.7031607,105.289138 36.71112,105.297105 36.7189432,105.305204 L44,112.843068 L28,112.843068 Z');
-
-    const filterShadowBg = tooltipDef.append('filter').attr('id', 'filter-shadow-bg');
-    filterShadowBg.append('feOffset')
-      .attr('in', 'SourceAlpha').attr('result', 'shadowOffsetOuter1')
-      .attr('dx', 0)
-      .attr('dy', 0);
-    filterShadowBg.append('feGaussianBlur')
-      .attr('in', 'shadowOffsetOuter1').attr('result', 'shadowBlurOuter1')
-      .attr('stdDeviation', '8');
-    filterShadowBg.append('feColorMatrix')
-      .attr('in', 'shadowBlurOuter1')
-      .attr('values', '0 0 0 0 0.0117647059   0 0 0 0 0.0117647059   0 0 0 0 0.0117647059  0 0 0 0.1 0')
-      .attr('type', 'matrix');
+    // draw defs section (mark, tooltip bg, filter shadow bg)
+    this.drawSvgDefs(tooltipDef);
 
     // // // // // // // // // // // // // // // // // // // // // 
-    // // //  DEBUG .... 
+    // // //  DEBUG (mount point) .... 
     // // // // // // // // // // // // // // // // // // // // // 
 
-    tooltipGroup.selectAll("circle")
-      .data([[event.positionX, 140, 1]]).enter()
-      .append("circle")
-      .attr("cx", function (d) { return d[0] })
-      .attr("cy", function (d) { return d[1] })
-      .attr("r", function (d) { return d[2] })
-      .style("fill", "steelblue")
+    // tooltipGroup.selectAll("circle")
+    //   .data([[event.positionX, 140, 1]]).enter()
+    //   .append("circle")
+    //   .attr("cx", function (d) { return d[0] })
+    //   .attr("cy", function (d) { return d[1] })
+    //   .attr("r", function (d) { return d[2] })
+    //   .style("fill", "steelblue")
 
     // // // // // // // // // // // // // // // // // // // // // 
     // // // // // // // // // // // // // // // // // // // // // 
 
-    let tooltipPosX = 0;
-    let directionScaled = 0;
-    const centerOffset = 28;
-    let offsetMountPointX = 0;
+    // inherited from svg mark path
+    const offsetMarkCentered = 25;
+    // max distance moving tooltip mark [-50px; 50px] from center tooltip
+    const maxOffsetFromMountPoint = 55;
+    // offset relate of tooltip center (position mark relate of center tooltip). 
+    // Store in % (from -100% to +100% of half tooltiop width).
+    let offsetRelateMountPoint = (maxOffsetFromMountPoint * event.offsetDelta) / 100;
 
-    if (event.beforeCenterData) {
-      // min -50
-      directionScaled = -50;
-      offsetMountPointX = -50;
-      tooltipPosX = event.positionX + directionScaled - offsetMountPointX;
-      tooltipPosX -= 13;
-    } else {
-      // max +50
-      directionScaled = 0;
-      offsetMountPointX = 50;
-      tooltipPosX = event.positionX + directionScaled - offsetMountPointX;
-      tooltipPosX -= 65;
-    }
-    console.warn(tooltipPosX, event.beforeCenterData);
+    const beforeCenterData = event.offsetDelta < 0;
+    let tooltipPosX = event.positionX - offsetRelateMountPoint;
+    let tooltipPosY = 10;
+
+    // addition offset correction - move back to mount point
+    tooltipPosX -= beforeCenterData ? 60 : 62
 
     const tooltipG = tooltipGroup.append('g')
       .attr('id', 'tooltip')
-      .attr('transform', `translate(${tooltipPosX}, 16.000000)`);
+      .attr('transform', `translate(${tooltipPosX}, ${tooltipPosY})`);
 
     this.drawTooltipBackgroudWithShadow(tooltipG, tooltipPosX);
 
@@ -143,12 +105,15 @@ export class ChartRelativeTooltipComponent extends BaseChartInstance {
     this.drawTooltipContentBottom(tooltipG);
 
     // tooltip mark
-    // const tDefaultMarkPosX = tooltipPosX;
     const tDefaultMarkPosY = 108.921534;
     const tooltipMarkG = tooltipG.append('g')
       .attr('id', 'bg-mark')
-      .call(this.magicTransform.bind(this), 0, tDefaultMarkPosY, centerOffset + offsetMountPointX)
-      // .call(this.magicTransform.bind(this), tDefaultMarkPosX, tDefaultMarkPosY, -24)
+      .call(
+        this.magicTransform.bind(this),
+        0,
+        tDefaultMarkPosY,
+        offsetMarkCentered + offsetRelateMountPoint
+      )
       .append('g')
 
     // tooltip mark bg shadow
@@ -162,7 +127,28 @@ export class ChartRelativeTooltipComponent extends BaseChartInstance {
     tooltipMarkG.append('use')
       .attr('fill', colorTooltip)
       .attr('xlink:href', '#tooltip_mark_path');
+  }
 
+  private drawSvgDefs(layout): void {
+
+    layout.append('path').attr('id', 'tooltip_path')
+      .attr('d', 'M4,-2.72848411e-12 L124,-2.72848411e-12 C126.209139,-2.72848411e-12 128,1.94582363 128,4.15693243 L128,101.153366 C128,103.364475 126.209139,105.156932 124,105.156932 L4,105.156932 C1.790861,105.156932 0,103.364475 0,101.153366 L0,4.00356665 C0,1.79245784 1.790861,-2.72848411e-12 4,-2.72848411e-12 Z');
+
+    layout.append('path').attr('id', 'tooltip_mark_path')
+      .attr('d', 'M28,112.843068 L35.2810568,105.305204 C35.6649327,104.907789 36.2980074,104.89709 36.6950688,105.281308 C36.7031607,105.289138 36.71112,105.297105 36.7189432,105.305204 L44,112.843068 L28,112.843068 Z');
+
+    const filterShadowBg = layout.append('filter').attr('id', 'filter-shadow-bg');
+    filterShadowBg.append('feOffset')
+      .attr('in', 'SourceAlpha').attr('result', 'shadowOffsetOuter1')
+      .attr('dx', 0)
+      .attr('dy', 0);
+    filterShadowBg.append('feGaussianBlur')
+      .attr('in', 'shadowOffsetOuter1').attr('result', 'shadowBlurOuter1')
+      .attr('stdDeviation', '8');
+    filterShadowBg.append('feColorMatrix')
+      .attr('in', 'shadowBlurOuter1')
+      .attr('values', '0 0 0 0 0.0117647059   0 0 0 0 0.0117647059   0 0 0 0 0.0117647059  0 0 0 0.1 0')
+      .attr('type', 'matrix');
   }
 
   private drawTooltipBackgroudWithShadow(layout, positionXAxis: number): void {

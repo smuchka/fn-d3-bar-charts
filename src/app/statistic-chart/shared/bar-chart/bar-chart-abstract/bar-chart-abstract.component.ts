@@ -80,25 +80,11 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
       this.canActivateNextBarItem = this.canChangeActiveOn(DirectionRight);
 
       setTimeout(() => {
-
-        const medianDate =
-          this.dataList[0].identity.getTime() + (
-            this.dataList[this.dataList.length - 1].identity.getTime() - this.dataList[0].identity.getTime()
-          ) / 2;
-
-        const isBeforeCenterData: boolean = differenceInSeconds(medianDate, item.identity) > 0;
-        const date = new Date(medianDate);
-
         const event = new BarChartActiveSelectedEvent(
           item,
           this.x(item.identity),
-          isBeforeCenterData,
+          this.dataList,
         );
-
-        console.log(
-          this.x,
-          this.x.domain()
-        )
         this.activeItemDataChange.emit(event);
       });
     }
@@ -195,8 +181,6 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
   }
 
   private onZoomed(): void {
-    // console.log('onZoomed');
-
     // recalc X Scale
     D3.event.transform.rescaleX(this.x);
 
@@ -206,17 +190,6 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
   }
 
   private onZoomedEnd(e): void {
-    const dataMin = D3.min(this.data, d => d.identity);
-    const currentDomainMin = D3.min(this.x.domain());
-    // console.log(this.data);
-    // console.log(
-    //   this.x.domain(),
-    //   currentDomainMin
-    // );
-
-    // if (dataMin > currentDomainMin) {
-    //   console.log('Direction left');
-    // }
   }
 
   private onBarClick(d: ItemData): void {
@@ -319,6 +292,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
 
   private initActiveDate(): void {
     let activeDate = null;
+
     const now = this.calcNowBarDate();
     const arr = this.data.filter(d => d.value > 0);
     const lastNotEmptyDate: Date | null = arr.length
@@ -338,11 +312,6 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
       // make active item from center chunk
       activeDate = this.data[Math.floor((this.data.length - 1) / 2)].identity;
     }
-
-    // TODO: debug
-    activeDate = this.data[this.data.length-1].identity;
-    // activeDate = this.data[0].identity;
-    // activeDate = this.data[5].identity;
 
     this.setActiveDate(activeDate);
   }

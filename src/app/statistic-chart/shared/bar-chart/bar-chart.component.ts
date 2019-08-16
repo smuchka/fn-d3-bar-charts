@@ -1,6 +1,5 @@
 import {
   AfterContentInit,
-  AfterContentChecked,
   Component,
   ContentChild,
   ElementRef,
@@ -30,7 +29,7 @@ import { BaseChartInstance } from './bar-chart-tooltip/base-chart-tooltip';
     `,
   ],
 })
-export class BarChartComponent extends BarChartAbstract implements OnInit, AfterContentInit, AfterContentChecked {
+export class BarChartComponent extends BarChartAbstract implements OnInit, AfterContentInit {
 
   @Input()
   public get countBarsInViewport(): number {
@@ -85,12 +84,6 @@ export class BarChartComponent extends BarChartAbstract implements OnInit, After
   public ngAfterContentInit(): void {
     this.initTooltip();
     super.ngAfterContentInit();
-  }
-
-  ngAfterContentChecked(): void {
-    // console.error(
-    //   this.tooltip
-    // )
   }
 
   protected getObserveSource(): Observable<any>[] {
