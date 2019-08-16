@@ -40,7 +40,6 @@ export class ChartStaticTooltipComponent extends BaseChartInstance {
       left: 10,
     };
 
-    console.warn('', this.chart)
 
     this.offsetToDivideLine = 24;
     this.tooltipHeight = 52;
