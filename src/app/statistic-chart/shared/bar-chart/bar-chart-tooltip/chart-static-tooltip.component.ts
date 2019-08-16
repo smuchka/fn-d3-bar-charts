@@ -20,11 +20,14 @@ export class ChartStaticTooltipComponent extends BaseChartInstance {
   private offsetToDivideLine: number;
   private tooltipHeight: number;
   private centerXAxis: number;
-  
+
   private widthValue: number;
+  public get fullWidth() {
+    return this.widthValue;
+  }
   public set fullWidth(value: number) {
     this.widthValue = value;
-    this.centerXAxis = this.fullWidth / 2;
+    this.centerXAxis = this.widthValue / 2;
   }
 
   public constructor() {
@@ -33,18 +36,16 @@ export class ChartStaticTooltipComponent extends BaseChartInstance {
     this.padding = {
       top: 24,
       right: 10,
-      bottom: 24,
+      bottom: 12,
       left: 10,
     };
 
     this.offsetToDivideLine = 24;
     this.tooltipHeight = 52;
-
-    console.error(this.chart.getWidth());
   }
 
   public get correctionHeight(): number {
-    return 100;
+    return 90;
   }
 
   public draw(event: BarChartActiveSelectedEvent): void {
@@ -64,16 +65,16 @@ export class ChartStaticTooltipComponent extends BaseChartInstance {
     // tooltip group container
     const tooltipGroup = layout.append('g')
       .attr('class', 'tooltipGroup')
-      .attr('fill', '#fff');
+      .attr('fill', '#eee');
 
     // tooltip background
-    tooltipGroup.append('rect')
-      .attr('width', `calc(100% - ${this.padding.left} - ${this.padding.right})`)
-      .attr('height', this.tooltipHeight + this.padding.top + this.padding.bottom)
-      .attr('x', this.padding.left)
-      .attr('y', top)
-      .attr('class', 'tooltip-bg');
-    // .style('opacity', 0.2)
+    // tooltipGroup.append('rect')
+    //   .attr('width', `calc(100% - ${this.padding.left} - ${this.padding.right})`)
+    //   .attr('height', this.tooltipHeight + this.padding.top + this.padding.bottom)
+    //   .attr('x', this.padding.left)
+    //   .attr('y', 0)
+    //   .attr('class', 'tooltip-bg')
+    //   .style('opacity', 0.4)
 
     // divide line
     tooltipGroup.append('line')
@@ -86,7 +87,7 @@ export class ChartStaticTooltipComponent extends BaseChartInstance {
     // Left side
     const impressionValue = event.item.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     this.drawTooltipContentLeft(tooltipGroup, impressionValue);
-    
+
     // Roght side
     const amountValue = Math.floor((event.item.external.amount || 0) * 100) / 100;
     this.drawTooltipContentRight(tooltipGroup, amountValue.toString());
