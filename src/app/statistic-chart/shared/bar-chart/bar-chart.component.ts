@@ -123,8 +123,6 @@ export class BarChartComponent extends BarChartAbstract implements OnInit, After
    */
   private initTooltip(): void {
 
-    console.warn(this.tooltip);
-
     if (!this.tooltip) {
       return;
     }
@@ -133,16 +131,15 @@ export class BarChartComponent extends BarChartAbstract implements OnInit, After
       ...this.margin,
       ...{
         top: this.margin.top + this.tooltip.correctionHeight,
-        // left: this.margin.left + this.tooltip.correctionWidth
+        left: this.margin.left + this.tooltip.correctionWidth
       },
     };
     this.heightCorrection = this.heightCorrection + this.tooltip.correctionHeight;
-    // this.widthCorrection = this.widthCorrection + this.tooltip.correctionWidth;
+    this.widthCorrection = this.widthCorrection + this.tooltip.correctionWidth;
 
     this.tooltip.setChart(this);
 
     this.activeItemDataChange.asObservable()
-      .pipe(tap(console.error))
       .subscribe((event: BarChartActiveSelectedEvent) => this.tooltip.draw(event));
   }
 }

@@ -24,6 +24,8 @@ export class ChartRelativeTooltipComponent extends BaseChartInstance {
     return 120;
   }
 
+  private insideTooltipCenterPosX: number = 0;
+
   public getLayout(): any {
 
     if (!this.chart) {
@@ -73,16 +75,18 @@ export class ChartRelativeTooltipComponent extends BaseChartInstance {
     const offsetMarkCentered = 25;
     // max distance moving tooltip mark [-50px; 50px] from center tooltip
     const maxOffsetFromMountPoint = 55;
+    const offsetBgShadow = 10;
     // offset relate of tooltip center (position mark relate of center tooltip). 
     // Store in % (from -100% to +100% of half tooltiop width).
     let offsetRelateMountPoint = (maxOffsetFromMountPoint * event.offsetDelta) / 100;
 
     const beforeCenterData = event.offsetDelta < 0;
     let tooltipPosX = event.positionX - offsetRelateMountPoint;
+    this.insideTooltipCenterPosX = maxOffsetFromMountPoint + offsetBgShadow;
     let tooltipPosY = 10;
 
     // addition offset correction - move back to mount point
-    tooltipPosX -= beforeCenterData ? 60 : 62
+    tooltipPosX -= (beforeCenterData ? 50 : 54) + offsetBgShadow
 
     const tooltipG = tooltipGroup.append('g')
       .attr('id', 'tooltip')
@@ -99,10 +103,12 @@ export class ChartRelativeTooltipComponent extends BaseChartInstance {
       .attr('height', '1')
 
     // top text area
-    this.drawTooltipContentTop(tooltipG);
+    const impressionValue = event.item.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    this.drawTooltipContentTop(tooltipG, impressionValue);
 
     // bottom text area
-    this.drawTooltipContentBottom(tooltipG);
+    const amountValue = Math.floor((event.item.external.amount || 0) * 100) / 100
+    this.drawTooltipContentBottom(tooltipG, `\$ ${amountValue}`);
 
     // tooltip mark
     const tDefaultMarkPosY = 108.921534;
@@ -120,7 +126,7 @@ export class ChartRelativeTooltipComponent extends BaseChartInstance {
     tooltipMarkG.append('use')
       .attr('fill', 'black')
       .attr('fill-opacity', '1')
-      .attr('filter', 'url(#filter-shadow-bg)')
+      .attr('filter', 'url(#filter-shadow-mark)')
       .attr('xlink:href', '#tooltip_mark_path');
 
     // tooltip mark bg white
@@ -129,29 +135,36 @@ export class ChartRelativeTooltipComponent extends BaseChartInstance {
       .attr('xlink:href', '#tooltip_mark_path');
   }
 
-  private drawSvgDefs(layout): void {
+  private drawSvgDefs(layout: any): void {
 
-    layout.append('path').attr('id', 'tooltip_path')
+    layout.append('path')
+      .attr('id', 'tooltip_path')
       .attr('d', 'M4,-2.72848411e-12 L124,-2.72848411e-12 C126.209139,-2.72848411e-12 128,1.94582363 128,4.15693243 L128,101.153366 C128,103.364475 126.209139,105.156932 124,105.156932 L4,105.156932 C1.790861,105.156932 0,103.364475 0,101.153366 L0,4.00356665 C0,1.79245784 1.790861,-2.72848411e-12 4,-2.72848411e-12 Z');
 
-    layout.append('path').attr('id', 'tooltip_mark_path')
+    layout.append('path')
+      .attr('id', 'tooltip_mark_path')
       .attr('d', 'M28,112.843068 L35.2810568,105.305204 C35.6649327,104.907789 36.2980074,104.89709 36.6950688,105.281308 C36.7031607,105.289138 36.71112,105.297105 36.7189432,105.305204 L44,112.843068 L28,112.843068 Z');
 
-    const filterShadowBg = layout.append('filter').attr('id', 'filter-shadow-bg');
-    filterShadowBg.append('feOffset')
-      .attr('in', 'SourceAlpha').attr('result', 'shadowOffsetOuter1')
-      .attr('dx', 0)
-      .attr('dy', 0);
-    filterShadowBg.append('feGaussianBlur')
-      .attr('in', 'shadowOffsetOuter1').attr('result', 'shadowBlurOuter1')
-      .attr('stdDeviation', '8');
-    filterShadowBg.append('feColorMatrix')
-      .attr('in', 'shadowBlurOuter1')
-      .attr('values', '0 0 0 0 0.0117647059   0 0 0 0 0.0117647059   0 0 0 0 0.0117647059  0 0 0 0.1 0')
-      .attr('type', 'matrix');
+    const createFilterShadow = (defs: any, idFilter: string, deviation: number = 8) => {
+      const filterShadowBg = defs.append('filter').attr('id', idFilter);
+      filterShadowBg.append('feOffset')
+        .attr('in', 'SourceAlpha').attr('result', 'shadowOffsetOuter1')
+        .attr('dx', 0)
+        .attr('dy', 0);
+      filterShadowBg.append('feGaussianBlur')
+        .attr('in', 'shadowOffsetOuter1').attr('result', 'shadowBlurOuter1')
+        .attr('stdDeviation', deviation);
+      filterShadowBg.append('feColorMatrix')
+        .attr('in', 'shadowBlurOuter1')
+        .attr('values', '0 0 0 0 0.0117647059   0 0 0 0 0.0117647059   0 0 0 0 0.0117647059  0 0 0 0.1 0')
+        .attr('type', 'matrix');
+    }
+
+    createFilterShadow(layout, 'filter-shadow-bg', 8);
+    createFilterShadow(layout, 'filter-shadow-mark', 16);
   }
 
-  private drawTooltipBackgroudWithShadow(layout, positionXAxis: number): void {
+  private drawTooltipBackgroudWithShadow(layout: any, positionXAxis: number): void {
 
     // background
     const tooltipBackgroundG = layout.append('g')
@@ -172,7 +185,7 @@ export class ChartRelativeTooltipComponent extends BaseChartInstance {
       .attr('xlink:href', '#tooltip_path');
   }
 
-  private drawTooltipContentTop(layout): void {
+  private drawTooltipContentTop(layout: any, value: string): void {
     layout.append('text')
       .attr('fill', '#292A31')
       .attr('font-family', 'Lato-Regular, Lato')
@@ -181,9 +194,10 @@ export class ChartRelativeTooltipComponent extends BaseChartInstance {
       .attr('line-spacing', '24')
 
       .append('tspan')
-      .attr('x', '44.244')
+      .attr('text-anchor', 'middle')
+      .attr('x', this.insideTooltipCenterPosX)
       .attr('y', '40')
-      .text('9,678')
+      .text(value)
 
     layout.append('text')
       .attr('fill', '#969DAD')
@@ -193,12 +207,13 @@ export class ChartRelativeTooltipComponent extends BaseChartInstance {
       .attr('line-spacing', '16')
 
       .append('tspan')
-      .attr('x', '35.442')
+      .attr('text-anchor', 'middle')
+      .attr('x', this.insideTooltipCenterPosX)
       .attr('y', '20')
       .text('Impression')
   }
 
-  private drawTooltipContentBottom(layout): void {
+  private drawTooltipContentBottom(layout: any, value: string): void {
     layout.append('text')
       .attr('fill', '#292A31')
       .attr('font-family', 'Lato-Regular, Lato')
@@ -207,9 +222,10 @@ export class ChartRelativeTooltipComponent extends BaseChartInstance {
       .attr('line-spacing', '24')
 
       .append('tspan')
-      .attr('x', '39.104')
+      .attr('text-anchor', 'middle')
+      .attr('x', this.insideTooltipCenterPosX)
       .attr('y', '89')
-      .text('$16.86')
+      .text(value)
 
     layout.append('text')
       .attr('fill', '#969DAD')
@@ -219,12 +235,13 @@ export class ChartRelativeTooltipComponent extends BaseChartInstance {
       .attr('line-spacing', '16')
 
       .append('tspan')
-      .attr('x', '27.456')
+      .attr('text-anchor', 'middle')
+      .attr('x', this.insideTooltipCenterPosX)
       .attr('y', '69')
       .text('Amount spent');
   }
 
-  private magicTransform(selection, sizeX, sizeY, offsetX = 0, offsetY = 0) {
+  private magicTransform(selection: any, sizeX, sizeY, offsetX = 0, offsetY = 0) {
     return selection.attr('transform', `translate(${sizeX + offsetX}, ${sizeY + offsetY}) scale(1, -1) translate(${-1 * (sizeX)}, ${-1 * sizeY})`)
   }
 }

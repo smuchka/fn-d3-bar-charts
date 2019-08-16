@@ -23,7 +23,6 @@ export class BarChartActiveSelectedEvent {
     if (this.allItems && this.allItems.length) {
       const percent: number = Math.floor(((++index * 100) / this.allItems.length) * 100) / 100;
       this.offsetDelta = (percent - 50) * 2;
-      console.warn('::', this.offsetDelta);
     }
   }
 }

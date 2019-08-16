@@ -1,5 +1,5 @@
 import { BarChartComponent } from '../bar-chart.component';
-import { ChartTooltip } from '../core/bar-chart-tooltip';
+import { ChartTooltip, BarChartActiveSelectedEvent } from '../core';
 
 export class BaseChartInstance implements ChartTooltip {
   protected chart: BarChartComponent;
@@ -23,5 +23,9 @@ export class BaseChartInstance implements ChartTooltip {
     }
 
     return this.chart.getLayout()
+  }
+
+  public draw(event: BarChartActiveSelectedEvent): void {
+    throw Error(`'draw' method must be reloaded in inherited class`);
   }
 }

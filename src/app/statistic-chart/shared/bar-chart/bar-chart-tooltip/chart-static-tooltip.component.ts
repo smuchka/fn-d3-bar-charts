@@ -16,6 +16,33 @@ import { BaseChartInstance } from './base-chart-tooltip';
 })
 export class ChartStaticTooltipComponent extends BaseChartInstance {
 
+  private padding: Record<'top' | 'right' | 'bottom' | 'left', number>;
+  private offsetToDivideLine: number;
+  private tooltipHeight: number;
+  private centerXAxis: number;
+  
+  private widthValue: number;
+  public set fullWidth(value: number) {
+    this.widthValue = value;
+    this.centerXAxis = this.fullWidth / 2;
+  }
+
+  public constructor() {
+    super();
+
+    this.padding = {
+      top: 24,
+      right: 10,
+      bottom: 24,
+      left: 10,
+    };
+
+    this.offsetToDivideLine = 24;
+    this.tooltipHeight = 52;
+
+    console.error(this.chart.getWidth());
+  }
+
   public get correctionHeight(): number {
     return 100;
   }
@@ -26,40 +53,24 @@ export class ChartStaticTooltipComponent extends BaseChartInstance {
       return;
     }
 
-    const left = 0;
-    const top = 0;
-    const padding = {
-      top: 24,
-      right: 10,
-      bottom: 24,
-      left: 10,
-    };
-
     const layout = this.getLayout();
 
     layout
       .selectAll('.tooltipGroup')
       .remove();
 
-    const fullWidth = this.chart.getWidth();
-    const centerXAxis = fullWidth / 2;
-    const tooltipHeight = 52;
-    const offsetToDivideLine = 24;
+    this.fullWidth = this.chart.getWidth();
 
     // tooltip group container
     const tooltipGroup = layout.append('g')
       .attr('class', 'tooltipGroup')
       .attr('fill', '#fff');
-    // .attr('width', `calc(100% - ${padding.left} - ${padding.right})`)
-    // .attr('x', left + padding.left)
-    // .attr('y', top)
-
 
     // tooltip background
     tooltipGroup.append('rect')
-      .attr('width', `calc(100% - ${padding.left} - ${padding.right})`)
-      .attr('height', tooltipHeight + padding.top + padding.bottom)
-      .attr('x', left + padding.left)
+      .attr('width', `calc(100% - ${this.padding.left} - ${this.padding.right})`)
+      .attr('height', this.tooltipHeight + this.padding.top + this.padding.bottom)
+      .attr('x', this.padding.left)
       .attr('y', top)
       .attr('class', 'tooltip-bg');
     // .style('opacity', 0.2)
@@ -67,48 +78,58 @@ export class ChartStaticTooltipComponent extends BaseChartInstance {
     // divide line
     tooltipGroup.append('line')
       .attr('stroke', '#DFE3EC')
-      .attr('x1', centerXAxis)
-      .attr('y1', padding.top)
-      .attr('x2', centerXAxis)
-      .attr('y2', tooltipHeight + padding.top);
+      .attr('x1', this.centerXAxis)
+      .attr('y1', this.padding.top)
+      .attr('x2', this.centerXAxis)
+      .attr('y2', this.tooltipHeight + this.padding.top);
 
-    //
     // Left side
-    const leftGroup = tooltipGroup.append('g')
-      .attr('x', centerXAxis)
+    const impressionValue = event.item.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    this.drawTooltipContentLeft(tooltipGroup, impressionValue);
+    
+    // Roght side
+    const amountValue = Math.floor((event.item.external.amount || 0) * 100) / 100;
+    this.drawTooltipContentRight(tooltipGroup, amountValue.toString());
+  }
+
+  private drawTooltipContentLeft(layout: any, value: string): void {
+
+    const leftGroup = layout.append('g')
+      .attr('x', this.centerXAxis)
       .attr('y', 0)
       .attr('text-anchor', 'end');
 
     leftGroup.append('text')
-      .attr('x', centerXAxis - offsetToDivideLine)
-      .attr('y', padding.top + 5)
+      .attr('x', this.centerXAxis - this.offsetToDivideLine)
+      .attr('y', this.padding.top + 5)
       .attr('alignment-baseline', 'hanging')
-      .text(`${event.item.value}`)
+      .text(value)
       .attr('class', 'value');
 
     leftGroup.append('text')
-      .attr('x', centerXAxis - offsetToDivideLine)
-      .attr('y', tooltipHeight + padding.top - 5)
+      .attr('x', this.centerXAxis - this.offsetToDivideLine)
+      .attr('y', this.tooltipHeight + this.padding.top - 5)
       .attr('alignment-baseline', 'baseline')
       .text('Impression')
       .attr('class', 'description');
+  }
 
-    //
-    // Roght side
-    const rightGroup = tooltipGroup
+  private drawTooltipContentRight(layout: any, value: string): void {
+
+    const rightGroup = layout
       .append('g')
       .attr('text-anchor', 'start');
 
     rightGroup.append('text')
-      .attr('x', centerXAxis + offsetToDivideLine)
-      .attr('y', padding.top + 5)
+      .attr('x', this.centerXAxis + this.offsetToDivideLine)
+      .attr('y', this.padding.top + 5)
       .attr('alignment-baseline', 'hanging')
-      .text(`${event.item.external.amount || 0}`)
+      .text(value)
       .attr('class', 'value');
 
     rightGroup.append('text')
-      .attr('x', centerXAxis + offsetToDivideLine)
-      .attr('y', tooltipHeight + padding.top - 5)
+      .attr('x', this.centerXAxis + this.offsetToDivideLine)
+      .attr('y', this.tooltipHeight + this.padding.top - 5)
       .attr('alignment-baseline', 'baseline')
       .text('Amount spent')
       .attr('class', 'description');
