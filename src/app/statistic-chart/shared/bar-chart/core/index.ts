@@ -19,5 +19,5 @@ export {
   DateChart,
   ChartTooltip,
   BarChartBase,
-  numberWithCommas
+  numberWithCommas,
 }
