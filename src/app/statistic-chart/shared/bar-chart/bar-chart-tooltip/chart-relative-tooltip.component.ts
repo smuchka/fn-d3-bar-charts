@@ -56,21 +56,6 @@ export class ChartRelativeTooltipComponent extends BaseChartInstance {
     // draw defs section (mark, tooltip bg, filter shadow bg)
     this.drawSvgDefs(tooltipDef);
 
-    // // // // // // // // // // // // // // // // // // // // // 
-    // // //  DEBUG (mount point) .... 
-    // // // // // // // // // // // // // // // // // // // // // 
-
-    // tooltipGroup.selectAll("circle")
-    //   .data([[event.positionX, 140, 1]]).enter()
-    //   .append("circle")
-    //   .attr("cx", function (d) { return d[0] })
-    //   .attr("cy", function (d) { return d[1] })
-    //   .attr("r", function (d) { return d[2] })
-    //   .style("fill", "steelblue")
-
-    // // // // // // // // // // // // // // // // // // // // // 
-    // // // // // // // // // // // // // // // // // // // // // 
-
     // inherited from svg mark path
     const offsetMarkCentered = 25;
     // max distance moving tooltip mark [-50px; 50px] from center tooltip

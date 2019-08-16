@@ -67,15 +67,6 @@ export class ChartStaticTooltipComponent extends BaseChartInstance {
       .attr('class', 'tooltipGroup')
       .attr('fill', '#eee');
 
-    // tooltip background
-    // tooltipGroup.append('rect')
-    //   .attr('width', `calc(100% - ${this.padding.left} - ${this.padding.right})`)
-    //   .attr('height', this.tooltipHeight + this.padding.top + this.padding.bottom)
-    //   .attr('x', this.padding.left)
-    //   .attr('y', 0)
-    //   .attr('class', 'tooltip-bg')
-    //   .style('opacity', 0.4)
-
     // divide line
     tooltipGroup.append('line')
       .attr('stroke', '#DFE3EC')
