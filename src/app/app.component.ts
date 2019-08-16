@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { Observable, of, BehaviorSubject } from 'rxjs';
-import { filter, tap } from 'rxjs/operators'
+import { Observable, BehaviorSubject } from 'rxjs';
+import { filter } from 'rxjs/operators'
 import { StatisticDelimiterService } from './services/statistic-delimiter.service';
-import { DirectionActiveChange, ItemData } from './statistic-chart/shared/bar-chart/core';
+import { DirectionActiveChange, ItemData, PaginationEvent } from './statistic-chart/shared/bar-chart/core';
 import { StatisticDelimiter, DateRange } from './statistic-chart/core';
-import { subHours, subDays, subWeeks, startOfHour } from 'date-fns'
+import { subDays, subWeeks, startOfHour } from 'date-fns'
 
 @Component({
   selector: 'my-app',
@@ -19,6 +19,8 @@ export class AppComponent implements OnInit {
 
   private campaignStart: Date;
   private campaignEnd: Date;
+
+  public paginationOffset = 1;
 
   public delimitersItems = [
     StatisticDelimiter.Hour,
@@ -69,18 +71,25 @@ export class AppComponent implements OnInit {
   }
 
   private loadPrevPeriod(date: Date): void {
+    this.paginationOffset++;
     const onlyStartBarDateRange: boolean = true;
-    this.dateRange = this.statistic.calcPreviousDateRange(
+    const previousDateRange = this.statistic.calcPreviousDateRange(
       this.showForDelimiter,
       date,
       onlyStartBarDateRange,
     );
+
+    this.dateRange = {
+      from: previousDateRange.from,
+      to: startOfHour(this.campaignEnd),
+    };
+
     const range: DateRange = this.statistic.calcPreviousDateRange(
       this.showForDelimiter,
       date,
       onlyStartBarDateRange
     );
-    console.warn('[Previous interval]', this.dateRange);
+
     const list: ItemData[] = this.statistic.loadStaticticByDates(this.showForDelimiter, range);
     const mergedList: ItemData[] = this.mergeStatisticWithChunk(list);
     this.pagginableData$.next(mergedList)

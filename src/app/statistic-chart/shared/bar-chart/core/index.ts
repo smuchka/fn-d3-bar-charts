@@ -5,6 +5,7 @@ import {
 } from './types/direction-active-change';
 import { ItemData } from './interfaces/item-data';
 import { DateChart } from './interfaces/date-chart-strategy';
+import { PaginationEvent } from './interfaces/pagination';
 
 export {
   DirectionActiveChange,
@@ -12,4 +13,5 @@ export {
   DirectionRight,
   ItemData,
   DateChart,
+  PaginationEvent,
 }

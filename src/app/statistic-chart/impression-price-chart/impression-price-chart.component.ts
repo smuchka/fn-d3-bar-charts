@@ -5,7 +5,7 @@ import {
 import { Observable, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ChartSizeConfig, DateRange, StatisticDelimiter } from '../core';
-import { ItemData } from '../shared/bar-chart/core';
+import { ItemData, PaginationEvent } from '../shared/bar-chart/core';
 import { BarChartAbstract } from '../shared/bar-chart/bar-chart-abstract/bar-chart-abstract.component';
 import { ChartActiveDateNavComponent } from '../chart-active-date-nav/chart-active-date-nav.component';
 import { DelimiterChartStrategyService } from '../shared/services/delimiter-chart-strategy.service';
@@ -26,6 +26,9 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
 
   @Input()
   public data: Observable<ItemData[]>;
+
+  @Input()
+  public paginationOffset: number;
 
   @Input()
   public chunkDateRange: DateRange;
@@ -85,7 +88,6 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
     }
 
     if (this.chunkDateRange && this.data) {
-
       let rangeLoadedChunks = this.getDateRange();
       this.renderData$ = this.data.pipe(
         map((data: ItemData[]) => {
@@ -93,7 +95,9 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
           data.forEach((el: ItemData) => localMap.set(el.identity.getTime(), el));
           return localMap;
         }),
-        map((map: Map<number, ItemData>) => this.fillRangeOfEmptyData(map, rangeLoadedChunks)),
+        map((map: Map<number, ItemData>) => {
+          return this.fillRangeOfEmptyData(map, rangeLoadedChunks, this.paginationOffset);
+        }),
       );
     }
   }
@@ -191,11 +195,9 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
   /**
    * Map pipe function for fill empty bar
    */
-  private fillRangeOfEmptyData(data: Map<number, ItemData>, range: DateRange): ItemData[] {
-
+  private fillRangeOfEmptyData(data: Map<number, ItemData>, range: DateRange, offsetIndex: number = 1): ItemData[] {
     const countBarItems: number = this.delimiterConfig
-      .getChartConfig(this.delimiter).countChunk;
-
+      .getChartConfig(this.delimiter).countChunk * offsetIndex;
     const createDataItem = (el, index): ItemData => {
       const nextDate: Date = this.dateStrategy.calcSomeDateOnDistance(range.to, -1 * index);
 

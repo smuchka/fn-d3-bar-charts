@@ -4,13 +4,14 @@ import {
 import { D3ChartBaseComponent } from './d3-chart-base.component';
 import { getEmptyDataInitError } from './bar-chart-errors';
 import {
+  addDays,
   differenceInSeconds,
 } from 'date-fns';
 import {
   ItemData,
   DirectionActiveChange,
   DirectionLeft,
-  DirectionRight
+  DirectionRight, PaginationEvent
 } from '../core';
 import { Observable, Subscription, merge } from 'rxjs';
 import * as D3 from 'd3';
@@ -44,6 +45,8 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   private canActivateNextBarItem: boolean;
   private changeData: EventEmitter<ItemData[]>;
   private changeBarWidth: EventEmitter<null>;
+
+  private offsetIndex = 1;
 
   @Output()
   public paginationEvent: EventEmitter<Date>;
@@ -174,7 +177,6 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
 
   private onZoomedEnd(): void {
     const dataMin: string = D3.min(this.data, d => d.identity);
-    const dataMax: string = D3.max(this.data, d => d.identity);
     const { x } = D3.event.transform || { x: 0 };
     if (x > Math.abs(this.x(dataMin))) {
       this.paginationEvent.emit(new Date(dataMin));
@@ -310,11 +312,6 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   private initXScale(): void {
     const [d1, d2] = this.viewportDateRange();
     const { left, right } = this.getPadding();
-    console.warn('[X scale]: ', d1, d2);
-    console.warn('[X Scale Size Range: ]', [
-      this.margin.left + left,
-      this.width - this.margin.right - right,
-    ]);
     this.x = D3.scaleTime()
       .domain([d1, d2])
       .rangeRound([
