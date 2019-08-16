@@ -4,8 +4,7 @@ import { BarChartActiveSelectedEvent, numberWithCommas } from '../core';
 import { ChartStaticTooltipComponent } from './chart-static-tooltip.component';
 import { BaseChartInstance } from './base-chart-tooltip';
 
-const colorTooltip = '#ffffff';
-// const colorTooltip = '#eee';
+const colorTooltipBg = '#ffffff';
 
 @Component({
   selector: 'fn-relative-tooltip',
@@ -58,7 +57,7 @@ export class ChartRelativeTooltipComponent extends BaseChartInstance {
 
     // inherited from svg mark path
     const offsetMarkCentered = 25;
-    // max distance moving tooltip mark [-50px; 50px] from center tooltip
+    // max distance moving tooltip mark [-55px; 55px] from center tooltip
     const maxOffsetFromMountPoint = 55;
     const offsetBgShadow = 10;
     // offset relate of tooltip center (position mark relate of center tooltip). 
@@ -116,7 +115,7 @@ export class ChartRelativeTooltipComponent extends BaseChartInstance {
 
     // tooltip mark bg white
     tooltipMarkG.append('use')
-      .attr('fill', colorTooltip)
+      .attr('fill', colorTooltipBg)
       .attr('xlink:href', '#tooltip_mark_path');
   }
 
@@ -166,7 +165,7 @@ export class ChartRelativeTooltipComponent extends BaseChartInstance {
 
     // bg white
     tooltipBackgroundG.append('use')
-      .attr('fill', colorTooltip)
+      .attr('fill', colorTooltipBg)
       .attr('xlink:href', '#tooltip_path');
   }
 

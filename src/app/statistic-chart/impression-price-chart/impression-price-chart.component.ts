@@ -165,7 +165,6 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
    * Handler for updating active item in navigation component
    */
   private onActiveItemChangeFromChart(data: ItemData): void {
-    console.log('Date changed:', data);
     this.lastActive = data;
     this.navigation.setActive(this.lastActive.identity);
     this.navigation.canActivateNextDate = this.chart.canActivateNextBar;

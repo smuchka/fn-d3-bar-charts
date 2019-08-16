@@ -24,9 +24,9 @@ export class DelimiterChartConfigService {
 
     this.config = {
       [PlatformSize.MOBILE]: {
-        [StatisticDelimiter.Hour]: { countViewport: 7, countChunk: 17, barWidth: 16 },
-        [StatisticDelimiter.Day]: { countViewport: 5, countChunk: 17, barWidth: 24 },
-        [StatisticDelimiter.Week]: { countViewport: 5, countChunk: 15, barWidth: 40 },
+        [StatisticDelimiter.Hour]: { countViewport: 7, countChunk: 7, barWidth: 16 },
+        [StatisticDelimiter.Day]: { countViewport: 5, countChunk: 7, barWidth: 24 },
+        [StatisticDelimiter.Week]: { countViewport: 5, countChunk: 5, barWidth: 40 },
       },
       [PlatformSize.WEB]: {
         [StatisticDelimiter.Hour]: { countViewport: 16, countChunk: 24, barWidth: 16 },
