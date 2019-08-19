@@ -1,5 +1,5 @@
 import { DateChart } from '../../bar-chart/core';
-import { addDays, startOfToday, startOfDay, endOfDay, format } from 'date-fns';
+import { addDays, startOfDay, endOfDay, format, differenceInDays } from 'date-fns';
 
 export class DayChartNavigation implements DateChart {
 
@@ -33,5 +33,11 @@ export class DayChartNavigation implements DateChart {
 
   public calcSomeDateOnDistance(date: Date, calcDateDelimiter: number): Date {
     return addDays(date, calcDateDelimiter);
+  }
+
+  public calcOffsetIndexByRange(from: Date, to: Date, chunkSize: number): number {
+    return Math.ceil(
+      Math.abs(differenceInDays(from, to)) / chunkSize
+    );
   }
 }

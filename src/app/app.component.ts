@@ -20,8 +20,6 @@ export class AppComponent implements OnInit {
   private campaignStart: Date;
   private campaignEnd: Date;
 
-  public paginationOffset = 1;
-
   public delimitersItems = [
     StatisticDelimiter.Hour,
     StatisticDelimiter.Day,
@@ -71,7 +69,6 @@ export class AppComponent implements OnInit {
   }
 
   private loadPrevPeriod(date: Date): void {
-    this.paginationOffset++;
     const onlyStartBarDateRange: boolean = true;
     const previousDateRange = this.statistic.calcPreviousDateRange(
       this.showForDelimiter,

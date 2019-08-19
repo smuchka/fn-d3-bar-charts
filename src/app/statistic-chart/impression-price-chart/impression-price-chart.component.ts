@@ -28,9 +28,6 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
   public data: Observable<ItemData[]>;
 
   @Input()
-  public paginationOffset: number;
-
-  @Input()
   public chunkDateRange: DateRange;
 
   @Input()
@@ -96,7 +93,7 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
           return localMap;
         }),
         map((map: Map<number, ItemData>) => {
-          return this.fillRangeOfEmptyData(map, rangeLoadedChunks, this.paginationOffset);
+          return this.fillRangeOfEmptyData(map, rangeLoadedChunks);
         }),
       );
     }
@@ -195,9 +192,11 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
   /**
    * Map pipe function for fill empty bar
    */
-  private fillRangeOfEmptyData(data: Map<number, ItemData>, range: DateRange, offsetIndex: number = 1): ItemData[] {
-    const countBarItems: number = this.delimiterConfig
-      .getChartConfig(this.delimiter).countChunk * offsetIndex;
+  private fillRangeOfEmptyData(data: Map<number, ItemData>, range: DateRange): ItemData[] {
+    const chunkItemsSize: number = this.delimiterConfig.getChartConfig(this.delimiter).countChunk;
+    const countBarItems: number =
+      chunkItemsSize * this.dateStrategy.calcOffsetIndexByRange(range.from, range.to, chunkItemsSize);
+
     const createDataItem = (el, index): ItemData => {
       const nextDate: Date = this.dateStrategy.calcSomeDateOnDistance(range.to, -1 * index);
 
