@@ -1,16 +1,26 @@
 import { Injectable } from '@angular/core';
 import { StatisticDelimiter, PlatformSize, ListChartConfig, ChartSizeConfig } from '../statistic-chart/core'
 
+// TODO: only for debug - in FN use other device detection flow
+import { DeviceDetectorService } from 'ngx-device-detector';
+
 @Injectable()
 export class DelimiterChartConfigService {
 
   private isMobile: boolean;
   private config: Record<PlatformSize, ListChartConfig>;
 
-  constructor() {
+  constructor(
+    private deviceService: DeviceDetectorService
+  ) {
 
     // todo: depend current platform
-    this.isMobile = false;
+    this.isMobile = this.deviceService.isMobile();
+
+    console.warn(
+      this.isMobile ? 'Moblie platform' : 'Desktop platform',
+      this.deviceService.getDeviceInfo()
+    );
 
     this.config = {
       [PlatformSize.MOBILE]: {

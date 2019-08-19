@@ -64,7 +64,10 @@ export class StatisticDayDelimiterService implements ImpressionStatistic {
       randValues.length - 1,
     ).map((date: Date) => ({
       identity: date,
-      value: random(0, 999),
+      value: random(0, 9999999),
+      external: {
+        amount: random(0, 9999999) / 100
+      },
     }));
   }
 
@@ -80,6 +83,7 @@ export class StatisticDayDelimiterService implements ImpressionStatistic {
       return {
         identity: date,
         value: item.views,
+        external: {},
       };
     })
   }

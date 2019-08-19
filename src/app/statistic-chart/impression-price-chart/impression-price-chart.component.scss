@@ -27,3 +27,26 @@
 /deep/ .label.active {
   fill:#0768EF;
 }
+
+//
+// Tooltip
+//
+/deep/ .value {
+  fill: #292A31;
+  font-family: "Fira Sans";	
+  font-size: 24px;	
+  font-weight: 500;	
+  line-height: 32px;
+}
+
+/deep/  .description {
+  fill: #969DAD;
+  font-family: Lato;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+/deep/ .right-border.shadow-on {
+    /* background: linear-gradient(to left, #ff9090 0, #ffffff 42px, #ffffff 100%); */
+    box-shadow: inset -50px 0 40px -50px rgba(216, 86, 86, 0.7);
+}

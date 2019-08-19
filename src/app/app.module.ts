@@ -12,11 +12,15 @@ import { StatisticDelimiterService } from './services/statistic-delimiter.servic
 import { StatisticWeekDelimiterService } from './services/statistic-week-delimiter.service';
 import { DelimiterChartConfigService } from './services/delimiter-chart-config.service';
 
+// TODO: only for debug - in FN use other device detection flow
+import { DeviceDetectorModule } from 'ngx-device-detector';
+
 @NgModule({
   imports: [
     BrowserModule,
     FormsModule,
     StatisticChartModule,
+    DeviceDetectorModule.forRoot()
   ],
   declarations: [
     AppComponent,

@@ -1,35 +1,46 @@
 import {
-  Component, ElementRef, OnInit, Renderer2, Input, EventEmitter
+  AfterContentInit,
+  Component,
+  ContentChild,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnInit,
+  Renderer2,
 } from '@angular/core';
 import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { BarChartAbstract } from './bar-chart-abstract/bar-chart-abstract.component';
-import {
-  getBarChartEmptyDateStrategyError,
-  getEmptyCountBarInViewportError
-} from './bar-chart-errors';
-import { DateChart, ItemData } from './core';
+// import { ChartStaticTooltipComponent } from './chart-static-tooltip/chart-static-tooltip.component';
+import { getBarChartEmptyDateStrategyError, getEmptyCountBarInViewportError } from './bar-chart-errors';
+import { BarChartActiveSelectedEvent, DateChart, ItemData } from './core';
+import { BaseChartInstance } from './bar-chart-tooltip/base-chart-tooltip';
 
 @Component({
   selector: 'fn-bar-chart',
   template: `<!--d3 create template itself-->`,
-  styles: [`
-    :host {
-      width: 100%;
-      height: 100%;
-      display: flex;
-    }
-  `]
+  styles: [
+    `
+      :host {
+          width: 100%;
+          height: 100%;
+          display: flex;
+      }
+    `,
+  ],
 })
-export class BarChartComponent extends BarChartAbstract implements OnInit {
+export class BarChartComponent extends BarChartAbstract implements OnInit, AfterContentInit {
 
   @Input()
   public get countBarsInViewport(): number {
     return this.countBarsInViewportValue;
   }
+
   public set countBarsInViewport(count: number) {
     this.countBarsInViewportValue = count;
     this.countBarsInViewportChange.emit();
   }
+
   private countBarsInViewportValue: number;
   private countBarsInViewportChange: EventEmitter<undefined>;
 
@@ -37,13 +48,18 @@ export class BarChartComponent extends BarChartAbstract implements OnInit {
   public barWidth: number;
 
   @Input()
-  public set dateRangeStrategy(strtategy: DateChart) {
-    this.dateRangeStrategyValue = strtategy;
+  public set dateRangeStrategy(strategy: DateChart) {
+    this.dateRangeStrategyValue = strategy;
   }
+
   public get dateRangeStrategy(): DateChart {
     return this.dateRangeStrategyValue;
   }
+
   private dateRangeStrategyValue: DateChart;
+
+  @ContentChild(BaseChartInstance, { static: false, })
+  protected tooltip: BaseChartInstance;
 
   public constructor(
     protected element: ElementRef,
@@ -62,7 +78,12 @@ export class BarChartComponent extends BarChartAbstract implements OnInit {
       throw getEmptyCountBarInViewportError();
     }
 
-    super.ngOnInit()
+    super.ngOnInit();
+  }
+
+  public ngAfterContentInit(): void {
+    this.initTooltip();
+    super.ngAfterContentInit();
   }
 
   protected getObserveSource(): Observable<any>[] {
@@ -92,8 +113,33 @@ export class BarChartComponent extends BarChartAbstract implements OnInit {
     const startingDatePoint: Date = this.data[this.data.length - 1].identity;
     const from: Date = this.dateRangeStrategy.calcSomeDateOnDistance(
       startingDatePoint,
-      -1 * (this.countBarsInViewport - 1)
+      -1 * (this.countBarsInViewport - 1),
     );
     return [from, startingDatePoint];
+  }
+
+  /**
+   * Calc and apply correction.
+   */
+  private initTooltip(): void {
+
+    if (!this.tooltip) {
+      return;
+    }
+
+    this.padding = {
+      ...this.margin,
+      ...{
+        top: this.margin.top + this.tooltip.correctionHeight,
+        left: this.margin.left + this.tooltip.correctionWidth
+      },
+    };
+    this.heightCorrection = this.heightCorrection + this.tooltip.correctionHeight;
+    this.widthCorrection = this.widthCorrection + this.tooltip.correctionWidth;
+
+    this.tooltip.setChart(this);
+
+    this.activeItemDataChange.asObservable()
+      .subscribe((event: BarChartActiveSelectedEvent) => this.tooltip.draw(event));
   }
 }

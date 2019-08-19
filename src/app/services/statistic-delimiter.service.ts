@@ -1,14 +1,12 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
 
 import { ItemData } from '../statistic-chart/shared/bar-chart/core';
 import { StatisticWeekDelimiterService } from './statistic-week-delimiter.service';
 import { StatisticDayDelimiterService } from './statistic-day-delimiter.service';
 import { StatisticHourDelimiterService } from './statistic-hour-delimiter.service';
 import { ImpressionStatistic } from './impression-statistic';
-import { StatisticDelimiter, ChartSizeConfig, DateRange } from '../statistic-chart/core';
+import { StatisticDelimiter, DateRange } from '../statistic-chart/core';
 
-import { subSeconds } from 'date-fns'
 
 @Injectable()
 export class StatisticDelimiterService {
@@ -72,7 +70,7 @@ export class StatisticDelimiterService {
   /**
    * Switch source for calulation dates
    */
-  private source(delimiter): ImpressionStatistic {
+  private source(delimiter): StatisticHourDelimiterService | StatisticDayDelimiterService | StatisticWeekDelimiterService | null{
     switch (delimiter) {
       case StatisticDelimiter.Hour:
         return this.hourStatistic;
