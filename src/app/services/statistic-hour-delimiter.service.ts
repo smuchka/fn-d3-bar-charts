@@ -51,7 +51,7 @@ export class StatisticHourDelimiterService implements ImpressionStatistic {
   public loadStaticticByDates(range: DateRange): ItemData[] {
     return this.generateRandomChunk(range.from, range.to, this.countRandom);
   }
-  
+
   private generateRandomChunk(d1: Date, d2: Date, count: number): ItemData[] {
     const map = new Map<number, ItemData>();
     const countRand: number = random(1, Math.floor(24 / count));
@@ -64,7 +64,10 @@ export class StatisticHourDelimiterService implements ImpressionStatistic {
       randValues.length - 1,
     ).map((date: Date) => ({
       identity: date,
-      value: random(0, 999),
+      value: random(0, 9999999),
+      external: {
+        amount: random(0, 9999999) / 100
+      },
     }));
   }
 
@@ -79,6 +82,7 @@ export class StatisticHourDelimiterService implements ImpressionStatistic {
       return {
         identity: date,
         value: item.views,
+        external: {},
       };
     })
   }

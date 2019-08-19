@@ -1,16 +1,17 @@
 import {
   Component, ViewChild, ComponentFactoryResolver,
-  Input, OnInit, OnChanges, OnDestroy, SimpleChanges, Output, EventEmitter
+  Input, OnInit, OnChanges, OnDestroy,
+  SimpleChanges, EventEmitter, Output
 } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ChartSizeConfig, DateRange, StatisticDelimiter } from '../core';
-import { ItemData, PaginationEvent } from '../shared/bar-chart/core';
+import { ItemData, PaginationEvent, BarChartActiveSelectedEvent } from '../shared/bar-chart/core';
 import { BarChartAbstract } from '../shared/bar-chart/bar-chart-abstract/bar-chart-abstract.component';
-import { ChartActiveDateNavComponent } from '../chart-active-date-nav/chart-active-date-nav.component';
 import { DelimiterChartStrategyService } from '../shared/services/delimiter-chart-strategy.service';
 import { DelimiterChartConfigService } from '../../services/delimiter-chart-config.service';
 import { DateChart } from '../shared/bar-chart/core';
+import { ChartActiveDateNavComponent } from '../chart-active-date-nav/chart-active-date-nav.component';
 import {
   getEmptyChartDelimiterError,
   getEmptyChartDateRangeError,
@@ -35,6 +36,9 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
 
   @Input()
   public navigation: ChartActiveDateNavComponent;
+
+  @Input()
+  public isMobile: boolean = null;
 
   @Output()
   public paginationEvent: EventEmitter<Date>;
@@ -61,7 +65,6 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
   }
 
   public ngOnInit(): void {
-
     if (!this.delimiter) {
       throw getEmptyChartDelimiterError();
     }
@@ -143,6 +146,7 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
     if (!this.chartActiveChangeSubscription) {
       this.chartActiveChangeSubscription =
         this.chart.activeItemDataChange.asObservable()
+          .pipe(map((event: BarChartActiveSelectedEvent) => event.item))
           .subscribe(this.onActiveItemChangeFromChart.bind(this));
     }
 
@@ -204,7 +208,12 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
         return data.get(nextDate.getTime());
       }
 
-      return <ItemData>{ identity: nextDate, value: 0 };
+      // todo: factory create
+      return <ItemData>{
+        identity: nextDate,
+        value: 0,
+        external: {},
+      };
     };
 
     return Array.from(Array(countBarItems), createDataItem).reverse();

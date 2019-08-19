@@ -1,5 +1,5 @@
 export interface ItemData {
   identity: any;
-  label?: string;
   value: number;
+  external?: Record<string, any>;
 }

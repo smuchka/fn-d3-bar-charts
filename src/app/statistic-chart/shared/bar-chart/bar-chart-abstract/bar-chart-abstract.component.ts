@@ -1,17 +1,19 @@
 import {
-  Component, ElementRef, Input, Output, OnChanges, OnInit, Renderer2, SimpleChanges, EventEmitter, OnDestroy
+  Component, ElementRef, Input, Output, Renderer2, SimpleChanges, EventEmitter, OnInit, AfterContentInit, OnChanges, OnDestroy,
 } from '@angular/core';
 import { D3ChartBaseComponent } from './d3-chart-base.component';
 import { getEmptyDataInitError } from './bar-chart-errors';
 import {
-  addDays,
   differenceInSeconds,
 } from 'date-fns';
 import {
   ItemData,
   DirectionActiveChange,
   DirectionLeft,
-  DirectionRight, PaginationEvent
+  DirectionRight,
+  PaginationEvent,
+  BarChartActiveSelectedEvent,
+  BarChartBase,
 } from '../core';
 import { Observable, Subscription, merge } from 'rxjs';
 import * as D3 from 'd3';
@@ -21,8 +23,9 @@ import { Selection } from "d3";
   selector: 'fn-bar-chart-time-scale',
   template: `<!--d3 create template itself-->`,
 })
-export abstract class BarChartAbstract extends D3ChartBaseComponent implements OnInit, OnChanges, OnDestroy {
+export abstract class BarChartAbstract extends D3ChartBaseComponent implements BarChartBase, OnInit, AfterContentInit, OnChanges, OnDestroy {
 
+  private groupPanning;
   private groupPlaceholderBars;
   private groupDataBars;
   private x;
@@ -69,16 +72,25 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   @Output()
   public petBorder: EventEmitter<any>;
 
-  @Output('activeItemChange')
-  public activeItemDataChange: EventEmitter<ItemData | null>;
+  @Output()
+  public readonly activeItemDataChange: EventEmitter<BarChartActiveSelectedEvent>;
 
   public setActiveDate(date: Date) {
-    const data = this.mapItemData.get(date.getTime());
-    if (data && this.activeDate !== date) {
+    const item = this.mapItemData.get(date.getTime());
+
+    if (item && this.activeDate !== date) {
       this.activeDate = date;
       this.canActivatePrevBarItem = this.canChangeActiveOn(DirectionLeft);
       this.canActivateNextBarItem = this.canChangeActiveOn(DirectionRight);
-      setTimeout(() => this.activeItemDataChange.emit(data))
+
+      setTimeout(() => {
+        const event = new BarChartActiveSelectedEvent(
+          item,
+          this.x(item.identity),
+          this.dataList,
+        );
+        this.activeItemDataChange.emit(event);
+      });
     }
   }
 
@@ -117,13 +129,15 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   }
 
   public ngOnInit(): void {
-    // Init svg in DOM and init svg dimentions
-    super.ngOnInit();
-
     // Start work with data, should already exist
     if (!this.data || !this.data.length) {
       throw getEmptyDataInitError();
     }
+  }
+
+  public ngAfterContentInit(): void {
+    // Init svg in DOM and init svg dimetions
+    super.ngAfterContentInit();
 
     // Required init after chart entities
     this.initSubscribes();
@@ -135,10 +149,11 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
 
     // process drawing
     this.svg.selectAll().remove();
-    this.groupPlaceholderBars = this.svg.append('g').attr('class', 'placeholder');
-    this.groupDataBars = this.svg.append('g').attr('class', 'bar');
+    this.groupPanning = this.svg.append('g').attr('class', 'wrapper-panning');
+    this.groupPlaceholderBars = this.groupPanning.append('g').attr('class', 'placeholder');
+    this.groupDataBars = this.groupPanning.append('g').attr('class', 'bar');
 
-    this.showActiveBarOnCenterViewport();
+    // this.showActiveBarOnCenterViewport();
     this.updateChart();
   }
 
@@ -162,11 +177,18 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
     this.subs.unsubscribe();
   }
 
+  // public API
+  public getLayoutPanning() {
+    return this.groupPanning;
+  }
+  public getLayout() {
+    return this.svg;
+  }
+
   private onZoomed(): void {
     // redraw groups of bars 
     const { x } = D3.event.transform || { x: 0 };
-    this.groupPlaceholderBars.attr("transform", "translate(" + x + ",0)");
-    this.groupDataBars.attr("transform", "translate(" + x + ",0)");
+    this.groupPanning.attr("transform", "translate(" + x + ",0)");
   }
 
   private onZoomedEnd(): void {
@@ -252,7 +274,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
     this.groupDataBars
       .selectAll('rect')
       .data(this.data.filter(el => el.value))
-      .call(this.drawDataBar.bind(this));
+      .call(this.drawDataBar.bind(this))
 
     // update active item viewport position
     this.showActiveBarOnCenterViewport();
@@ -277,6 +299,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
 
   private initActiveDate(): void {
     let activeDate = null;
+
     const now = this.calcNowBarDate();
     const arr = this.data.filter(d => d.value > 0);
     const lastNotEmptyDate: Date | null = arr.length

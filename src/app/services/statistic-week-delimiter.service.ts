@@ -65,7 +65,10 @@ export class StatisticWeekDelimiterService implements ImpressionStatistic {
       randValues.length - 1,
     ).map((date: Date) => ({
       identity: startOfWeek(date, { weekStartsOn: 1 }),
-      value: random(0, 999),
+      value: random(0, 9999999),
+      external: {
+        amount: random(0, 9999999) / 100
+      },
     }));
   }
 
@@ -80,6 +83,7 @@ export class StatisticWeekDelimiterService implements ImpressionStatistic {
       return {
         identity: date,
         value: item.views,
+        external: {},
       };
     })
   }
