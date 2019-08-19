@@ -45,10 +45,6 @@ export class AppComponent implements OnInit {
     this.loadFirstPeriod();
   }
 
-  public activeDateChanged(direction: DirectionActiveChange) {
-
-  }
-
   private loadFirstPeriod(): void {
     const onlyStartBarDateRange: boolean = true;
 
