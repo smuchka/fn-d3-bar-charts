@@ -26,14 +26,10 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   private groupPlaceholderBars;
   private groupDataBars;
   private x;
-  private xAxis;
-  private x2;
   private y;
   private zoom;
   private radiusRectangle: number;
   private minBarHeight: number;
-
-  private minTransateX = 0;
 
   private maxValueFromChart: number;
   private translateWidthOneBar: number;
@@ -45,8 +41,6 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements O
   private canActivateNextBarItem: boolean;
   private changeData: EventEmitter<ItemData[]>;
   private changeBarWidth: EventEmitter<null>;
-
-  private offsetIndex = 1;
 
   @Output()
   public paginationEvent: EventEmitter<Date>;
