@@ -4,7 +4,6 @@ import { ItemData } from '../statistic-chart/shared/bar-chart/core';
 import { StatisticWeekDelimiterService } from './statistic-week-delimiter.service';
 import { StatisticDayDelimiterService } from './statistic-day-delimiter.service';
 import { StatisticHourDelimiterService } from './statistic-hour-delimiter.service';
-import { ImpressionStatistic } from './impression-statistic';
 import { StatisticDelimiter, DateRange } from '../statistic-chart/core';
 
 

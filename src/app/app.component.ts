@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { Observable, of, BehaviorSubject } from 'rxjs';
-import { filter, tap } from 'rxjs/operators'
+import { Observable, BehaviorSubject } from 'rxjs';
+import { filter } from 'rxjs/operators'
 import { StatisticDelimiterService } from './services/statistic-delimiter.service';
-import { ItemData } from './statistic-chart/shared/bar-chart/core';
+import { ItemData, PaginationEvent } from './statistic-chart/shared/bar-chart/core';
 import { StatisticDelimiter, DateRange } from './statistic-chart/core';
-import { subDays, subWeeks } from 'date-fns';
+import { subDays, subWeeks, startOfHour } from 'date-fns';
 
 // TODO: only for debug - in FN use other device detection flow
 import { DeviceDetectorService } from 'ngx-device-detector';
@@ -68,31 +68,35 @@ export class AppComponent implements OnInit {
     );
 
     const list: ItemData[] = this.statistic.loadStaticticByDates(this.showForDelimiter, range);
-    const mergedList: ItemData[] = this.mergeStatiscticWithChunk(list);
+    const mergedList: ItemData[] = this.mergeStatisticWithChunk(list);
     this.pagginableData$.next(mergedList);
   }
 
-  private loadPrevPeriod(): void {
+  private loadPrevPeriod(date: Date): void {
     const onlyStartBarDateRange: boolean = true;
-
-    this.dateRange = this.statistic.calcPreviousDateRange(
+    const previousDateRange = this.statistic.calcPreviousDateRange(
       this.showForDelimiter,
-      this.dateRange.from,
+      date,
       onlyStartBarDateRange,
     );
 
+    this.dateRange = {
+      from: previousDateRange.from,
+      to: startOfHour(this.campaignEnd),
+    };
+
     const range: DateRange = this.statistic.calcPreviousDateRange(
       this.showForDelimiter,
-      this.dateRange.from,
-      !onlyStartBarDateRange
+      date,
+      onlyStartBarDateRange
     );
 
     const list: ItemData[] = this.statistic.loadStaticticByDates(this.showForDelimiter, range);
-    const mergedList: ItemData[] = this.mergeStatiscticWithChunk(list);
+    const mergedList: ItemData[] = this.mergeStatisticWithChunk(list);
     this.pagginableData$.next(mergedList)
   }
 
-  private mergeStatiscticWithChunk(chunk: ItemData[]): ItemData[] {
+  private mergeStatisticWithChunk(chunk: ItemData[]): ItemData[] {
     return [
       ...chunk,
       ...this.pagginableData$.value || [],

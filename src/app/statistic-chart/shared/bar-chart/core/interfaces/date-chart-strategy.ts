@@ -13,6 +13,14 @@ export interface DateChart {
   formatRangeLabel(from: Date, to: Date): string;
 
   /**
+   * Function to calculate offset index between date range according to delimiter
+   * @param from Date
+   * @param to Date
+   * @param chunkSize number
+   */
+  calcOffsetIndexByRange(from: Date, to: Date, chunkSize: number): number;
+
+  /**
    * Get start of step/bar date.
    * Depend of delimiter chart && start is 00 value
    */

@@ -3,7 +3,7 @@ import { ItemData } from '../statistic-chart/shared/bar-chart/core';
 import { DelimiterChartConfigService } from './delimiter-chart-config.service';
 import { StatisticDelimiter, WeekDelimiterData, DateRange, ChartSizeConfig } from '../statistic-chart/core';
 import { ImpressionStatistic } from './impression-statistic';
-import { startOfWeek, startOfDay, startOfToday, endOfWeek, endOfToday, subWeeks, addWeeks } from 'date-fns'
+import { startOfWeek, endOfWeek, subWeeks, addWeeks } from 'date-fns'
 // mocks
 import { weeksMock } from '../data/weeksMock';
 import { random, getTimestamInSecond } from './helpers';

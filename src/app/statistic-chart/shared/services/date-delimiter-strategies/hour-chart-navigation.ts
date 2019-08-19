@@ -1,4 +1,4 @@
-import { addHours, startOfHour, endOfHour, format } from 'date-fns'
+import { addHours, startOfHour, endOfHour, format, differenceInHours } from 'date-fns'
 import { DateChart } from '../../bar-chart/core';
 
 export class HourChartNavigation implements DateChart {
@@ -38,5 +38,11 @@ export class HourChartNavigation implements DateChart {
 
   public calcSomeDateOnDistance(date: Date, calcDateDelimiter: number): Date {
     return addHours(date, calcDateDelimiter);
+  }
+
+  public calcOffsetIndexByRange(from: Date, to: Date, chunkSize: number): number {
+    return Math.ceil(
+      Math.abs(differenceInHours(from, to)) / chunkSize,
+    );
   }
 }

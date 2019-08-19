@@ -12,6 +12,7 @@
 		<fn-chart-active-date-nav 
       #navLink
       [delimiter]="showForDelimiter"
+	  [activeDate]="dateRange.to"
     ></fn-chart-active-date-nav>
 	</div>
 
@@ -21,7 +22,8 @@
       [data]="pagginableData$"
       [delimiter]="showForDelimiter"
       [navigation]="navLink"
-	    [isMobile]="isMobile"
+      [isMobile]="isMobile"
+	  (paginationEvent)="loadPrevPeriod($event)"
     ></fn-impression-price-chart>
 	</div>
 </div>

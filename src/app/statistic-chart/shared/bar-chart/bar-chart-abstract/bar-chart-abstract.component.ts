@@ -11,6 +11,7 @@ import {
   DirectionActiveChange,
   DirectionLeft,
   DirectionRight,
+  PaginationEvent,
   BarChartActiveSelectedEvent,
   BarChartBase,
 } from '../core';
@@ -43,6 +44,9 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
   private canActivateNextBarItem: boolean;
   private changeData: EventEmitter<ItemData[]>;
   private changeBarWidth: EventEmitter<null>;
+
+  @Output()
+  public paginationEvent: EventEmitter<Date>;
 
   @Input()
   public set data(items: ItemData[]) {
@@ -119,12 +123,13 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
     this.changeData = new EventEmitter();
     this.changeBarWidth = new EventEmitter();
     this.activeItemDataChange = new EventEmitter();
+    this.paginationEvent = new EventEmitter();
     this.petBorder = new EventEmitter();
     this.subs = new Subscription();
   }
 
   public ngOnInit(): void {
-    // Start work with data, shoul already exist
+    // Start work with data, should already exist
     if (!this.data || !this.data.length) {
       throw getEmptyDataInitError();
     }
@@ -134,7 +139,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
     // Init svg in DOM and init svg dimetions
     super.ngAfterContentInit();
 
-    // Requiered init after chart entities
+    // Required init after chart entities
     this.initSubscribes();
 
     this.initActiveDate();
@@ -142,7 +147,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
     this.initYScale();
     this.initZoom();
 
-    // process drowing
+    // process drawing
     this.svg.selectAll().remove();
     this.groupPanning = this.svg.append('g').attr('class', 'wrapper-panning');
     this.groupPlaceholderBars = this.groupPanning.append('g').attr('class', 'placeholder');
@@ -181,15 +186,17 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
   }
 
   private onZoomed(): void {
-    // recalc X Scale
-    D3.event.transform.rescaleX(this.x);
-
     // redraw groups of bars 
     const { x } = D3.event.transform || { x: 0 };
     this.groupPanning.attr("transform", "translate(" + x + ",0)");
   }
 
-  private onZoomedEnd(e): void {
+  private onZoomedEnd(): void {
+    const dataMin: string = D3.min(this.data, d => d.identity);
+    const { x } = D3.event.transform || { x: 0 };
+    if (x > Math.abs(this.x(dataMin))) {
+      this.paginationEvent.emit(new Date(dataMin));
+    }
   }
 
   private onBarClick(d: ItemData): void {
@@ -317,12 +324,11 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
   }
 
   /**
-   * Intit scaling for X axis and calc width one step (from bar start to next bar start)
+   * Init scaling for X axis and calc width one step (from bar start to next bar start)
    */
   private initXScale(): void {
     const [d1, d2] = this.viewportDateRange();
     const { left, right } = this.getPadding();
-
     this.x = D3.scaleTime()
       .domain([d1, d2])
       .rangeRound([
@@ -357,7 +363,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
 
   protected getObserveSource(): Observable<any>[] {
     return [
-      this.changeData
+      this.changeData,
     ];
   }
 

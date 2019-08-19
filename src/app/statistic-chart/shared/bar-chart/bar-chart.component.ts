@@ -9,7 +9,6 @@ import {
   Renderer2,
 } from '@angular/core';
 import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
 import { BarChartAbstract } from './bar-chart-abstract/bar-chart-abstract.component';
 // import { ChartStaticTooltipComponent } from './chart-static-tooltip/chart-static-tooltip.component';
 import { getBarChartEmptyDateStrategyError, getEmptyCountBarInViewportError } from './bar-chart-errors';

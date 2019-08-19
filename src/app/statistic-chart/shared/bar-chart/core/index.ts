@@ -6,6 +6,7 @@ import {
 import { ItemData } from './interfaces/item-data';
 import { BarChartActiveSelectedEvent } from './interfaces/bar-chart-active-selected-event';
 import { DateChart } from './interfaces/date-chart-strategy';
+import { PaginationEvent } from './interfaces/pagination';
 import { ChartTooltip } from './interfaces/bar-chart-tooltip';
 import { BarChartBase } from './interfaces/bar-chart-base';
 import { numberWithCommas } from './helpers';
@@ -20,4 +21,5 @@ export {
   ChartTooltip,
   BarChartBase,
   numberWithCommas,
+  PaginationEvent,
 }

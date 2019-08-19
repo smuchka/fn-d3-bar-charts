@@ -1,8 +1,7 @@
 import { DateChart } from '../../bar-chart/core';
-import { startOfWeek, endOfWeek, addWeeks, getMonth, format } from 'date-fns'
+import { startOfWeek, endOfWeek, addWeeks, getMonth, format, differenceInWeeks } from 'date-fns'
 
 export class WeekChartNavigation implements DateChart {
-
   public formatLabel(date: Date | string): string {
     return idDate(date) ? `W${format(date, 'W')}` : date.toString();
   }
@@ -40,6 +39,12 @@ export class WeekChartNavigation implements DateChart {
 
   public calcSomeDateOnDistance(date: Date, calcDateDelimiter: number): Date {
     return addWeeks(date, calcDateDelimiter);
+  }
+
+  public calcOffsetIndexByRange(from: Date, to: Date, chunkSize: number): number {
+    return Math.ceil(
+      Math.abs(differenceInWeeks(from, to)) / chunkSize
+    );
   }
 }
 

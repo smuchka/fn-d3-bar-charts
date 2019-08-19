@@ -1,12 +1,12 @@
 import {
   Component, ViewChild, ComponentFactoryResolver,
   Input, OnInit, OnChanges, OnDestroy,
-  SimpleChanges
+  SimpleChanges, EventEmitter, Output
 } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
-import { ChartSizeConfig, StatisticDelimiter, DateRange } from '../core';
-import { ItemData, BarChartActiveSelectedEvent } from '../shared/bar-chart/core';
+import { map } from 'rxjs/operators';
+import { ChartSizeConfig, DateRange, StatisticDelimiter } from '../core';
+import { ItemData, PaginationEvent, BarChartActiveSelectedEvent } from '../shared/bar-chart/core';
 import { BarChartAbstract } from '../shared/bar-chart/bar-chart-abstract/bar-chart-abstract.component';
 import { DelimiterChartStrategyService } from '../shared/services/delimiter-chart-strategy.service';
 import { DelimiterChartConfigService } from '../../services/delimiter-chart-config.service';
@@ -40,6 +40,9 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
   @Input()
   public isMobile: boolean = null;
 
+  @Output()
+  public paginationEvent: EventEmitter<Date>;
+
   @ViewChild('chart', { static: true })
   protected chart: BarChartAbstract;
 
@@ -58,6 +61,7 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
     private delimiterConfig: DelimiterChartConfigService,
   ) {
     this.lastActive = null;
+    this.paginationEvent = new EventEmitter<Date>();
   }
 
   public ngOnInit(): void {
@@ -75,7 +79,6 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
-
     if (changes.delimiter) {
       this.switchDateDelimiterConfig();
     }
@@ -85,16 +88,16 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
     }
 
     if (this.chunkDateRange && this.data) {
-
       let rangeLoadedChunks = this.getDateRange();
-
       this.renderData$ = this.data.pipe(
         map((data: ItemData[]) => {
           const localMap: Map<number, ItemData> = new Map();
           data.forEach((el: ItemData) => localMap.set(el.identity.getTime(), el));
           return localMap;
         }),
-        map((map: Map<number, ItemData>) => this.fillRangeOfEmptyData(map, rangeLoadedChunks)),
+        map((map: Map<number, ItemData>) => {
+          return this.fillRangeOfEmptyData(map, rangeLoadedChunks);
+        }),
       );
     }
   }
@@ -194,9 +197,9 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
    * Map pipe function for fill empty bar
    */
   private fillRangeOfEmptyData(data: Map<number, ItemData>, range: DateRange): ItemData[] {
-
-    const countBarItems: number = this.delimiterConfig
-      .getChartConfig(this.delimiter).countChunk;
+    const chunkItemsSize: number = this.delimiterConfig.getChartConfig(this.delimiter).countChunk;
+    const countBarItems: number =
+      chunkItemsSize * this.dateStrategy.calcOffsetIndexByRange(range.from, range.to, chunkItemsSize);
 
     const createDataItem = (el, index): ItemData => {
       const nextDate: Date = this.dateStrategy.calcSomeDateOnDistance(range.to, -1 * index);
