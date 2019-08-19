@@ -3,7 +3,7 @@ import { ItemData } from '../statistic-chart/shared/bar-chart/core';
 import { DelimiterChartConfigService } from './delimiter-chart-config.service';
 import { StatisticDelimiter, HourDelimiterData, DateRange, ChartSizeConfig } from '../statistic-chart/core';
 import { ImpressionStatistic } from './impression-statistic';
-import { startOfHour, endOfHour, subHours } from 'date-fns'
+import { startOfHour, endOfHour, subHours, addHours } from 'date-fns'
 // mocks
 import { hoursMock } from '../data/hoursMock';
 import { random, getTimestamInSecond } from './helpers';
@@ -56,7 +56,7 @@ export class StatisticHourDelimiterService implements ImpressionStatistic {
     const map = new Map<number, ItemData>();
     const countRand: number = random(1, Math.floor(24 / count));
 
-    const x = D3.scaleTime().domain([d1, d2]);
+    const x = D3.scaleTime().domain([addHours(d1, 4), d2]);
     const randValues: Date[] = x.ticks(D3.timeHour.every(countRand));
 
     return randValues.slice(
