@@ -547,7 +547,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
     const idFilter = 'svg_3_blur';
     createFilterShadow(tooltipDef, idFilter, 15)
 
-    const blurColor = '#fffff';
+    const blurColor = 'white';
     const blurOffsetX = 25;
     const widthShadowWithMargin = 70;
     const { left, right } = this.getPadding();
