@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { Observable, BehaviorSubject } from 'rxjs';
-import { filter } from 'rxjs/operators'
+import { filter, map } from 'rxjs/operators'
 import { StatisticDelimiterService } from './services/statistic-delimiter.service';
 import { ItemData, PaginationEvent } from './statistic-chart/shared/bar-chart/core';
 import { StatisticDelimiter, DateRange } from './statistic-chart/core';
-import { subDays, subWeeks, startOfHour } from 'date-fns';
+import { subDays, subWeeks, startOfHour, addDays } from 'date-fns';
 
 // TODO: only for debug - in FN use other device detection flow
 import { DeviceDetectorService } from 'ngx-device-detector';
@@ -20,6 +20,7 @@ export class AppComponent implements OnInit {
   private showChartData$: Observable<ItemData[]>;
   private showForDelimiter: StatisticDelimiter = StatisticDelimiter.Hour;
 
+  private hasLeftPagination$: BehaviorSubject<boolean>;
   private campaignStart: Date;
   private campaignEnd: Date;
 
@@ -40,9 +41,24 @@ export class AppComponent implements OnInit {
     this.showChartData$ = this.pagginableData$.pipe(
       filter(list => Boolean(list.length)),
     );
-    this.campaignEnd = subDays(new Date(), 3);
-    this.campaignStart = subWeeks(this.campaignEnd, 4);
+    this.campaignEnd = addDays(new Date(), 0);
+    this.campaignStart = subDays(this.campaignEnd, 2);
+    this.hasLeftPagination$ = new BehaviorSubject<boolean>(false);
     this.isMobile = this.deviceService.isMobile();
+
+    this.pagginableData$.asObservable()
+      .pipe(map((list: any[]) => {
+        return [
+          list[0],
+          list[list.length - 1]
+        ]
+      }))
+      .subscribe(([min, max]) => {
+        const newState = min > this.campaignStart.getTime();
+        if (this.hasLeftPagination$.value !== newState) {
+          this.hasLeftPagination$.next(newState)
+        }
+      })
   }
 
   public ngOnInit(): void {
@@ -73,6 +89,18 @@ export class AppComponent implements OnInit {
   }
 
   private loadPrevPeriod(date: Date): void {
+
+    console.warn(`Request before: ${date.toUTCString()}`)
+    if (date.getTime() < this.campaignStart.getTime()) {
+      console.warn(
+        'Out of campaign date range. Skip load next periods.',
+        `${this.campaignStart.toString()} - ${this.campaignEnd.toString()}`,
+        date.toUTCString()
+      )
+      this.hasLeftPagination$.next(false);
+      return;
+    }
+
     const onlyStartBarDateRange: boolean = true;
     const previousDateRange = this.statistic.calcPreviousDateRange(
       this.showForDelimiter,
@@ -101,5 +129,12 @@ export class AppComponent implements OnInit {
       ...chunk,
       ...this.pagginableData$.value || [],
     ]
+  }
+
+  private updateHasPreviousData(): void {
+    const newState = this.dateRange.from.getTime() > this.campaignStart.getTime();
+    if (this.hasLeftPagination$.value !== newState) {
+      this.hasLeftPagination$.next(newState)
+    }
   }
 }
