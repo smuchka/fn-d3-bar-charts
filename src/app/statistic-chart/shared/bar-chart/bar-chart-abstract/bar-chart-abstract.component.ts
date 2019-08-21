@@ -17,7 +17,7 @@ import {
   UpdateChartEvent,
 } from '../core';
 import { Observable, Subscription, Subject, merge, } from 'rxjs';
-import { map, distinctUntilChanged, debounceTime, tap } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import * as D3 from 'd3';
 import { Selection } from "d3";
 
@@ -92,7 +92,6 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
   public readonly activeItemDataChange: EventEmitter<BarChartActiveSelectedEvent>;
 
   public setActiveDate(date: Date) {
-    console.warn('setActiveDate');
     const item = this.mapItemData.get(date.getTime());
 
     if (item && this.activeDate !== date) {
