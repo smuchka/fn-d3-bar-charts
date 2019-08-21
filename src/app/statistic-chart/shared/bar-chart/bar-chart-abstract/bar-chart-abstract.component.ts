@@ -1,5 +1,5 @@
 import {
-  Component, ElementRef, Input, Output, Renderer2, SimpleChanges, EventEmitter, OnInit, AfterContentInit, OnChanges, OnDestroy,
+  Component, ElementRef, Input, Output, Renderer2, EventEmitter, OnInit, AfterContentInit, OnChanges, OnDestroy,
 } from '@angular/core';
 import { D3ChartBaseComponent } from './d3-chart-base.component';
 import { getEmptyDataInitError } from './bar-chart-errors';
@@ -45,8 +45,10 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
   private subs: Subscription;
   private canActivatePrevBarItem: boolean;
   private canActivateNextBarItem: boolean;
-  private changeData: EventEmitter<ItemData[]>;
-  private changeChartStrategyParams: EventEmitter<null>;
+  // private changeData: EventEmitter<ItemData[]>;
+  // private changeChartStrategyParams: EventEmitter<null>;
+
+  protected updateChart$: EventEmitter<null>;
 
   @Output()
   public paginationEvent: EventEmitter<Date>;
@@ -86,9 +88,6 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
   public get showRightPagination(): boolean {
     return this.hasRightPannning;
   }
-
-  @Output()
-  public petBorder: EventEmitter<any>;
 
   @Output()
   public readonly activeItemDataChange: EventEmitter<BarChartActiveSelectedEvent>;
@@ -156,11 +155,11 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
     this.maxValueFromChart = 0;
     this.translateWidthOneBar = 0;
 
-    this.changeData = new EventEmitter();
-    this.changeChartStrategyParams = new EventEmitter();
+    // this.changeData = new EventEmitter();
+    // this.changeChartStrategyParams = new EventEmitter();
     this.activeItemDataChange = new EventEmitter();
     this.paginationEvent = new EventEmitter();
-    this.petBorder = new EventEmitter();
+    this.updateChart$ = new EventEmitter()
     this.subs = new Subscription();
   }
 
@@ -193,21 +192,21 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
     this.updateChart();
   }
 
-  public ngOnChanges(changes: SimpleChanges): void {
+  // public ngOnChanges(changes: SimpleChanges): void {
 
-    // skip any changes until onInit unavailable
-    if (changes.data && changes.data.firstChange) {
-      return;
-    }
+  //   // skip any changes until onInit unavailable
+  //   if (changes.data && changes.data.firstChange) {
+  //     return;
+  //   }
 
-    if (changes.dateRangeStrategy) {
-      this.changeChartStrategyParams.next();
-    }
+  //   if (changes.data && changes.data.currentValue) {
+  //     this.changeData.emit(changes.data.currentValue);
+  //   }
 
-    if (changes.data && changes.data.currentValue) {
-      this.changeData.emit(changes.data.currentValue);
-    }
-  }
+  //   if (changes.dateRangeStrategy) {
+  //     this.changeChartStrategyParams.next();
+  //   }
+  // }
 
   public ngOnDestroy(): void {
     this.subs.unsubscribe();
@@ -323,17 +322,13 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
 
   private initSubscribes(): void {
 
-    const observe = this.getObserveSource();
+    // const sources = this.getObserveSource();
     this.subs.add(
-      merge(...observe)
-        .subscribe(this.recalculateAndUpdateChart.bind(this))
-    );
-
-    this.subs.add(
-      merge(
-        this.changeChartStrategyParams,
+      merge([
+        ...sources,
+        this.updateChart$.asObservable(),
         this.activeItemDataChange,
-      )
+      ])
         .subscribe(this.recalculateAndUpdateChart.bind(this))
     );
   }
@@ -399,12 +394,6 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
     if (this.useYAxisValuesRound) {
       this.y = this.y.nice();
     }
-  }
-
-  protected getObserveSource(): Observable<any>[] {
-    return [
-      this.changeData,
-    ];
   }
 
   /**
@@ -599,6 +588,8 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
       });
     }
   }
+
+  // protected abstract getObserveSource(): Observable<any>[];
 
   protected abstract formatLabel(date: ItemData): string;
 

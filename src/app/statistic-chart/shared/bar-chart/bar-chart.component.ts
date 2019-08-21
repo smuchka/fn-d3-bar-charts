@@ -7,10 +7,10 @@ import {
   Input,
   OnInit,
   Renderer2,
+  SimpleChanges,
 } from '@angular/core';
 import { Observable } from 'rxjs';
 import { BarChartAbstract } from './bar-chart-abstract/bar-chart-abstract.component';
-// import { ChartStaticTooltipComponent } from './chart-static-tooltip/chart-static-tooltip.component';
 import { getBarChartEmptyDateStrategyError, getEmptyCountBarInViewportError } from './bar-chart-errors';
 import { BarChartActiveSelectedEvent, DateChart, ItemData } from './core';
 import { BaseChartInstance } from './bar-chart-tooltip/base-chart-tooltip';
@@ -85,12 +85,29 @@ export class BarChartComponent extends BarChartAbstract implements OnInit, After
     super.ngAfterContentInit();
   }
 
-  protected getObserveSource(): Observable<any>[] {
-    return [
-      ...super.getObserveSource(),
-      this.countBarsInViewportChange,
-    ];
+  public ngOnChanges(changes: SimpleChanges): void {
+
+    // skip any changes until onInit unavailable
+    if (changes.data && changes.data.firstChange) {
+      return;
+    }
+
+    if (changes.data && changes.data.currentValue) {
+      //   this.changeData.emit(changes.data.currentValue);
+      this.updateChart$.next();
+    }
+
+    if (changes.dateRangeStrategy) {
+      //   this.changeChartStrategyParams.next();
+      this.updateChart$.next();
+    }
   }
+
+  // protected getObserveSource(): Observable<any>[] {
+  //   return [
+  //     this.countBarsInViewportChange,
+  //   ];
+  // }
 
   protected formatLabel(data: ItemData): string {
     return this.dateRangeStrategy.formatLabel(data.identity);
