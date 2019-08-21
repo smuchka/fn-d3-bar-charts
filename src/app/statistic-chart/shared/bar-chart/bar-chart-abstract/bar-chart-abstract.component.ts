@@ -170,14 +170,12 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
   public ngAfterContentInit(): void {
     // Init svg in DOM and init svg dimetions
     super.ngAfterContentInit();
+    this.initSubscribes();
 
     this.initActiveDate();
     this.initXScale();
     this.initYScale();
     this.initZoom();
-
-    // Required init after chart entities
-    this.initSubscribes();
 
     // process drawing
     this.svg.selectAll().remove();
