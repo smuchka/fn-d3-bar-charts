@@ -14,8 +14,10 @@ import {
   PaginationEvent,
   BarChartActiveSelectedEvent,
   BarChartBase,
+  UpdateChartEvent,
 } from '../core';
-import { Observable, Subscription, merge } from 'rxjs';
+import { Observable, Subscription, Subject, merge, } from 'rxjs';
+import { map, distinctUntilChanged, tap } from 'rxjs/operators';
 import * as D3 from 'd3';
 import { Selection } from "d3";
 
@@ -23,7 +25,7 @@ import { Selection } from "d3";
   selector: 'fn-bar-chart-time-scale',
   template: `<!--d3 create template itself-->`,
 })
-export abstract class BarChartAbstract extends D3ChartBaseComponent implements BarChartBase, OnInit, AfterContentInit, OnChanges, OnDestroy {
+export abstract class BarChartAbstract extends D3ChartBaseComponent implements BarChartBase, OnInit, AfterContentInit, OnDestroy {
 
   private groupPanning;
   private groupPlaceholderBars;
@@ -42,13 +44,10 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
   private dataMax: Date;
   private mapItemData: Map<number, ItemData>;
   private activeDate: Date;
-  private subs: Subscription;
   private canActivatePrevBarItem: boolean;
   private canActivateNextBarItem: boolean;
-  // private changeData: EventEmitter<ItemData[]>;
-  // private changeChartStrategyParams: EventEmitter<null>;
-
-  protected updateChart$: EventEmitter<null>;
+  protected updateChart$: Subject<UpdateChartEvent>;
+  protected subs: Subscription;
 
   @Output()
   public paginationEvent: EventEmitter<Date>;
@@ -155,11 +154,9 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
     this.maxValueFromChart = 0;
     this.translateWidthOneBar = 0;
 
-    // this.changeData = new EventEmitter();
-    // this.changeChartStrategyParams = new EventEmitter();
     this.activeItemDataChange = new EventEmitter();
     this.paginationEvent = new EventEmitter();
-    this.updateChart$ = new EventEmitter()
+    this.updateChart$ = new Subject<UpdateChartEvent>();
     this.subs = new Subscription();
   }
 
@@ -174,39 +171,20 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
     // Init svg in DOM and init svg dimetions
     super.ngAfterContentInit();
 
-    // Required init after chart entities
-    this.initSubscribes();
-
     this.initActiveDate();
     this.initXScale();
     this.initYScale();
     this.initZoom();
+
+    // Required init after chart entities
+    this.initSubscribes();
 
     // process drawing
     this.svg.selectAll().remove();
     this.groupPanning = this.svg.append('g').attr('class', 'wrapper-panning');
     this.groupPlaceholderBars = this.groupPanning.append('g').attr('class', 'placeholder');
     this.groupDataBars = this.groupPanning.append('g').attr('class', 'bar');
-
-    // this.showActiveBarOnCenterViewport();
-    this.updateChart();
   }
-
-  // public ngOnChanges(changes: SimpleChanges): void {
-
-  //   // skip any changes until onInit unavailable
-  //   if (changes.data && changes.data.firstChange) {
-  //     return;
-  //   }
-
-  //   if (changes.data && changes.data.currentValue) {
-  //     this.changeData.emit(changes.data.currentValue);
-  //   }
-
-  //   if (changes.dateRangeStrategy) {
-  //     this.changeChartStrategyParams.next();
-  //   }
-  // }
 
   public ngOnDestroy(): void {
     this.subs.unsubscribe();
@@ -274,14 +252,6 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
   }
 
   /**
-   * Handler of changing input data
-   */
-  private recalculateAndUpdateChart(): void {
-    this.initXScale();
-    this.updateChart();
-  }
-
-  /**
    * Update any chart elements
    */
   private updateChart(): void {
@@ -322,14 +292,21 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
 
   private initSubscribes(): void {
 
-    // const sources = this.getObserveSource();
     this.subs.add(
-      merge([
-        // ...sources,
+      merge(
         this.updateChart$.asObservable(),
-        this.activeItemDataChange,
-      ])
-        .subscribe(this.updateChart.bind(this))
+        this.activeItemDataChange.pipe(map(_ => ({ rescale: false })))
+      )
+        .pipe(distinctUntilChanged((x: UpdateChartEvent, y: UpdateChartEvent) => x.full === y.full))
+        .subscribe((upd: UpdateChartEvent) => {
+
+          if (upd.full) {
+            this.initXScale();
+            this.initActiveDate();
+          }
+
+          this.updateChart();
+        })
     );
   }
 
@@ -361,7 +338,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
    * Init scaling for X axis and calc width one step (from bar start to next bar start)
    */
   private initXScale(): void {
-    const [d1, d2] = this.viewportDateRange();
+    const [d1, d2] = this.domainDateRange();
     const { left, right } = this.getPadding();
     this.x = D3.scaleTime()
       .domain([d1, d2])
@@ -602,7 +579,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
   /**
    * How much dates need show on x axis - [from;to]
    */
-  protected abstract viewportDateRange(): [Date, Date];
+  protected abstract domainDateRange(): [Date, Date];
 
   protected abstract calcNextBarDate(from: Date): Date;
 

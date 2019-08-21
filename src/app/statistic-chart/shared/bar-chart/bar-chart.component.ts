@@ -6,13 +6,20 @@ import {
   EventEmitter,
   Input,
   OnInit,
+  OnChanges,
   Renderer2,
   SimpleChanges,
 } from '@angular/core';
 import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { BarChartAbstract } from './bar-chart-abstract/bar-chart-abstract.component';
 import { getBarChartEmptyDateStrategyError, getEmptyCountBarInViewportError } from './bar-chart-errors';
-import { BarChartActiveSelectedEvent, DateChart, ItemData } from './core';
+import {
+  BarChartActiveSelectedEvent,
+  DateChart,
+  ItemData,
+  UpdateChartEvent,
+} from './core';
 import { BaseChartInstance } from './bar-chart-tooltip/base-chart-tooltip';
 
 @Component({
@@ -28,7 +35,7 @@ import { BaseChartInstance } from './bar-chart-tooltip/base-chart-tooltip';
     `,
   ],
 })
-export class BarChartComponent extends BarChartAbstract implements OnInit, AfterContentInit {
+export class BarChartComponent extends BarChartAbstract implements OnInit, OnChanges, AfterContentInit {
 
   @Input()
   public get countBarsInViewport(): number {
@@ -87,22 +94,18 @@ export class BarChartComponent extends BarChartAbstract implements OnInit, After
 
   public ngOnChanges(changes: SimpleChanges): void {
 
-    // // skip any changes until onInit unavailable
-    // if (changes.data && changes.data.firstChange) {
-    //   return;
-    // }
+    // skip any changes until onInit unavailable
+    if (changes.data && changes.data.firstChange) {
+      return;
+    }
 
-    // if (changes.data && changes.data.currentValue) {
-    //   //   this.changeData.emit(changes.data.currentValue);
-    //   this.updateChart$.next();
-    // }
+    if (changes.data) {
+      this.updateChart$.next({ full: true });
+    }
 
-    // if (changes.dateRangeStrategy) {
-    //   //   this.changeChartStrategyParams.next();
-    //   this.updateChart$.next();
-    // }
-
-    // console.log(changes)
+    if (changes.dateRangeStrategy) {
+      this.updateChart$.next({ full: true });
+    }
   }
 
   protected formatLabel(data: ItemData): string {
@@ -121,13 +124,13 @@ export class BarChartComponent extends BarChartAbstract implements OnInit, After
     return this.dateRangeStrategy.calcPrevBarDate(from);
   }
 
-  protected viewportDateRange(): [Date, Date] {
-    const startingDatePoint: Date = this.data[this.data.length - 1].identity;
-    const from: Date = this.dateRangeStrategy.calcSomeDateOnDistance(
-      startingDatePoint,
+  protected domainDateRange(): [Date, Date] {
+    const rangeEnd: Date = this.dateRangeStrategy.calcNowBarDate();
+    const rangeStart: Date = this.dateRangeStrategy.calcSomeDateOnDistance(
+      rangeEnd,
       -1 * (this.countBarsInViewport - 1),
     );
-    return [from, startingDatePoint];
+    return [rangeStart, rangeEnd];
   }
 
   /**
@@ -151,7 +154,10 @@ export class BarChartComponent extends BarChartAbstract implements OnInit, After
 
     this.tooltip.setChart(this);
 
-    this.activeItemDataChange.asObservable()
-      .subscribe((event: BarChartActiveSelectedEvent) => this.tooltip.draw(event));
+    this.subs.add(
+      this.activeItemDataChange.asObservable()
+        .pipe(tap(event => this.tooltip.draw(event)))
+        .subscribe()
+    );
   }
 }
