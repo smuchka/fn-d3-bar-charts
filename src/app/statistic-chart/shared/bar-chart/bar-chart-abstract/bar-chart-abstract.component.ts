@@ -29,6 +29,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
   private groupPlaceholderBars;
   private groupDataBars;
   private x;
+  private x2;
   private y;
   private zoom;
   private radiusRectangle: number;
@@ -186,7 +187,8 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
   }
 
   private onZoomed(): void {
-    // redraw groups of bars 
+    // redraw groups of bars
+    this.x2 = D3.event.transform.rescaleX(this.x);
     const { x } = D3.event.transform || { x: 0 };
     this.groupPanning.attr("transform", "translate(" + x + ",0)");
   }
@@ -274,7 +276,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
     this.groupDataBars
       .selectAll('rect')
       .data(this.data.filter(el => el.value))
-      .call(this.drawDataBar.bind(this))
+      .call(this.drawDataBar.bind(this));
 
     // update active item viewport position
     this.showActiveBarOnCenterViewport();
@@ -336,6 +338,8 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
         this.width - this.margin.right - right,
       ]);
 
+    this.x2 = this.x.copy();
+
     // calc width of one bar
     this.translateWidthOneBar = Math.abs(
       this.x(d1) - this.x(this.calcNextBarDate(d1))
@@ -380,6 +384,37 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
   }
 
   private showActiveBarOnCenterViewport(duration: number = 0): void {
+    if (!this.activeDate) {
+      return;
+    }
+
+    const layout = this.svg.transition().duration(duration);
+
+    const [initialX, initialY] = [this.x( this.activeDate ), 0];
+    console.log(Math.abs(initialX), this.x(D3.min(this.x2.ticks())), this.x(D3.max(this.x2.ticks())));
+
+    switch(Math.abs(initialX)) {
+      case Math.abs(this.x(D3.min(this.x2.ticks()))): // Left Side
+        layout.call(
+          this.zoom.transform,
+          D3.zoomIdentity.translate( -initialX + 100, initialY)
+        );
+        break;
+      case Math.abs(this.x(D3.max(this.x2.ticks()))): // Right Side
+        layout.call(
+          this.zoom.transform,
+          D3.zoomIdentity.translate( -initialX - 100, initialY)
+        );
+        break;
+      default: // Default scroll state
+        break;
+    }
+
+    // layout.call( this.zoom.transform,
+    //   D3.zoomIdentity.translate(this.x2(this.calcPrevBarDate(new Date(this.activeDate))), 0 ));
+  }
+
+  private showActiveBarOnCenterViewportMob(duration: number = 0): void {
     if (!this.activeDate) {
       return;
     }
