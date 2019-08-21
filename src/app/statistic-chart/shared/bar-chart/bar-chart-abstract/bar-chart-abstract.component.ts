@@ -46,7 +46,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
   private canActivatePrevBarItem: boolean;
   private canActivateNextBarItem: boolean;
   private changeData: EventEmitter<ItemData[]>;
-  private changeBarWidth: EventEmitter<null>;
+  private changeChartStrategyParams: EventEmitter<null>;
 
   @Output()
   public paginationEvent: EventEmitter<Date>;
@@ -157,7 +157,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
     this.translateWidthOneBar = 0;
 
     this.changeData = new EventEmitter();
-    this.changeBarWidth = new EventEmitter();
+    this.changeChartStrategyParams = new EventEmitter();
     this.activeItemDataChange = new EventEmitter();
     this.paginationEvent = new EventEmitter();
     this.petBorder = new EventEmitter();
@@ -200,8 +200,8 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
       return;
     }
 
-    if (changes.barWidth && changes.barWidth.currentValue) {
-      this.changeBarWidth.next();
+    if (changes.dateRangeStrategy) {
+      this.changeChartStrategyParams.next();
     }
 
     if (changes.data && changes.data.currentValue) {
@@ -331,10 +331,10 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
 
     this.subs.add(
       merge(
-        this.changeBarWidth,
+        this.changeChartStrategyParams,
         this.activeItemDataChange,
       )
-        .subscribe(this.updateChart.bind(this))
+        .subscribe(this.recalculateAndUpdateChart.bind(this))
     );
   }
 
