@@ -325,11 +325,11 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
     // const sources = this.getObserveSource();
     this.subs.add(
       merge([
-        ...sources,
+        // ...sources,
         this.updateChart$.asObservable(),
         this.activeItemDataChange,
       ])
-        .subscribe(this.recalculateAndUpdateChart.bind(this))
+        .subscribe(this.updateChart.bind(this))
     );
   }
 

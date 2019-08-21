@@ -87,27 +87,23 @@ export class BarChartComponent extends BarChartAbstract implements OnInit, After
 
   public ngOnChanges(changes: SimpleChanges): void {
 
-    // skip any changes until onInit unavailable
-    if (changes.data && changes.data.firstChange) {
-      return;
-    }
+    // // skip any changes until onInit unavailable
+    // if (changes.data && changes.data.firstChange) {
+    //   return;
+    // }
 
-    if (changes.data && changes.data.currentValue) {
-      //   this.changeData.emit(changes.data.currentValue);
-      this.updateChart$.next();
-    }
+    // if (changes.data && changes.data.currentValue) {
+    //   //   this.changeData.emit(changes.data.currentValue);
+    //   this.updateChart$.next();
+    // }
 
-    if (changes.dateRangeStrategy) {
-      //   this.changeChartStrategyParams.next();
-      this.updateChart$.next();
-    }
+    // if (changes.dateRangeStrategy) {
+    //   //   this.changeChartStrategyParams.next();
+    //   this.updateChart$.next();
+    // }
+
+    // console.log(changes)
   }
-
-  // protected getObserveSource(): Observable<any>[] {
-  //   return [
-  //     this.countBarsInViewportChange,
-  //   ];
-  // }
 
   protected formatLabel(data: ItemData): string {
     return this.dateRangeStrategy.formatLabel(data.identity);
