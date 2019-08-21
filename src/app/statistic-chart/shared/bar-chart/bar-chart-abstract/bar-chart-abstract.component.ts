@@ -38,6 +38,8 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
   private maxValueFromChart: number;
   private translateWidthOneBar: number;
   private dataList: ItemData[];
+  private dataMin: Date;
+  private dataMax: Date;
   private mapItemData: Map<number, ItemData>;
   private activeDate: Date;
   private subs: Subscription;
@@ -53,6 +55,8 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
   public set data(items: ItemData[]) {
     this.dataList = items;
     this.updateMapItemData(items);
+    this.dataMin = D3.min(items, d => d.identity)
+    this.dataMax = D3.max(items, d => d.identity);
   }
   public get data(): ItemData[] {
     return this.dataList;
@@ -69,6 +73,19 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
 
   @Input('maxValue')
   public initMaxValue: number;
+
+  @Input()
+  public hasLeftPagination: boolean;
+  private hasLeftPannning: boolean;
+
+  public get showLeftPagination(): boolean {
+    return this.hasLeftPagination || this.hasLeftPannning;
+  }
+
+  private hasRightPannning: boolean;
+  public get showRightPagination(): boolean {
+    return this.hasRightPannning;
+  }
 
   @Output()
   public petBorder: EventEmitter<any>;
@@ -103,6 +120,22 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
     return this.canActivateNextBarItem;
   }
 
+  public get firstViewportDate(): Date | null {
+    if (this.x2 && this.x2.ticks()) {
+      return this.x2.ticks()[0]
+    }
+
+    return null;
+  }
+
+  public get lastViewportDate(): Date | null {
+    if (this.x2 && this.x2.ticks()) {
+      return this.x2.ticks()[this.x2.ticks().length - 1]
+    }
+
+    return null;
+  }
+
   protected constructor(
     protected element: ElementRef,
     protected renderer: Renderer2,
@@ -113,6 +146,8 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
     this.activeDate = null;
     this.canActivatePrevBarItem = false;
     this.canActivateNextBarItem = false;
+    this.hasLeftPagination = false;
+    this.hasLeftPannning = false;
     this.radiusRectangle = 4;
     this.minBarHeight = 0;
     this.minBarHeight = 10;
@@ -191,13 +226,19 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
     this.x2 = D3.event.transform.rescaleX(this.x);
     const { x } = D3.event.transform || { x: 0 };
     this.groupPanning.attr("transform", "translate(" + x + ",0)");
+
+    // rescale copy axis -> x2
+    this.x2 = D3.event.transform.rescaleX(this.x);
+
+    this.hasLeftPannning = this.dataMin && this.dataMin.getTime() < this.firstViewportDate.getTime();
+    this.hasRightPannning = this.dataMax && this.dataMax.getTime() > this.lastViewportDate.getTime();
+    this.drawPaginationShadow();
   }
 
   private onZoomedEnd(): void {
-    const dataMin: string = D3.min(this.data, d => d.identity);
     const { x } = D3.event.transform || { x: 0 };
-    if (x > Math.abs(this.x(dataMin))) {
-      this.paginationEvent.emit(new Date(dataMin));
+    if (x > Math.abs(this.x(this.dataMin))) {
+      this.paginationEvent.emit(new Date(this.dataMin));
     }
   }
 
@@ -252,10 +293,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
       this.initYScale();
     }
 
-    this.updateZoomOnChangeData(
-      D3.min(this.data, d => d.identity),
-      D3.max(this.data, d => d.identity),
-    );
+    this.updateZoomOnChangeData(this.dataMin, this.dataMax);
 
     // todo: recal active item
     // on chnage delimiter -> active date not correct
@@ -277,6 +315,8 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
       .selectAll('rect')
       .data(this.data.filter(el => el.value))
       .call(this.drawDataBar.bind(this));
+
+    this.drawPaginationShadow();
 
     // update active item viewport position
     this.showActiveBarOnCenterViewport();
@@ -304,9 +344,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
 
     const now = this.calcNowBarDate();
     const arr = this.data.filter(d => d.value > 0);
-    const lastNotEmptyDate: Date | null = arr.length
-      ? D3.max(arr, d => d.identity)
-      : null;
+    const lastNotEmptyDate: Date | null = arr.length ? this.dataMax : null;
     const lastChartDate = this.data[this.data.length - 1].identity;
     const todayInDateRange: boolean = differenceInSeconds(now, lastChartDate) <= 0;
 
@@ -337,6 +375,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
         this.margin.left + left,
         this.width - this.margin.right - right,
       ]);
+    this.x2 = this.x.copy();
 
     this.x2 = this.x.copy();
 
@@ -521,6 +560,63 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
   private drawAsActiveBar(selection: Selection<SVGElement, {}, HTMLElement, any>): any {
     const fnActive = (d) => d.identity.getTime() === this.activeDate.getTime();
     selection.classed('active', fnActive);
+  }
+
+  private drawPaginationShadow(): any {
+    const layout = this.getLayout();
+
+    layout.selectAll('.shadow-container').remove();
+
+    // shadow container
+    const shadowPaginationGroup = layout.append('g')
+      .attr('class', 'shadow-container')
+    var tooltipDef = shadowPaginationGroup.append('defs');
+    const createFilterShadow = (defs: any, idFilter: string, deviation: number = 8) => {
+      const filterRef = defs.append('filter').attr('id', idFilter);
+      filterRef
+        .attr('x', '-50%').attr('y', '-50%')
+        .attr('width', '200%').attr('height', '200%')
+      filterRef.append('feGaussianBlur').attr('stdDeviation', deviation);
+    };
+    const idFilter = 'svg_3_blur';
+    createFilterShadow(tooltipDef, idFilter, 15)
+
+    const blurColor = 'white';
+    const blurOffsetX = 25;
+    const widthShadowWithMargin = 70;
+    const { left, right } = this.getPadding();
+    let posX = 0;
+
+    // fn draw shadow
+    const fnDrawShadow = (x: number, className: string) => {
+      shadowPaginationGroup
+        .selectAll(`rect.${className}`)
+        .data([[x, 0]])
+        .join('rect')
+        .attr('class', `${className}`)
+        .attr('opacity', '1')
+        .attr('filter', `url(#${idFilter})`)
+        .attr('x', ([x,]) => x)
+        .attr('y', d => this.y(this.maxValueFromChart))
+        .attr('width', widthShadowWithMargin)
+        .attr('height', d => this.y(0) - this.y(this.maxValueFromChart) + this.minBarHeight)
+        .attr('fill', blurColor)
+        .attr('stroke-opacity', '0.5')
+        .attr('stroke-width', '10')
+        .attr('stroke', blurColor)
+    }
+
+    // draw left shadow
+    if (this.showLeftPagination) {
+      posX = 0 - (widthShadowWithMargin - (widthShadowWithMargin / 2)) - blurOffsetX;
+      fnDrawShadow(posX, 'left')
+    }
+
+    // draw right shadow
+    if (this.showRightPagination) {
+      posX = this.width - (widthShadowWithMargin / 2) + blurOffsetX;
+      fnDrawShadow(posX, 'right')
+    }
   }
 
   private updateMapItemData(items: ItemData[]): void {

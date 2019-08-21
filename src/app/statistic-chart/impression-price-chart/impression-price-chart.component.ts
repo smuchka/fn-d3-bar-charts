@@ -40,8 +40,12 @@ export class ImpressionPriceChartComponent implements OnInit, OnChanges, OnDestr
   @Input()
   public isMobile: boolean = null;
 
+  @Input()
+  public hasLeftPagination: boolean;
+
   @Output()
   public paginationEvent: EventEmitter<Date>;
+  
 
   @ViewChild('chart', { static: true })
   protected chart: BarChartAbstract;
