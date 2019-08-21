@@ -17,7 +17,7 @@ import {
   UpdateChartEvent,
 } from '../core';
 import { Observable, Subscription, Subject, merge, } from 'rxjs';
-import { map, distinctUntilChanged, tap } from 'rxjs/operators';
+import { map, distinctUntilChanged, debounceTime, tap } from 'rxjs/operators';
 import * as D3 from 'd3';
 import { Selection } from "d3";
 
@@ -92,6 +92,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
   public readonly activeItemDataChange: EventEmitter<BarChartActiveSelectedEvent>;
 
   public setActiveDate(date: Date) {
+    console.warn('setActiveDate');
     const item = this.mapItemData.get(date.getTime());
 
     if (item && this.activeDate !== date) {
@@ -170,12 +171,13 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
   public ngAfterContentInit(): void {
     // Init svg in DOM and init svg dimetions
     super.ngAfterContentInit();
-    this.initSubscribes();
 
     this.initActiveDate();
     this.initXScale();
     this.initYScale();
     this.initZoom();
+
+    this.initSubscribes();
 
     // process drawing
     this.svg.selectAll().remove();
@@ -295,7 +297,6 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
         this.updateChart$.asObservable(),
         this.activeItemDataChange.pipe(map(_ => ({ rescale: false })))
       )
-        .pipe(distinctUntilChanged((x: UpdateChartEvent, y: UpdateChartEvent) => x.full === y.full))
         .subscribe((upd: UpdateChartEvent) => {
 
           if (upd.full) {

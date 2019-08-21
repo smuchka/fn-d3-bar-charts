@@ -100,11 +100,11 @@ export class BarChartComponent extends BarChartAbstract implements OnInit, OnCha
     }
 
     if (changes.data) {
-      this.updateChart$.next({ full: true });
-    }
-
-    if (changes.dateRangeStrategy) {
-      this.updateChart$.next({ full: true });
+      if (changes.dateRangeStrategy) {
+        this.updateChart$.next({ full: true });
+      } else {
+        this.updateChart$.next({ full: false });
+      }
     }
   }
 
