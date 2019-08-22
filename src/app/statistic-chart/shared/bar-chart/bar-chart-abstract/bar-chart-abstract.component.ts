@@ -27,10 +27,6 @@ import { Selection } from "d3";
 })
 export abstract class BarChartAbstract extends D3ChartBaseComponent implements BarChartBase, OnInit, AfterContentInit, OnDestroy {
 
-  private groupPanning;
-  private groupPlaceholderBars;
-  private groupClickAreaBars;
-  private groupDataBars;
   private groupBars;
   private x;
   private x2;
@@ -181,11 +177,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
 
     // process drawing
     this.svg.selectAll().remove();
-    this.groupPanning = this.svg.append('g').attr('class', 'wrapper-panning');
-    // this.groupPlaceholderBars = this.groupPanning.append('g').attr('class', 'placeholder');
-    // this.groupClickAreaBars = this.groupPanning.append('g').attr('class', 'clickArea');
-    // this.groupDataBars = this.groupPanning.append('g').attr('class', 'bar');
-    this.groupBars = this.groupPanning.append('g').attr('class', 'bars');
+    this.groupBars = this.svg.append('g').attr('class', 'panning-container');
   }
 
   public ngOnDestroy(): void {
@@ -194,7 +186,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
 
   // public API
   public getLayoutPanning() {
-    return this.groupPanning;
+    return this.groupBars;
   }
   public getLayout() {
     return this.svg;
@@ -203,7 +195,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
   private onZoomed(): void {
     // redraw groups of bars 
     const { x } = D3.event.transform || { x: 0 };
-    this.groupPanning.attr("transform", "translate(" + x + ",0)");
+    this.groupBars.attr("transform", "translate(" + x + ",0)");
 
     // rescale copy axis -> x2
     this.x2 = D3.event.transform.rescaleX(this.x);
