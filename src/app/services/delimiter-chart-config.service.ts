@@ -17,11 +17,6 @@ export class DelimiterChartConfigService {
     // todo: depend current platform
     this.isMobile = this.deviceService.isMobile();
 
-    console.warn(
-      this.isMobile ? 'Moblie platform' : 'Desktop platform',
-      this.deviceService.getDeviceInfo()
-    );
-
     this.config = {
       [PlatformSize.MOBILE]: {
         [StatisticDelimiter.Hour]: { countViewport: 7, countChunk: 24, barWidth: 16 },
