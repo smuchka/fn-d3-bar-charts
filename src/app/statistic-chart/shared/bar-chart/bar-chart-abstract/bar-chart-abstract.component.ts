@@ -29,6 +29,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
 
   private groupPanning;
   private groupPlaceholderBars;
+  private groupClickAreaBars;
   private groupDataBars;
   private x;
   private x2;
@@ -181,6 +182,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
     this.svg.selectAll().remove();
     this.groupPanning = this.svg.append('g').attr('class', 'wrapper-panning');
     this.groupPlaceholderBars = this.groupPanning.append('g').attr('class', 'placeholder');
+    this.groupClickAreaBars = this.groupPanning.append('g').attr('class', 'clickArea');
     this.groupDataBars = this.groupPanning.append('g').attr('class', 'bar');
   }
 
@@ -263,6 +265,12 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
 
     // todo: recal active item
     // on chnage delimiter -> active date not correct
+
+    // draw click area bars
+    this.groupClickAreaBars
+      .selectAll('rect')
+      .data(this.data)
+      .call(this.drawClickBarArea.bind(this));
 
     // draw bar placeholders
     const placeholderBars = this.groupPlaceholderBars
@@ -441,16 +449,36 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
       .call(this.drawAsActiveBar.bind(this))
   }
 
-  private drawPlaceholderBar(selection: any): void {
+  private drawPlaceholderBar(selection: Selection<SVGElement, {}, HTMLElement, any>): void {
     this
       .drawBarPrimitive(selection)
       .attr('y', d => this.y(this.maxValueFromChart))
       .attr('height', d => this.y(0) - this.y(this.maxValueFromChart) + this.minBarHeight)
       .attr('class', 'bar placeholder')
+    // .on("click", this.onBarClick.bind(this));
+  }
+
+  private drawClickBarArea(selection: Selection<SVGElement, {}, HTMLElement, any>): void {
+
+    const clickAreaWidth: number = this.translateWidthOneBar;
+
+    this
+      .drawBarPrimitive(selection)
+      .attr('class', 'clickArea')
+      .attr('x', (d: ItemData) => this.x(d.identity) - Math.round(clickAreaWidth / 2))
+      .attr('y', d => this.y(this.maxValueFromChart))
+      .attr('width', clickAreaWidth)
+      .attr('height', d => this.y(0) - this.y(this.maxValueFromChart) + this.minBarHeight)
+      //
+      .attr('fill', 'red')
+      .attr('opacity', '.1')
+      //
       .on("click", this.onBarClick.bind(this));
   }
 
-  private drawBarPrimitive(selection: Selection<SVGElement, {}, HTMLElement, any>): Selection<SVGElement, {}, HTMLElement, any> {
+  private drawBarPrimitive(
+    selection: Selection<SVGElement, {}, HTMLElement, any>
+  ): Selection<SVGElement, {}, HTMLElement, any> {
     return selection
       .join('rect')
       .attr('x', (d: ItemData) => this.x(d.identity) - Math.round(this.barWidth / 2))
@@ -460,7 +488,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
       .attr('rx', d => this.radiusRectangle)
       .attr('ry', d => this.radiusRectangle)
       .attr('class', 'bar')
-      .on("click", this.onBarClick.bind(this));
+    // .on("click", this.onBarClick.bind(this));
   }
 
   private drawBarLabel(selection: any): void {
