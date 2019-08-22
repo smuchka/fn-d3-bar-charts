@@ -262,7 +262,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
     this.drawPaginationShadow();
 
     // update active item viewport position
-    // this.showActiveBarOnCenterViewport();
+    this.showActiveBarOnCenterViewport();
   }
 
 
@@ -275,8 +275,9 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
         .subscribe((upd: UpdateChartEvent) => {
 
           if (upd.full) {
+            this.getLayoutPanning().selectAll('*').remove();
             this.getLayoutPanning().call(
-              this.zoom.transform, 
+              this.zoom.transform,
               D3.zoomIdentity.scale(1)
             )
             this.initXScale();
@@ -384,7 +385,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
     // layout.call(this.zoom.translateBy, -initialX + offset, initialY);
 
     // - on zoom function call method - translateTo
-    // layout.call(this.zoom.translateTo, initialX, initialY)
+    layout.call(this.zoom.translateTo, initialX, initialY)
   }
 
   public goToPrevBar(): boolean {
@@ -476,8 +477,8 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
       const barLabelSelection = context.append('text')
       this.drawBarTextLabel(barLabelSelection, 'label', optionsBarLabel);
     }
-    
-    context.selectAll('g.bar-group').remove()
+
+    // context.selectAll('g.bar-group').remove()
     const barGroupSelection = context.selectAll('g.bar-group')
       .data(this.data, (d: ItemData) => d.identity)
       .join(
@@ -487,10 +488,12 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
             .call(createBarContextFn)
         },
         (update) => {
+          console.warn(update.size())
           update.classed('entered', false)
           return update;
         },
         (exit) => {
+          console.error(exit.size())
           exit.remove();
           return exit;
         },
