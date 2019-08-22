@@ -31,6 +31,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
   private groupPlaceholderBars;
   private groupClickAreaBars;
   private groupDataBars;
+  private groupBars;
   private x;
   private x2;
   private y;
@@ -181,9 +182,10 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
     // process drawing
     this.svg.selectAll().remove();
     this.groupPanning = this.svg.append('g').attr('class', 'wrapper-panning');
-    this.groupPlaceholderBars = this.groupPanning.append('g').attr('class', 'placeholder');
-    this.groupClickAreaBars = this.groupPanning.append('g').attr('class', 'clickArea');
-    this.groupDataBars = this.groupPanning.append('g').attr('class', 'bar');
+    // this.groupPlaceholderBars = this.groupPanning.append('g').attr('class', 'placeholder');
+    // this.groupClickAreaBars = this.groupPanning.append('g').attr('class', 'clickArea');
+    // this.groupDataBars = this.groupPanning.append('g').attr('class', 'bar');
+    this.groupBars = this.groupPanning.append('g').attr('class', 'bars');
   }
 
   public ngOnDestroy(): void {
@@ -263,38 +265,14 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
 
     this.updateZoomOnChangeData(this.dataMin, this.dataMax);
 
-    // todo: recal active item
-    // on chnage delimiter -> active date not correct
-
-    // draw click area bars
-    this.groupClickAreaBars
-      .selectAll('rect')
-      .data(this.data)
-      .call(this.drawClickBarArea.bind(this));
-
-    // draw bar placeholders
-    const placeholderBars = this.groupPlaceholderBars
-      .selectAll('rect')
-      .data(this.data)
-      .call(this.drawPlaceholderBar.bind(this));
-
-    // draw bar label
-    this.groupPlaceholderBars
-      .selectAll('text')
-      .data(this.data)
-      .call(this.drawBarLabel.bind(this));
-
-    // draw DATA bars
-    this.groupDataBars
-      .selectAll('rect')
-      .data(this.data.filter(el => el.value))
-      .call(this.drawDataBar.bind(this))
+    this.drawBars();
 
     this.drawPaginationShadow();
 
     // update active item viewport position
     this.showActiveBarOnCenterViewport();
   }
+
 
   private initSubscribes(): void {
 
@@ -442,74 +420,149 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
     return (dir === DirectionRight) ? diffDates > 0 : diffDates < 0;
   }
 
-  private drawDataBar(selection: Selection<SVGElement, {}, HTMLElement, any>): void {
-    this
-      .drawBarPrimitive(selection)
-      // mark active label
-      .call(this.drawAsActiveBar.bind(this))
-  }
+  private drawBars(): void {
+    const context = this.groupBars;
 
-  private drawPlaceholderBar(selection: Selection<SVGElement, {}, HTMLElement, any>): void {
-    this
-      .drawBarPrimitive(selection)
-      .attr('y', d => this.y(this.maxValueFromChart))
-      .attr('height', d => this.y(0) - this.y(this.maxValueFromChart) + this.minBarHeight)
-      .attr('class', 'bar placeholder')
-    // .on("click", this.onBarClick.bind(this));
-  }
+    // width from bar to bar
+    const barClickAreaWidth: number = this.translateWidthOneBar;
+    const optionsBarArea = {
+      x: (d: ItemData) => this.x(d.identity) - Math.round(barClickAreaWidth / 2),
+      y: (d: ItemData) => this.y(this.maxValueFromChart),
+      width: barClickAreaWidth,
+      height: (d: ItemData) => this.y(0) - this.y(this.maxValueFromChart) + this.minBarHeight
+    };
 
-  private drawClickBarArea(selection: Selection<SVGElement, {}, HTMLElement, any>): void {
 
-    const clickAreaWidth: number = this.translateWidthOneBar;
+    const optionsBarData = {
+      x: (d: ItemData) => this.x(d.identity) - Math.round(this.barWidth / 2),
+      y: (d: ItemData) => this.y(d.value),
+      width: this.barWidth,
+      height: (d: ItemData) => this.y(0) - this.y(d.value) + this.minBarHeight,
+    };
 
-    this
-      .drawBarPrimitive(selection)
-      .attr('class', 'clickArea')
-      .attr('x', (d: ItemData) => this.x(d.identity) - Math.round(clickAreaWidth / 2))
-      .attr('y', d => this.y(this.maxValueFromChart))
-      .attr('width', clickAreaWidth)
-      .attr('height', d => this.y(0) - this.y(this.maxValueFromChart) + this.minBarHeight)
-      //
-      .attr('fill', 'red')
-      .attr('opacity', '.1')
-      //
-      .on("click", this.onBarClick.bind(this));
-  }
 
-  private drawBarPrimitive(
-    selection: Selection<SVGElement, {}, HTMLElement, any>
-  ): Selection<SVGElement, {}, HTMLElement, any> {
-    return selection
-      .join('rect')
-      .attr('x', (d: ItemData) => this.x(d.identity) - Math.round(this.barWidth / 2))
-      .attr('y', (d: ItemData) => this.y(d.value))
-      .attr('height', (d: ItemData) => this.y(0) - this.y(d.value) + this.minBarHeight)
-      .attr('width', this.barWidth)
-      .attr('rx', d => this.radiusRectangle)
-      .attr('ry', d => this.radiusRectangle)
-      .attr('class', 'bar')
-    // .on("click", this.onBarClick.bind(this));
-  }
+    const optionsBarPlaceholder = {
+      x: (d: ItemData) => this.x(d.identity) - Math.round(this.barWidth / 2),
+      y: (d: ItemData) => this.y(this.maxValueFromChart),
+      width: this.barWidth,
+      height: (d: ItemData) => this.y(0) - this.y(this.maxValueFromChart) + this.minBarHeight,
+    };
 
-  private drawBarLabel(selection: any): void {
-
-    const yPos: number = this.y(0)
+    const yLabelPosition: number = this.y(0)
       + this.minBarHeight
       + (this.labelConfig.labelOffsetTop || 0)
       + (this.labelConfig.labelFontSize || 0);
 
+    const optionsBarLabel = {
+      x: (d: ItemData) => this.x(d.identity),
+      y: (d: ItemData) => yLabelPosition,
+    };
+
+    const createBarContext = (context) => {
+
+      // draw click bg
+      const barAreaClickSelection = context.append('rect');
+      const barAreaClick = this.drawBarRectangle(barAreaClickSelection, 'click-area', optionsBarArea);
+      barAreaClick
+        .classed('click-area', true)
+        .attr('opacity', '.0')
+
+      // draw placeholder bar
+      const barPlaceholderSelection = context.append('rect');
+      const barPlaceholder = this.drawBarRectangle(barPlaceholderSelection, 'placeholder', optionsBarPlaceholder);
+      barPlaceholder
+        .classed('bar placeholder', true);
+
+      // draw data bar
+      const barDataSelection = context.append('rect');
+      const barData = this.drawBarRectangle(barDataSelection, 'bar', optionsBarData);
+      barData
+        // .call(this.drawAsActiveBar.bind(this))
+        .classed('bar', true);
+
+      // draw label
+      const barLabelSelection = context.append('text')
+      const barLabel = this.drawBarTextLabel(barLabelSelection, 'label', optionsBarLabel);
+      barLabel
+      // .call(this.drawAsActiveBar.bind(this));
+    }
+
+    const barGroupSelection = context.selectAll('g.bar-group')
+      .data(this.data, (d: ItemData) => d.identity)
+      .join(
+        (enter) => {
+          return enter.append('g')
+            .classed('bar-group enter', true)
+            .attr('fill', 'green')
+            .call(createBarContext)
+        },
+        // (update) => {
+        //   update.classed('update', true)
+        //   return update;
+        // },
+        // (exit) => {
+        //   console.info(exit);
+        //   exit.remove();
+        // }
+      )
+
+    // click on bar group (include click on bar + palceholder + empty area aroud placeholder)
+    barGroupSelection.on("click", this.onBarClick.bind(this));
+  }
+
+  private drawBarRectangle(
+    selectionRects: Selection<SVGElement, {}, HTMLElement, any>,
+    className: string,
+    options: {
+      width?: any,
+      height?: any,
+      x?: any,
+      y?: any,
+    } = {}
+  ): Selection<SVGElement, {}, HTMLElement, any> {
+
+    const width = options.width !== undefined
+      ? options.width
+      : this.barWidth;
+    const height = options.height !== undefined
+      ? options.height
+      : (d: ItemData) => this.y(0) - this.y(d.value) + this.minBarHeight;
+    const x = options.x !== undefined
+      ? options.x
+      : (d: ItemData) => this.x(d.identity) - Math.round(this.barWidth / 2);
+    const y = options.y !== undefined
+      ? options.y
+      : (d: ItemData) => this.y(d.value);
+
+    selectionRects
+      .attr('x', x)
+      .attr('y', y)
+      .attr('height', height)
+      .attr('width', width)
+      .attr('rx', d => this.radiusRectangle)
+      .attr('ry', d => this.radiusRectangle)
+      .attr('class', className)
+
+    return selectionRects;
+  }
+
+  private drawBarTextLabel(
+    selection: Selection<SVGElement, {}, HTMLElement, any>,
+    className: string,
+    options: {
+      x?: any,
+      y?: any,
+    } = {}
+  ): Selection<SVGElement, {}, HTMLElement, any> {
+
     selection
-      .join('text')
       .text((d, i) => this.formatLabel(d))
-      .attr('class', 'label')
-      // set label by center of bar
-      .attr('x', d => this.x(d.identity))
-      .attr('y', d => yPos)
+      .attr('class', className)
+      .attr('x', options.x || 0)
+      .attr('y', options.y || 0)
+      .style('text-anchor', 'middle')
       .attr("font-family", `${this.labelConfig.labelFontFamily}`)
       .attr("font-size", `${this.labelConfig.labelFontSize}px`)
-      .style('text-anchor', 'middle')
-      // mark active label
-      .call(this.drawAsActiveBar.bind(this));
 
     return selection;
   }
@@ -591,8 +644,9 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
     }
   }
 
-  // protected abstract getObserveSource(): Observable<any>[];
-
+  /**
+   * Get formatted string for item
+   */
   protected abstract formatLabel(date: ItemData): string;
 
   /**
