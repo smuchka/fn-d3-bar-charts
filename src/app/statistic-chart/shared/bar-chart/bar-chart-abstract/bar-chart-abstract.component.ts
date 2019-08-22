@@ -55,7 +55,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
   public set data(items: ItemData[]) {
     this.dataList = items;
     this.updateMapItemData(items);
-    this.dataMin = D3.min(items, d => d.identity)
+    this.dataMin = D3.min(items, d => d.identity);
     this.dataMax = D3.max(items, d => d.identity);
   }
   public get data(): ItemData[] {
@@ -149,7 +149,6 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
     this.hasLeftPagination = false;
     this.hasLeftPannning = false;
     this.radiusRectangle = 4;
-    this.minBarHeight = 0;
     this.minBarHeight = 10;
     this.barWidthValue = 10;
     this.initMaxValue = 1;
@@ -222,8 +221,6 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
   }
 
   private onZoomed(): void {
-    // redraw groups of bars
-    this.x2 = D3.event.transform.rescaleX(this.x);
     const { x } = D3.event.transform || { x: 0 };
     this.groupPanning.attr("transform", "translate(" + x + ",0)");
 
@@ -279,7 +276,6 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
    * Handler of changing input data
    */
   private recalculateAndUpdateChart(): void {
-    this.initXScale();
     this.updateChart();
   }
 
@@ -375,7 +371,6 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
         this.margin.left + left,
         this.width - this.margin.right - right,
       ]);
-    this.x2 = this.x.copy();
 
     this.x2 = this.x.copy();
 
@@ -430,20 +425,33 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
     const layout = this.svg.transition().duration(duration);
 
     const [initialX, initialY] = [this.x( this.activeDate ), 0];
-    console.log(Math.abs(initialX), this.x(D3.min(this.x2.ticks())), this.x(D3.max(this.x2.ticks())));
-
     switch(Math.abs(initialX)) {
       case Math.abs(this.x(D3.min(this.x2.ticks()))): // Left Side
-        layout.call(
-          this.zoom.transform,
-          D3.zoomIdentity.translate( -initialX + 100, initialY)
-        );
+        if(this.dataMin.getTime() !== new Date(D3.min(this.x2.ticks())).getTime()) {
+          layout.call(
+            this.zoom.transform,
+            D3.zoomIdentity.translate( -initialX + this.translateWidthOneBar + (this.barWidth * 2) - 12, initialY)
+          );
+        }
         break;
       case Math.abs(this.x(D3.max(this.x2.ticks()))): // Right Side
-        layout.call(
-          this.zoom.transform,
-          D3.zoomIdentity.translate( -initialX - 100, initialY)
-        );
+        if(this.x(this.dataMax) !== Math.abs(initialX)) {
+          layout.call(
+            this.zoom.transform,
+            D3.zoomIdentity.translate(
+              Math.abs(
+                this.x(
+                  this.calcNextBarDate(
+                    new Date(
+                      D3.min(
+                        this.x2.ticks()
+                      )
+                    )
+                  )
+                )
+              ), initialY)
+          );
+        }
         break;
       default: // Default scroll state
         break;
