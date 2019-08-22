@@ -10,6 +10,7 @@ import { PaginationEvent } from './interfaces/pagination';
 import { ChartTooltip } from './interfaces/bar-chart-tooltip';
 import { BarChartBase } from './interfaces/bar-chart-base';
 import { numberWithCommas } from './helpers';
+import { UpdateChartEvent } from './types/update-chart-event';
 
 export {
   DirectionActiveChange,
@@ -22,4 +23,5 @@ export {
   BarChartBase,
   numberWithCommas,
   PaginationEvent,
+  UpdateChartEvent,
 }
