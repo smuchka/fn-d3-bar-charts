@@ -424,14 +424,18 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
       height: (d: ItemData) => this.y(0) - this.y(this.maxValueFromChart) + this.minBarHeight
     };
 
-
     const optionsBarData = {
       x: (d: ItemData) => this.x(d.identity) - Math.round(this.barWidth / 2),
       y: (d: ItemData) => this.y(d.value),
       width: this.barWidth,
-      height: (d: ItemData) => this.y(0) - this.y(d.value) + this.minBarHeight,
-    };
+      height: (d: ItemData) => {
+        if (d.value) {
+          return this.y(0) - this.y(d.value) + this.minBarHeight
+        }
 
+        return 0;
+      },
+    };
 
     const optionsBarPlaceholder = {
       x: (d: ItemData) => this.x(d.identity) - Math.round(this.barWidth / 2),
