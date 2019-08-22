@@ -27,7 +27,7 @@ import { Selection } from "d3";
 })
 export abstract class BarChartAbstract extends D3ChartBaseComponent implements BarChartBase, OnInit, AfterContentInit, OnDestroy {
 
-  private groupBars;
+  private groupPanning;
   private x;
   private x2;
   private y;
@@ -177,7 +177,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
 
     // process drawing
     this.svg.selectAll().remove();
-    this.groupBars = this.svg.append('g').attr('class', 'panning-container');
+    this.groupPanning = this.svg.append('g').attr('class', 'panning-container');
   }
 
   public ngOnDestroy(): void {
@@ -186,7 +186,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
 
   // public API
   public getLayoutPanning() {
-    return this.groupBars;
+    return this.groupPanning;
   }
   public getLayout() {
     return this.svg;
@@ -195,7 +195,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
   private onZoomed(): void {
     // redraw groups of bars 
     const { x } = D3.event.transform || { x: 0 };
-    this.groupBars.attr("transform", "translate(" + x + ",0)");
+    this.groupPanning.attr("transform", "translate(" + x + ",0)");
 
     // rescale copy axis -> x2
     this.x2 = D3.event.transform.rescaleX(this.x);
@@ -262,12 +262,11 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
     this.drawPaginationShadow();
 
     // update active item viewport position
-    this.showActiveBarOnCenterViewport();
+    // this.showActiveBarOnCenterViewport();
   }
 
 
   private initSubscribes(): void {
-
     this.subs.add(
       merge(
         this.updateChart$.asObservable(),
@@ -276,10 +275,13 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
         .subscribe((upd: UpdateChartEvent) => {
 
           if (upd.full) {
+            this.getLayoutPanning().call(
+              this.zoom.transform, 
+              D3.zoomIdentity.scale(1)
+            )
             this.initXScale();
             this.initActiveDate();
           }
-
           this.updateChart();
         })
     );
@@ -382,7 +384,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
     // layout.call(this.zoom.translateBy, -initialX + offset, initialY);
 
     // - on zoom function call method - translateTo
-    layout.call(this.zoom.translateTo, initialX, initialY)
+    // layout.call(this.zoom.translateTo, initialX, initialY)
   }
 
   public goToPrevBar(): boolean {
@@ -413,7 +415,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
   }
 
   private drawBars(): void {
-    const context = this.groupBars;
+    const context = this.groupPanning;
 
     // width from bar to bar
     const barClickAreaWidth: number = this.translateWidthOneBar;
@@ -474,7 +476,8 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
       const barLabelSelection = context.append('text')
       this.drawBarTextLabel(barLabelSelection, 'label', optionsBarLabel);
     }
-
+    
+    context.selectAll('g.bar-group').remove()
     const barGroupSelection = context.selectAll('g.bar-group')
       .data(this.data, (d: ItemData) => d.identity)
       .join(
@@ -486,6 +489,10 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
         (update) => {
           update.classed('entered', false)
           return update;
+        },
+        (exit) => {
+          exit.remove();
+          return exit;
         },
       )
       .call(this.drawAsActiveBar.bind(this))

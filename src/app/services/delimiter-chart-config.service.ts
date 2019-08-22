@@ -31,7 +31,7 @@ export class DelimiterChartConfigService {
       [PlatformSize.WEB]: {
         [StatisticDelimiter.Hour]: { countViewport: 16, countChunk: 24, barWidth: 16 },
         [StatisticDelimiter.Day]: { countViewport: 14, countChunk: 14, barWidth: 24 },
-        [StatisticDelimiter.Week]: { countViewport: 11, countChunk: 11, barWidth: 40 },
+        [StatisticDelimiter.Week]: { countViewport: 11, countChunk: 21, barWidth: 40 },
       },
     }
   }
