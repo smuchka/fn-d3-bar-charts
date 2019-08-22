@@ -22,7 +22,7 @@
 }
 
 /deep/ .active .label,
-/deep/ .active .bar {
+/deep/ .active .bar:not(.placeholder) {
   fill:#0768EF;
 }
 
