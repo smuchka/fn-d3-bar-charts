@@ -12,9 +12,6 @@
 /deep/ .bar {
   fill:#969DAD;
 }
-/deep/ .bar.active {
-  fill:#0768EF;
-}
 
 /deep/ .bar.placeholder {
   fill:#F2F5FA;
@@ -24,7 +21,8 @@
   fill:#969DAD;
 }
 
-/deep/ .label.active {
+/deep/ .active .label,
+/deep/ .active .bar {
   fill:#0768EF;
 }
 

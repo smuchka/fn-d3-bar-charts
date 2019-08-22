@@ -450,33 +450,25 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
       y: (d: ItemData) => yLabelPosition,
     };
 
-    const createBarContext = (context) => {
+    const createBarContextFn = (context) => {
 
       // draw click bg
       const barAreaClickSelection = context.append('rect');
-      const barAreaClick = this.drawBarRectangle(barAreaClickSelection, 'click-area', optionsBarArea);
-      barAreaClick
-        .classed('click-area', true)
+      this.drawBarRectangle(barAreaClickSelection, 'click-area', optionsBarArea)
         .attr('opacity', '.0')
 
       // draw placeholder bar
       const barPlaceholderSelection = context.append('rect');
-      const barPlaceholder = this.drawBarRectangle(barPlaceholderSelection, 'placeholder', optionsBarPlaceholder);
-      barPlaceholder
-        .classed('bar placeholder', true);
+      this.drawBarRectangle(barPlaceholderSelection, 'bar', optionsBarPlaceholder)
+        .classed('placeholder', true);
 
       // draw data bar
       const barDataSelection = context.append('rect');
-      const barData = this.drawBarRectangle(barDataSelection, 'bar', optionsBarData);
-      barData
-        // .call(this.drawAsActiveBar.bind(this))
-        .classed('bar', true);
+      this.drawBarRectangle(barDataSelection, 'bar', optionsBarData);
 
       // draw label
       const barLabelSelection = context.append('text')
-      const barLabel = this.drawBarTextLabel(barLabelSelection, 'label', optionsBarLabel);
-      barLabel
-      // .call(this.drawAsActiveBar.bind(this));
+      this.drawBarTextLabel(barLabelSelection, 'label', optionsBarLabel);
     }
 
     const barGroupSelection = context.selectAll('g.bar-group')
@@ -484,19 +476,15 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
       .join(
         (enter) => {
           return enter.append('g')
-            .classed('bar-group enter', true)
-            .attr('fill', 'green')
-            .call(createBarContext)
+            .classed('bar-group entered', true)
+            .call(createBarContextFn)
         },
-        // (update) => {
-        //   update.classed('update', true)
-        //   return update;
-        // },
-        // (exit) => {
-        //   console.info(exit);
-        //   exit.remove();
-        // }
+        (update) => {
+          update.classed('entered', false)
+          return update;
+        },
       )
+      .call(this.drawAsActiveBar.bind(this))
 
     // click on bar group (include click on bar + palceholder + empty area aroud placeholder)
     barGroupSelection.on("click", this.onBarClick.bind(this));
