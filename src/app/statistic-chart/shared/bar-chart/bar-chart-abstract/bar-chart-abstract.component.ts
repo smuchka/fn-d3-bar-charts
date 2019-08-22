@@ -275,12 +275,13 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
         .subscribe((upd: UpdateChartEvent) => {
 
           if (upd.full) {
+            this.initXScale();
+            // @hack
             this.getLayoutPanning().selectAll('*').remove();
             this.getLayoutPanning().call(
               this.zoom.transform,
               D3.zoomIdentity.scale(1)
-            )
-            this.initXScale();
+            );
             this.initActiveDate();
           }
           this.updateChart();
@@ -478,7 +479,6 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
       this.drawBarTextLabel(barLabelSelection, 'label', optionsBarLabel);
     }
 
-    // context.selectAll('g.bar-group').remove()
     const barGroupSelection = context.selectAll('g.bar-group')
       .data(this.data, (d: ItemData) => d.identity)
       .join(
@@ -488,12 +488,10 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
             .call(createBarContextFn)
         },
         (update) => {
-          console.warn(update.size())
           update.classed('entered', false)
           return update;
         },
         (exit) => {
-          console.error(exit.size())
           exit.remove();
           return exit;
         },
