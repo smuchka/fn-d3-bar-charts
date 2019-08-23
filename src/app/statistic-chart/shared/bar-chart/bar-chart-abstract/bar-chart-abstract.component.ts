@@ -54,7 +54,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
   public set data(items: ItemData[]) {
     this.dataList = items;
     this.updateMapItemData(items);
-    this.dataMin = D3.min(items, d => d.identity)
+    this.dataMin = D3.min(items, d => d.identity);
     this.dataMax = D3.max(items, d => d.identity);
   }
   public get data(): ItemData[] {
@@ -72,6 +72,9 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
 
   @Input('maxValue')
   public initMaxValue: number;
+
+  @Input('isMobile')
+  public isMobile: boolean = false;
 
   @Input()
   public hasLeftPagination: boolean;
@@ -145,7 +148,6 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
     this.hasLeftPagination = false;
     this.hasLeftPannning = false;
     this.radiusRectangle = 4;
-    this.minBarHeight = 0;
     this.minBarHeight = 10;
     this.barWidthValue = 10;
     this.initMaxValue = 1;
@@ -193,12 +195,11 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
   }
 
   private onZoomed(): void {
-    // redraw groups of bars 
-    const { x } = D3.event.transform || { x: 0 };
-    this.groupPanning.attr("transform", "translate(" + x + ",0)");
-
     // rescale copy axis -> x2
     this.x2 = D3.event.transform.rescaleX(this.x);
+
+    const { x } = D3.event.transform || { x: 0 };
+    this.groupPanning.attr("transform", "translate(" + x + ",0)");
 
     this.hasLeftPannning = this.dataMin && this.dataMin.getTime() < this.firstViewportDate.getTime();
     this.hasRightPannning = this.dataMax && this.dataMax.getTime() > this.lastViewportDate.getTime();
@@ -206,6 +207,9 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
   }
 
   private onZoomedEnd(): void {
+    // rescale copy axis -> x2
+    this.x2 = D3.event.transform.rescaleX(this.x);
+
     const { x } = D3.event.transform || { x: 0 };
     if (x > Math.abs(this.x(this.dataMin))) {
       this.paginationEvent.emit(new Date(this.dataMin));
@@ -262,7 +266,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
     this.drawPaginationShadow();
 
     // update active item viewport position
-    this.showActiveBarOnCenterViewport();
+    this.isMobile ? this.showActiveBarOnCenterViewportMob() : this.showActiveBarOnCenterViewport();
   }
 
 
@@ -325,6 +329,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
         this.margin.left + left,
         this.width - this.margin.right - right,
       ]);
+
     this.x2 = this.x.copy();
 
     // calc width of one bar
@@ -369,23 +374,52 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
       return;
     }
 
+    const layout = this.svg.transition().duration(duration);
+    const [initialX, initialY] = [this.x( this.activeDate ), 0];
+
+    switch(initialX) {
+      case this.x(this.firstViewportDate): // Left Side
+        if(this.dataMin.getTime() !== this.firstViewportDate.getTime()) {
+          layout.call(
+            this.zoom.transform,
+            D3.zoomIdentity.translate(
+              - this.x(
+                this.firstViewportDate
+              ) + (this.translateWidthOneBar / 2) + this.translateWidthOneBar,
+              initialY
+            )
+          );
+        }
+        break;
+      case this.x(this.lastViewportDate): // Right Side
+        if(this.dataMax.getTime() !== this.lastViewportDate.getTime()) {
+          layout.call(
+            this.zoom.transform,
+            D3.zoomIdentity.translate(
+              - this.x(
+                this.firstViewportDate
+              ) - (this.translateWidthOneBar / 2) + (this.translateWidthOneBar / 2) + this.barWidth,
+              initialY
+            )
+          );
+        }
+        break;
+      default:
+        break;
+    }
+  }
+
+  private showActiveBarOnCenterViewportMob(duration: number = 0): void {
+    if (!this.activeDate) {
+      return;
+    }
+
     let [initialX, initialY] = [this.x(this.activeDate), 0];
 
     const layout = this.svg
       .transition()
       .duration(duration);
 
-    // - create new transform and apply it
-    // const offset = 100
-    // const newTransform = D3.zoomIdentity.translate(-initialX, 0);
-    // layout.call(this.zoom.transform, newTransform);
-
-    // - BETTER!
-    // - need add offset
-    // const offset = 100
-    // layout.call(this.zoom.translateBy, -initialX + offset, initialY);
-
-    // - on zoom function call method - translateTo
     layout.call(this.zoom.translateTo, initialX, initialY)
   }
 
