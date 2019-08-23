@@ -170,16 +170,16 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
   public ngAfterContentInit(): void {
     // Init svg in DOM and init svg dimetions
     super.ngAfterContentInit();
-    this.initSubscribes();
-
-    this.initActiveDate();
-    this.initXScale();
-    this.initYScale();
-    this.initZoom();
 
     // process drawing
     this.svg.selectAll().remove();
     this.groupPanning = this.svg.append('g').attr('class', 'panning-container');
+
+    this.initSubscribes();
+    this.initActiveDate();
+    this.initXScale();
+    this.initYScale();
+    this.initZoom();
   }
 
   public ngOnDestroy(): void {
@@ -280,12 +280,12 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
 
           if (upd.full) {
             this.initXScale();
-            // @hack
-            this.getLayoutPanning().selectAll('*').remove();
-            this.getLayoutPanning().call(
-              this.zoom.transform,
-              D3.zoomIdentity.scale(1)
-            );
+            this.getLayoutPanning()
+              .call(
+                this.zoom.transform,
+                D3.zoomIdentity.scale(1)
+              )
+              .selectAll('*').remove();
             this.initActiveDate();
           }
           this.updateChart();
@@ -375,11 +375,11 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
     }
 
     const layout = this.svg.transition().duration(duration);
-    const [initialX, initialY] = [this.x( this.activeDate ), 0];
+    const [initialX, initialY] = [this.x(this.activeDate), 0];
 
-    switch(initialX) {
+    switch (initialX) {
       case this.x(this.firstViewportDate): // Left Side
-        if(this.dataMin.getTime() !== this.firstViewportDate.getTime()) {
+        if (this.dataMin.getTime() !== this.firstViewportDate.getTime()) {
           layout.call(
             this.zoom.transform,
             D3.zoomIdentity.translate(
@@ -392,7 +392,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
         }
         break;
       case this.x(this.lastViewportDate): // Right Side
-        if(this.dataMax.getTime() !== this.lastViewportDate.getTime()) {
+        if (this.dataMax.getTime() !== this.lastViewportDate.getTime()) {
           layout.call(
             this.zoom.transform,
             D3.zoomIdentity.translate(
