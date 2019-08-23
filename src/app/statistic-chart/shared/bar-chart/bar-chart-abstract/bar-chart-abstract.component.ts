@@ -75,6 +75,9 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
   @Input('maxValue')
   public initMaxValue: number;
 
+  @Input('isMobile')
+  public isMobile: boolean = false;
+
   @Input()
   public hasLeftPagination: boolean;
   private hasLeftPannning: boolean;
@@ -286,7 +289,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
     this.drawPaginationShadow();
 
     // update active item viewport position
-    this.showActiveBarOnCenterViewport();
+    this.isMobile ? this.showActiveBarOnCenterViewportMob() : this.showActiveBarOnCenterViewport();
   }
 
   private initSubscribes(): void {

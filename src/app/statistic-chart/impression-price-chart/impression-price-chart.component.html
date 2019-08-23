@@ -6,6 +6,7 @@
     [barWidth]="barWidth"
     [countBarsInViewport]="barCountInViewport"
     [hasLeftPagination]="hasLeftPagination"
+    [isMobile]="isMobile"
     (paginationEvent)="paginationEvent.emit($event)"
   >
     <fn-static-tooltip *ngIf="isMobile; else relativeTooltip"></fn-static-tooltip>
