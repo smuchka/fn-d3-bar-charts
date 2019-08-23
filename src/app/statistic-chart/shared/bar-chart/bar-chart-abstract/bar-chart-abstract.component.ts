@@ -565,8 +565,8 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
       .attr('y', y)
       .attr('height', height)
       .attr('width', width)
-      .attr('rx', d => this.radiusRectangle)
-      .attr('ry', d => this.radiusRectangle)
+      .attr('rx', (d: ItemData) => this.radiusRectangle)
+      .attr('ry', (d: ItemData) => this.radiusRectangle)
       .attr('class', className)
 
     return selectionRects;
@@ -582,7 +582,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
   ): Selection<SVGElement, {}, HTMLElement, any> {
 
     selection
-      .text((d, i) => this.formatLabel(d))
+      .text((d: ItemData) => this.formatLabel(d))
       .attr('class', className)
       .attr('x', options.x || 0)
       .attr('y', options.y || 0)
