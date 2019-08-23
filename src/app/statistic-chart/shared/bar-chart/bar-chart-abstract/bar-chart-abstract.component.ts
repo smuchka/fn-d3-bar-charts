@@ -4,7 +4,7 @@ import {
 import { D3ChartBaseComponent } from './d3-chart-base.component';
 import { getEmptyDataInitError } from './bar-chart-errors';
 import {
-  differenceInSeconds,
+  differenceInSeconds, isWithinRange,
 } from 'date-fns';
 import {
   ItemData,
@@ -211,8 +211,6 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
   }
 
   private onZoomedEnd(): void {
-    // rescale copy axis -> x2
-    this.x2 = D3.event.transform.rescaleX(this.x);
 
     const { x } = D3.event.transform || { x: 0 };
     if (x > Math.abs(this.x(this.dataMin))) {
@@ -422,7 +420,10 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
           );
         }
         break;
-      default:
+      default: // If active date is out of viewport and user clicked on navigation button scroll to changed active date
+        if(!isWithinRange(this.activeDate, this.firstViewportDate, this.lastViewportDate)) {
+          layout.call(this.zoom.translateTo, initialX, initialY);
+        }
         break;
     }
   }
