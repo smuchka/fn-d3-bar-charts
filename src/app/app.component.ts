@@ -89,14 +89,7 @@ export class AppComponent implements OnInit {
   }
 
   private loadPrevPeriod(date: Date): void {
-
-    console.warn(`Request before: ${date.toUTCString()}`)
     if (date.getTime() < this.campaignStart.getTime()) {
-      console.warn(
-        'Out of campaign date range. Skip load next periods.',
-        `${this.campaignStart.toString()} - ${this.campaignEnd.toString()}`,
-        date.toUTCString()
-      )
       this.hasLeftPagination$.next(false);
       return;
     }
