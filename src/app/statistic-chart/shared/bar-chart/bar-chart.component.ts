@@ -103,7 +103,7 @@ export class BarChartComponent extends BarChartAbstract implements OnInit, OnCha
       if (changes.dateRangeStrategy) {
         this.updateChart$.next({ full: true });
       } else {
-        this.updateChart$.next({ full: false });
+        this.updateChart$.next({ full: false, isDataUpdate: true });
       }
     }
   }
