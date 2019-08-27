@@ -287,7 +287,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
     this.drawPaginationShadow();
 
     // update active item viewport position
-    this.isMobile ? this.showActiveBarOnCenterViewportMob() : this.showActiveBarOnCenterViewport();
+    this.isMobile ? this.showActiveBarOnCenterViewportMobile() : this.showActiveBarOnViewportDesktop(0, isChanged);
   }
 
   private initSubscribes(): void {
@@ -298,7 +298,6 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
         this.activeItemDataChange.pipe(map(_ => ({ rescale: false })))
       )
         .subscribe((upd: UpdateChartEvent) => {
-
           if (upd.full) {
             this.initXScale();
             this.initActiveDate();
@@ -385,7 +384,7 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
     this.svg.call(this.zoom)
   }
 
-  private showActiveBarOnCenterViewport(duration: number = 0): void {
+  private showActiveBarOnViewportDesktop(duration: number = 0, skipCenterOnDataChange: boolean = false): void {
     if (!this.activeDate) {
       return;
     }
@@ -421,14 +420,15 @@ export abstract class BarChartAbstract extends D3ChartBaseComponent implements B
         }
         break;
       default: // If active date is out of viewport and user clicked on navigation button scroll to changed active date
-        if(!isWithinRange(this.activeDate, this.firstViewportDate, this.lastViewportDate)) {
+        if(!isWithinRange(this.activeDate, this.firstViewportDate, this.lastViewportDate) && !skipCenterOnDataChange) {
+          console.warn('Zoom Update');
           layout.call(this.zoom.translateTo, initialX, initialY);
         }
         break;
     }
   }
 
-  private showActiveBarOnCenterViewportMob(duration: number = 0): void {
+  private showActiveBarOnCenterViewportMobile(duration: number = 0): void {
     if (!this.activeDate) {
       return;
     }
