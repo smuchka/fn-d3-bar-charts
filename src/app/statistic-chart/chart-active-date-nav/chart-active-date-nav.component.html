@@ -1,0 +1,15 @@
+<div class="nav">
+	<button 
+    (click)="onClickPrevActivate()"
+    [disabled]="!canPrevActivate()"
+    class="nav-item"
+  >︎←</button>
+
+  <div class="nav-title">{{ dateRangeTitle }}</div>
+
+  <button
+    (click)="onClickNextActivate()"
+    [disabled]="!canNextActivate()"
+    class="nav-item"
+  >→</button>
+</div>
