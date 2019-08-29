@@ -1,6 +1,6 @@
 {
-  "name": "angular",
-  "version": "0.0.0",
+  "name": "fn-bar-chart",
+  "version": "2.0.0",
   "private": true,
   "dependencies": {
     "@angular/common": "^8.0.0",
